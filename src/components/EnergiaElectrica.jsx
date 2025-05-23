@@ -1,3 +1,4 @@
+// src/components/EnergiaElectrica.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -6,13 +7,13 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// Cargar módulos
+// cargar módulos
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema oscuro y estilos
+// tema oscuro y estilos globales
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#111827',
@@ -47,65 +48,141 @@ export function EnergiaElectrica() {
   const chartRefs = useRef([]);
 
   useEffect(() => {
-    const baseOptions = [
-      {
-        title: { text: 'Evolución del Volumen Útil por Región' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
-        chart: { zoomType: '', height: 350 },
-        yAxis: { title: { text: 'Volumen útil (Millones de m³)' } },
-        xAxis: { categories: ['ene-20','jul-20','ene-21','jul-21','ene-22','jul-22','ene-23','jul-23','ene-24'] },
-        series: [
-          { name: 'Antioquia', data: [2000,2300,2100,2400,2500,2200,2300,2600,2700] },
-          { name: 'Caribe',    data: [1000,1300,1200,1400,1450,1250,1350,1500,1600] },
-          { name: 'Centro',    data: [1500,1600,1550,1650,1700,1600,1680,1800,1900] },
-          { name: 'Oriente',   data: [800,850,870,900,950,920,940,980,1000] },
-          { name: 'Valle',     data: [700,740,760,780,800,820,840,860,880] },
-          { name: 'Caldas',    data: [300,310,320,330,340,350,360,370,380] }
-        ]
-      },
-      {
-        title: { text: 'Capacidad Instalada por Tecnología' },
-        subtitle: { text: 'Fuente: XM. 2014-2024' },
-        chart: { zoomType: '', height: 350 },
-        yAxis: { title: { text: 'Capacidad (GW)' } },
-        xAxis: { categories: ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'] },
-        series: [
-          { name: 'AGUA',        data: [10,11,12,12,13,13,14,15,16,17,18] },
-          { name: 'CARBÓN',      data: [5,5.5,6,6,6.5,6.8,7,7.2,7.5,7.6,8] },
-          { name: 'GAS',         data: [3,3.2,3.4,3.5,3.7,4,4.2,4.5,4.6,4.8,5] },
-          { name: 'GLP',         data: [1,1,1,1.1,1.1,1.2,1.2,1.3,1.3,1.3,1.4] },
-          { name: 'JET-A1',      data: [0.5,0.6,0.6,0.7,0.8,0.9,1,1,1.1,1.1,1.2] },
-          { name: 'COMBUSTOLEO', data: [0.3,0.4,0.5,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.9] },
-          { name: 'RAD SOLAR',   data: [0.2,0.3,0.4,0.5,0.6,0.7,0.8,1,1.2,1.4,1.6] }
-        ]
-      },
-      {
-        title: { text: 'Comparativo Volumen vs. Capacidad' },
-        subtitle: { text: 'Gráfico de ejemplo adicional' },
-        chart: { zoomType: '', height: 350 },
-        yAxis: { title: { text: 'Índice Relativo' } },
-        xAxis: { categories: ['Q1','Q2','Q3','Q4'] },
-        series: [
-          { name: 'Volumen útil',       data: [2.5,2.7,2.6,2.8] },
-          { name: 'Capacidad instalada', data: [14,14.3,14.5,15] }
-        ]
-      }
-    ];
-
-    // Agregar export buttons
-    const withExport = baseOptions.map(opt => ({
-      ...opt,
-      exporting: {
-        enabled: true,
-        buttons: {
-          contextButton: {
-            menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
+    async function fetchData() {
+      try {
+        const res = await fetch(
+          'http://192.168.8.138:8002/v1/graficas/energia_electrica',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json'
+            },
+            body: JSON.stringify({
+              fecha_inicio: '2025-05-05',
+              fecha_fin: '2025-05-06'
+            })
           }
-        }
-      }
-    }));
+        );
+        const data = await res.json();
 
-    setCharts(withExport);
+        // 1) Serie diaria de volumen útil del embalse
+        const estatuto = data.grafica_estatuto;
+        const fechas = estatuto.map(d => d.fecha);
+        const volUtil = estatuto.map(d => d['Volumen útil del embalse']);
+
+        // 2) Precios (mín, promedio, máximo)
+        const precios = data.grafica_precios;
+        const preciosMin = precios.map(d => d['Precio Bolsa Minimo Horario']);
+        const preciosAvg = precios.map(d => d['Precio Bolsa Promedio Horario']);
+        const preciosMax = precios.map(d => d['Precio Bolsa Máximo Horario']);
+
+        // 3) Demanda
+        const dem = data.grafica_demanda;
+        const demCom = dem.map(d => d['Demanda Comercial por Sistema']);
+        const enerFirm = dem.map(d => d['Energía en Firme Cargo por Confiabilidad']);
+        const obrFirm = dem.map(d => d['Obligación de Energía en Firme']);
+
+        // 4) Relación demanda
+        const demRel = data.grafica_demanda_relacion;
+        const relOEF = demRel.map(d => d['Relacion Demanda Comercial / OEF']);
+        const relEFICC = demRel.map(d => d['Relacion Demanda Comercial / EFICC']);
+
+        // 5) Volumen útil por región (último mes)
+        const volReg = data.grafica_volumen_util_regiones;
+        const regiones = volReg.map(d => d.region);
+        const volRegData = volReg.map(d => {
+          // la clave que no es 'region' es el mes
+          const key = Object.keys(d).find(k => k !== 'region');
+          return d[key];
+        });
+
+        // 6) Capacidad instalada por tecnología (último mes)
+        const capTec = data.grafica_capacidad_instalada_tecnologia;
+        const fuentes = capTec.map(d => d.fuente);
+        const capTecData = capTec.map(d => {
+          const key = Object.keys(d).find(k => k !== 'fuente');
+          return d[key];
+        });
+
+        // Construir opciones Highcharts
+        const opts = [
+          {
+            title: { text: 'Volumen útil del embalse (diario)' },
+            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+            chart: { zoomType: '', height: 350 },
+            xAxis: { categories: fechas },
+            yAxis: { title: { text: 'Volumen útil (m³)' } },
+            series: [{ name: 'Volumen útil embalse', data: volUtil }]
+          },
+          {
+            title: { text: 'Precios de Bolsa (horario)' },
+            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+            chart: { zoomType: '', height: 350 },
+            xAxis: { categories: fechas },
+            yAxis: { title: { text: 'Precio (COP)' } },
+            series: [
+              { name: 'Mínimo', data: preciosMin },
+              { name: 'Promedio', data: preciosAvg },
+              { name: 'Máximo', data: preciosMax }
+            ]
+          },
+          {
+            title: { text: 'Demanda vs energía en firme' },
+            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+            chart: { zoomType: '', height: 350 },
+            xAxis: { categories: fechas },
+            yAxis: { title: { text: 'Cantidad' } },
+            series: [
+              { name: 'Demanda Comercial', data: demCom },
+              { name: 'Energía en Firme', data: enerFirm },
+              { name: 'Obligación Energía Firme', data: obrFirm }
+            ]
+          },
+          {
+            title: { text: 'Relación Demanda / Firme' },
+            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+            chart: { zoomType: '', height: 350 },
+            xAxis: { categories: fechas },
+            yAxis: { title: { text: 'Ratio' } },
+            series: [
+              { name: 'Dem/ OEF', data: relOEF },
+              { name: 'Dem/ EFICC', data: relEFICC }
+            ]
+          },
+          {
+            title: { text: 'Volumen útil por región (mes)' },
+            chart: { type: 'column', height: 350 },
+            xAxis: { categories: regiones },
+            yAxis: { title: { text: 'Volumen (m³)' } },
+            series: [{ name: 'Volumen útil', data: volRegData }]
+          },
+          {
+            title: { text: 'Capacidad instalada por tecnología' },
+            chart: { type: 'column', height: 350 },
+            xAxis: { categories: fuentes },
+            yAxis: { title: { text: 'Capacidad (GW)' } },
+            series: [{ name: 'Capacidad inst.', data: capTecData }]
+          }
+        ].map(opt => ({
+          ...opt,
+          exporting: {
+            enabled: true,
+            buttons: {
+              contextButton: {
+                menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
+              }
+            }
+          }
+        }));
+
+        setCharts(opts);
+      } catch (err) {
+        console.error('Error cargando datos API', err);
+      }
+    }
+
+    fetchData();
   }, []);
 
   const isFiltered = selected !== 'all';
@@ -113,16 +190,14 @@ export function EnergiaElectrica() {
     ? 'grid-cols-1'
     : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
 
-  // Filtrar y preparar opciones dinámicas
+  // Preparar listado para filtro externo
   const displayed = charts
     .map((opt, idx) => ({ opt, idx }))
     .filter(item => selected === 'all' || String(item.idx) === selected);
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4 text-white">
-        Energía eléctrica
-      </h2>
+      <h2 className="text-2xl font-semibold mb-4 text-white">Energía eléctrica</h2>
 
       {/* Dropdown filtro */}
       <div className="mb-4">
@@ -143,13 +218,9 @@ export function EnergiaElectrica() {
       {/* Grid dinámico */}
       <div className={`grid ${gridClasses} gap-4`}>
         {displayed.map(({ opt, idx }) => {
-          // Aumentar alto si está filtrado
           const dynOptions = {
             ...opt,
-            chart: {
-              ...opt.chart,
-              height: isFiltered ? 600 : opt.chart.height
-            }
+            chart: { ...opt.chart, height: isFiltered ? 600 : opt.chart.height }
           };
           return (
             <div
@@ -161,7 +232,9 @@ export function EnergiaElectrica() {
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"
                 onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
                 title="Maximizar gráfico"
-              >⛶</button>
+              >
+                ⛶
+              </button>
 
               <HighchartsReact
                 highcharts={Highcharts}
@@ -175,4 +248,5 @@ export function EnergiaElectrica() {
     </section>
   );
 }
+
 
