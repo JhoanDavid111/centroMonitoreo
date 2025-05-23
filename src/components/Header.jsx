@@ -1,0 +1,1 @@
+export function Header() { return <header className='text-2xl font-bold mb-6'>Centro de Monitoreo</header>; }
