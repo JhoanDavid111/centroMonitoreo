@@ -60,6 +60,30 @@ export function Sidebar({ open, toggle }) {
           icon: GWOff,
           activeIcon: GWOn
         },
+        {
+          title: 'Comunidades energéticas',
+          path: '/comunidades_energeticas',
+          icon: GasOff,
+          activeIcon: GasOn
+        },
+        {
+          title: 'Autogeneración y GD',
+          path: '/autogeneracion',
+          icon: GLPOff,
+          activeIcon: GLPOn
+        },
+        {
+          title: 'Proyectos 075',
+          path: '/proyectos_075',
+          icon: CombustiblesOff,
+          activeIcon: CombustiblesOn
+        },
+        {
+          title: 'Acciones estratégicas',
+          path: '/acciones_estrategicas',
+          icon: TermicaOff,
+          activeIcon: TermicaOn
+        },
       ]
     },
     {
@@ -98,7 +122,7 @@ export function Sidebar({ open, toggle }) {
       ]
     },
     {
-      title: 'COMBUSTIBLES FÓSILES',
+      title: 'TARIFAS',
       items: [
         {
           title: 'Combustibles líquidos',
