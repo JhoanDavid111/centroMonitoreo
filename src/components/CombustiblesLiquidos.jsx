@@ -48,15 +48,16 @@ export function CombustiblesLiquidos() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
   const chartRefs = useRef([]);
-  const colores = [
-  '#FFC800', // amarillo brillante (principal)
-  '#FFD700', // dorado
-  '#FF9900', // ámbar fuerte
-  '#FFB300', // ámbar medio
-  '#FFA500', // naranja estándar
-  '#FF8C00', // naranja oscuro
-  '#FFCC00', // dorado suave
-  '#FFE066'  // amarillo pastel
+const colores = [
+  '#FFC800', // dorado brillante
+  '#FF6F00', // naranja vivo
+  '#4CAF50', // verde energía
+  '#2196F3', // azul clásico
+  '#9C27B0', // morado elegante
+  '#00BFA6', // verde agua
+  '#FF9800', // ámbar suave
+  '#FF4081'  // rosa/magenta vibrante
+  
 ];
 
   useEffect(() => {
