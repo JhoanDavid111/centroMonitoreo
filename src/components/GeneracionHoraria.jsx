@@ -6,17 +6,16 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// Cargar módulos de Highcharts
+// Cargar módulos
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema oscuro global
+// Tema global con fondo oscuro y fuente Nunito Sans
 Highcharts.setOptions({
   chart: {
-    backgroundColor: '#111827',
-    style: { fontFamily: 'sans-serif' }
+    style: { fontFamily: 'Nunito Sans, sans-serif' }
   },
   title: { style: { color: '#fff' } },
   subtitle: { style: { color: '#aaa' } },
@@ -51,18 +50,21 @@ export function GeneracionHoraria() {
       '12 PM', '2 PM', '4 PM', '6 PM', '8 PM', '10 PM'
     ];
 
-    // Datos ficticios para ambas gráficas
+    // Colores armonizados
     const seriesBase = [
-      { name: 'Solar', data: [22, 21, 20, 18, 15, 12, 10, 12, 18, 25, 28, 24] },
-      { name: 'Eólica', data: [20, 19, 18, 16, 14, 11, 9, 11, 17, 23, 27, 23] },
-      { name: 'Gas', data: [25, 24, 23, 21, 18, 14, 12, 15, 20, 30, 32, 26] }
+      { name: 'Solar', data: [22, 21, 20, 18, 15, 12, 10, 12, 18, 25, 28, 24], color: '#FFC800' },
+      { name: 'Eólica', data: [20, 19, 18, 16, 14, 11, 9, 11, 17, 23, 27, 23], color: '#FF9900' },
+      { name: 'Gas', data: [25, 24, 23, 21, 18, 14, 12, 15, 20, 30, 32, 26], color: '#FFD700' }
     ];
 
     const options = [
       {
         title: { text: 'Generación horaria promedio 2022-1' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
-        chart: { height: 350 },
+        chart: {
+          height: 350,
+          backgroundColor: '#262626'
+        },
         xAxis: { categories: horas },
         yAxis: { title: { text: 'Generación / Demanda' } },
         series: seriesBase,
@@ -78,10 +80,16 @@ export function GeneracionHoraria() {
       {
         title: { text: 'Generación horaria promedio últimos 6 meses' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
-        chart: { height: 350 },
+        chart: {
+          height: 350,
+          backgroundColor: '#262626'
+        },
         xAxis: { categories: horas },
         yAxis: { title: { text: 'Generación / Demanda' } },
-        series: seriesBase.map(s => ({ ...s, data: s.data.map((v, i) => Math.max(v - 2, 0)) })),
+        series: seriesBase.map(s => ({
+          ...s,
+          data: s.data.map(v => Math.max(v - 2, 0)) // variante para segunda gráfica
+        })),
         exporting: {
           enabled: true,
           buttons: {
@@ -102,14 +110,16 @@ export function GeneracionHoraria() {
         {charts.map((opt, idx) => (
           <div
             key={idx}
-            className="bg-gray-900 p-4 rounded border border-gray-700 shadow relative"
+            className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative"
           >
-            {/* Botón maximizar full-screen */}
             <button
               className="absolute top-2 right-2 text-gray-300 hover:text-white"
               onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
               title="Maximizar gráfico"
-            >⛶</button>
+            >
+              ⛶
+            </button>
+
             <HighchartsReact
               highcharts={Highcharts}
               options={opt}

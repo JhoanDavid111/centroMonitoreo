@@ -12,40 +12,42 @@ OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema oscuro global
+// Tema oscuro global con Nunito Sans
 Highcharts.setOptions({
   chart: {
-    backgroundColor: '#111827',
-    style: { fontFamily: 'sans-serif' }
+    backgroundColor: '#262626',
+    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    plotBorderWidth: 0,
+    plotBackgroundColor: '#262626'
   },
-  title: { style: { color: '#fff' } },
-  subtitle: { style: { color: '#aaa' } },
+  title: { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
+  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333'
   },
   yAxis: [
     {
-      labels: { style: { color: '#ccc', fontSize: '10px' } },
-      title: { style: { color: '#ccc' } },
+      labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+      title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
       gridLineColor: '#333'
     },
     {
-      labels: { style: { color: '#ccc', fontSize: '10px' } },
-      title: { style: { color: '#ccc' } },
+      labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+      title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
       opposite: true,
       gridLineColor: '#333'
     }
   ],
   legend: {
-    itemStyle: { color: '#ccc' },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' },
+    backgroundColor: '#262626',
+    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
     shared: true
   }
 });
@@ -53,7 +55,7 @@ Highcharts.setOptions({
 export function CapacidadHistorica() {
   const chartRef = useRef(null);
 
-  // Etiquetas de fechas (trimestrales de ene‐2020 a oct‐2028)
+  // Etiquetas de fechas (trimestrales de ene‑2020 a oct‑2028)
   const categories = [
     'ene-2020','abr-2020','jul-2020','oct-2020',
     'ene-2021','abr-2021','jul-2021','oct-2021',
@@ -83,67 +85,37 @@ export function CapacidadHistorica() {
   ];
 
   const options = {
-    chart: {
-      type: 'area',
-      height: 450,
-      zoomType: ''
+    chart: { 
+      type: 'area', 
+      height: 450, 
+      zoomType: '',
+      backgroundColor: '#262626',
+      plotBackgroundColor: '#262626'
     },
-    title: {
-      text: 'Capacidad instalada / No. de proyectos histórica y proyectada'
-    },
-    subtitle: {
-      text: 'Fuente: XM. 2020-2024'
-    },
-    xAxis: {
-      categories
-    },
+    title: { text: 'Capacidad instalada / No. de proyectos histórica y proyectada' },
+    subtitle: { text: 'Fuente: XM. 2020-2028' },
+    xAxis: { categories },
     yAxis: [
-      { 
-        title: { text: 'Capacidad Instalada (GW)' }
-      },
-      {
-        title: { text: 'Número de proyectos' },
-        opposite: true
-      }
+      { title: { text: 'Capacidad Instalada (GW)' } },
+      { title: { text: 'Número de proyectos' }, opposite: true }
     ],
-    legend: {
-      layout: 'horizontal',
-      align: 'center',
-      verticalAlign: 'top'
-    },
-    exporting: {
-      enabled: true,
-      buttons: {
-        contextButton: {
-          menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
-        }
-      }
-    },
+    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'top' },
+    exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } },
     series: [
-      {
-        name: 'Capacidad instalada',
-        data: capacidadData,
-        yAxis: 0,
-        color: '#d4af37',
-        fillOpacity: 0.5
-      },
-      {
-        name: 'Número de proyectos',
-        data: proyectosData,
-        yAxis: 1,
-        type: 'line',
-        color: '#4caf50'
-      }
-    ]
+      { name: 'Capacidad instalada', data: capacidadData, yAxis: 0, color: '#FFC800', fillOpacity: 0.5 },
+      { name: 'Número de proyectos', data: proyectosData, yAxis: 1, type: 'line', color: '#FF9900' }
+    ],
+    responsive: {
+      rules: [{
+        condition: { maxWidth: 600 },
+        chartOptions: { legend: { layout: 'vertical', align: 'center', verticalAlign: 'bottom' } }
+      }]
+    }
   };
 
   return (
-    <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 shadow">
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={options}
-        ref={chartRef}
-      />
+    <div className="bg-[#262626] p-4 rounded-lg border border-[#262626] shadow">
+      <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
     </div>
   );
 }

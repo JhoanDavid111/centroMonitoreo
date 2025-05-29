@@ -39,7 +39,7 @@ export function CapacidadInstalada() {
   return (
     <section className="mt-8 grid grid-cols-1 xl:grid-cols-4 gap-6">
       {/* --- Mapa --- */}
-      <div className="map-container xl:col-span-3 bg-gray-900 rounded border border-gray-700 shadow overflow-hidden h-[650px] p-2 relative">
+      <div className="map-container xl:col-span-3 bg-bg-[#262626] rounded border border-[#666666] shadow overflow-hidden h-[650px] p-2 relative">
         {/* Controles de Zoom */}
         <div className="absolute top-2 right-2 z-10 flex flex-col space-y-2">
           <button
@@ -76,17 +76,17 @@ export function CapacidadInstalada() {
       </div>
 
       {/* --- Tabla de datos --- */}
-      <div className="bg-gray-900 rounded border border-gray-700 shadow overflow-auto xl:col-span-1">
+      <div className="bg-[#262626] rounded border border-[#666666] shadow overflow-auto xl:col-span-1">
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              <th className="px-4 py-2 text-left text-sm text-gray-400">
+              <th className="px-4 py-2 text-left text-sm text-[#FFC800]">
                 Departamento
               </th>
-              <th className="px-4 py-2 text-right text-sm text-gray-400">
+              <th className="px-4 py-2 text-right text-sm text-[#FFC800]">
                 Capacidad instalada
               </th>
-              <th className="px-4 py-2 text-right text-sm text-gray-400">
+              <th className="px-4 py-2 text-right text-sm text-[#FFC800]">
                 No. de proyectos
               </th>
             </tr>

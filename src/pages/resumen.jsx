@@ -9,7 +9,7 @@ import {
   Thermometer,
   MapPin
 } from 'lucide-react'
-import bannerImage from '../assets/banner6wg.jpg' // ajusta ruta/nombre si cambiaste
+import bannerImage from '../assets/bannerEstrategia6GW.png' // ajusta ruta/nombre si cambiaste
 import { ComunidadesResumen } from '../components/ComunidadesResumen'
 import { CapacidadHistorica } from '../components/CapacidadHistorica'
 import { ResumenCharts } from '../components/ResumenCharts';
@@ -86,10 +86,10 @@ export default function Resumen() {
         <img
           src={bannerImage}
           alt="Estrategia 6GW Plus"
-          className="w-full h-56 object-cover"
+          className="w-full object-contain max-h-[240px]"
         />
-        <div className="absolute inset-0 bg-black/40 flex items-center px-6">
-          <h1 className="text-5xl font-bold text-white">
+        <div className="absolute inset-0 flex flex-col justify-center items-start px-6">
+          <h1 className="text-3xl font-bold text-white">
             Estrategia 6GW Plus
           </h1>
         </div>
@@ -98,7 +98,7 @@ export default function Resumen() {
       {/* Total + Botón */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 mb-6 space-y-4 md:space-y-0">
         <div>
-          <p className="text-lime-400 mb-1">
+          <p style={{ color: '#FFC800' }} className="mb-1">
             Capacidad instalada 6GW total:
           </p>
           <p className="text-5xl font-bold text-white">
@@ -128,10 +128,10 @@ export default function Resumen() {
             return (
               <div
                 key={i}
-                className="bg-gray-900 p-5 rounded-lg border border-gray-700 shadow"
+                className="bg-[#262626] p-5 rounded-lg border border-gray-700 shadow"
               >
                 <div className="flex items-center mb-2">
-                  <Icon className="text-lime-400" size={20} />
+                  <Icon className="text-[#FFC800]" size={20} />
                   <span className="ml-2 text-sm text-gray-300">
                     {card.label}
                   </span>

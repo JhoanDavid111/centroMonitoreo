@@ -7,38 +7,40 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// cargar módulos
+// Cargar módulos
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// tema oscuro y estilos globales
+// Tema oscuro con Nunito Sans y fondo #262626
 Highcharts.setOptions({
   chart: {
-    backgroundColor: '#111827',
-    style: { fontFamily: 'sans-serif' }
+    backgroundColor: '#262626',
+    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    plotBorderWidth: 0,
+    plotBackgroundColor: 'transparent',
   },
-  title: { style: { color: '#fff' } },
-  subtitle: { style: { color: '#aaa' } },
+  title: { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
+  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '8px' } },
-    title: { style: { color: '#ccc' } },
-    gridLineColor: '#333'
+    labels: { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    gridLineColor: '#333',
   },
   yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '8px' } },
-    title: { style: { color: '#ccc' } },
-    gridLineColor: '#333'
+    labels: { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    gridLineColor: '#333',
   },
   legend: {
-    itemStyle: { color: '#ccc' },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHiddenStyle: { color: '#666' },
   },
   tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '10px' }
+    backgroundColor: '#262626',
+    style: { color: '#fff', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' },
   }
 });
 
@@ -50,67 +52,46 @@ export function EnergiaElectrica() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(
-          'http://192.168.8.138:8002/v1/graficas/energia_electrica',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json'
-            },
-            body: JSON.stringify({
-              fecha_inicio: '2025-05-05',
-              fecha_fin: '2025-05-06'
-            })
-          }
-        );
+        const res = await fetch('http://192.168.8.138:8002/v1/graficas/energia_electrica', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' })
+        });
         const data = await res.json();
 
-        // 1) Serie diaria de volumen útil del embalse
+        // --- Procesar datos como antes...
         const estatuto = data.grafica_estatuto;
         const fechas = estatuto.map(d => d.fecha);
         const volUtil = estatuto.map(d => d['Volumen útil del embalse']);
 
-        // 2) Precios (mín, promedio, máximo)
         const precios = data.grafica_precios;
         const preciosMin = precios.map(d => d['Precio Bolsa Minimo Horario']);
         const preciosAvg = precios.map(d => d['Precio Bolsa Promedio Horario']);
         const preciosMax = precios.map(d => d['Precio Bolsa Máximo Horario']);
 
-        // 3) Demanda
         const dem = data.grafica_demanda;
         const demCom = dem.map(d => d['Demanda Comercial por Sistema']);
         const enerFirm = dem.map(d => d['Energía en Firme Cargo por Confiabilidad']);
         const obrFirm = dem.map(d => d['Obligación de Energía en Firme']);
 
-        // 4) Relación demanda
         const demRel = data.grafica_demanda_relacion;
         const relOEF = demRel.map(d => d['Relacion Demanda Comercial / OEF']);
         const relEFICC = demRel.map(d => d['Relacion Demanda Comercial / EFICC']);
 
-        // 5) Volumen útil por región (último mes)
         const volReg = data.grafica_volumen_util_regiones;
         const regiones = volReg.map(d => d.region);
-        const volRegData = volReg.map(d => {
-          // la clave que no es 'region' es el mes
-          const key = Object.keys(d).find(k => k !== 'region');
-          return d[key];
-        });
+        const volRegData = volReg.map(d => d[Object.keys(d).find(k => k !== 'region')]);
 
-        // 6) Capacidad instalada por tecnología (último mes)
         const capTec = data.grafica_capacidad_instalada_tecnologia;
         const fuentes = capTec.map(d => d.fuente);
-        const capTecData = capTec.map(d => {
-          const key = Object.keys(d).find(k => k !== 'fuente');
-          return d[key];
-        });
+        const capTecData = capTec.map(d => d[Object.keys(d).find(k => k !== 'fuente')]);
 
-        // Construir opciones Highcharts
-        const opts = [
+        const baseOptions = [
           {
             title: { text: 'Volumen útil del embalse (diario)' },
             subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
             chart: { zoomType: '', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: fechas },
             yAxis: { title: { text: 'Volumen útil (m³)' } },
             series: [{ name: 'Volumen útil embalse', data: volUtil }]
@@ -119,6 +100,7 @@ export function EnergiaElectrica() {
             title: { text: 'Precios de Bolsa (horario)' },
             subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
             chart: { zoomType: '', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: fechas },
             yAxis: { title: { text: 'Precio (COP)' } },
             series: [
@@ -131,6 +113,7 @@ export function EnergiaElectrica() {
             title: { text: 'Demanda vs energía en firme' },
             subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
             chart: { zoomType: '', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: fechas },
             yAxis: { title: { text: 'Cantidad' } },
             series: [
@@ -143,6 +126,7 @@ export function EnergiaElectrica() {
             title: { text: 'Relación Demanda / Firme' },
             subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
             chart: { zoomType: '', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: fechas },
             yAxis: { title: { text: 'Ratio' } },
             series: [
@@ -153,6 +137,7 @@ export function EnergiaElectrica() {
           {
             title: { text: 'Volumen útil por región (mes)' },
             chart: { type: 'column', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: regiones },
             yAxis: { title: { text: 'Volumen (m³)' } },
             series: [{ name: 'Volumen útil', data: volRegData }]
@@ -160,17 +145,25 @@ export function EnergiaElectrica() {
           {
             title: { text: 'Capacidad instalada por tecnología' },
             chart: { type: 'column', height: 350 },
+            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
             xAxis: { categories: fuentes },
             yAxis: { title: { text: 'Capacidad (GW)' } },
             series: [{ name: 'Capacidad inst.', data: capTecData }]
           }
-        ].map(opt => ({
+        ];
+
+        // Inyectamos el fondo gris en cada chart y los botones de exportar
+        const opts = baseOptions.map(opt => ({
           ...opt,
+          chart: {
+            ...opt.chart,
+            backgroundColor: '#262626'
+          },
           exporting: {
             enabled: true,
             buttons: {
               contextButton: {
-                menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
+                menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
           }
@@ -181,16 +174,12 @@ export function EnergiaElectrica() {
         console.error('Error cargando datos API', err);
       }
     }
-
     fetchData();
   }, []);
 
   const isFiltered = selected !== 'all';
-  const gridClasses = isFiltered
-    ? 'grid-cols-1'
-    : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
+  const gridClasses = isFiltered ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
 
-  // Preparar listado para filtro externo
   const displayed = charts
     .map((opt, idx) => ({ opt, idx }))
     .filter(item => selected === 'all' || String(item.idx) === selected);
@@ -199,15 +188,15 @@ export function EnergiaElectrica() {
     <section className="mt-8">
       <h2 className="text-2xl font-semibold mb-4 text-white">Energía eléctrica</h2>
 
-      {/* Dropdown filtro */}
+      {/* Filtro externo */}
       <div className="mb-4">
         <select
-          className="bg-gray-800 text-gray-200 p-2 rounded"
+          className="bg-[#262626] text-gray-200 p-2 rounded border border-gray-700 font-sans"
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >
           <option value="all">Mostrar todos</option>
-          {charts.map((c, i) => (
+          {charts.map((c,i) => (
             <option key={i} value={String(i)}>
               {c.title.text}
             </option>
@@ -218,28 +207,25 @@ export function EnergiaElectrica() {
       {/* Grid dinámico */}
       <div className={`grid ${gridClasses} gap-4`}>
         {displayed.map(({ opt, idx }) => {
-          const dynOptions = {
+          const dynOpt = {
             ...opt,
             chart: { ...opt.chart, height: isFiltered ? 600 : opt.chart.height }
           };
           return (
             <div
               key={idx}
-              className="bg-gray-900 p-4 rounded border border-gray-700 shadow relative"
+              className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
-              {/* Botón maximizar */}
               <button
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"
                 onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
                 title="Maximizar gráfico"
-              >
-                ⛶
-              </button>
+              >⛶</button>
 
               <HighchartsReact
                 highcharts={Highcharts}
-                options={dynOptions}
-                ref={el => (chartRefs.current[idx] = el)}
+                options={dynOpt}
+                ref={el => chartRefs.current[idx] = el}
               />
             </div>
           );

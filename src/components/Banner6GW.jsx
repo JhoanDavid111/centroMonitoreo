@@ -1,7 +1,7 @@
 // src/components/Banner6GW.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import bannerImage from '../assets/banner6wg.jpg';
+import bannerImage from '../assets/bannerEstrategia6GW.png';
 
 export function Banner6GW({ onClick }) {
   return (
@@ -9,15 +9,15 @@ export function Banner6GW({ onClick }) {
       <img
         src={bannerImage}
         alt="Estrategia 6GW Plus"
-        className="w-full h-48 md:h-40 object-cover"
+        className="w-full object-contain max-h-[240px]"
       />
-      <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-start px-6">
+      <div className="absolute inset-0 flex flex-col justify-center items-start px-6">
         <h1 className="text-4xl font-bold text-white mb-4">
           Estrategia 6GW Plus
         </h1>
         <button
           onClick={onClick}
-          className="bg-[#FFC800] text-black px-5 py-3 rounded-md hover:bg-[#e6b000] transition"
+          className="bg-[#FFC800] text-black px-5 py-1 rounded-md hover:bg-[#e6b000] transition"
         >
           Consultar
         </button>

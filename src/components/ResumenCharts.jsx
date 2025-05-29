@@ -47,88 +47,96 @@ export function ResumenCharts() {
   const chartRefs = useRef([]);
 
   useEffect(() => {
-    const baseOptions = [
-      // Donut 1: Distribución por tecnología
-      {
-        chart: { type: 'pie', height: 300 },
-        title: { text: 'Distribución actual por tecnología' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
-        plotOptions: {
-          pie: {
-            innerSize: '60%',
-            dataLabels: { enabled: true, format: '{point.name}: {point.y:.2f} MW' }
-          }
-        },
-        series: [{
-          name: 'Tecnología',
-          data: [
-            { name: 'Solar', y: 1960.05 },
-            { name: 'Eólica', y: 120.06 }
-          ]
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' }
-      },
-      // Donut 2: Distribución por categoría
-      {
-        chart: { type: 'pie', height: 300 },
-        title: { text: 'Distribución actual por categoría' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
-        plotOptions: {
-          pie: {
-            innerSize: '60%',
-            dataLabels: { enabled: true, format: '{point.name}: {point.y:.2f} MW' }
-          }
-        },
-        series: [{
-          name: 'Categoría',
-          data: [
-            { name: 'AG', y: 1960.05 },
-            { name: 'GD', y: 120.06 }
-          ]
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' }
-      },
-      // Barras 1: Proyectos próximos 6 meses
-      {
-        chart: { type: 'column', height: 350 },
-        title: { text: 'Número de proyectos próximos 6 meses' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
-        xAxis: {
-          categories: ['Junio','Julio','Agosto','Septiembre','Octubre','Noviembre'],
-          title: { text: null }
-        },
-        yAxis: { title: { text: 'Número de proyectos' } },
-        plotOptions: {
-          column: { stacking: 'normal' }
-        },
-        series: [
-          { name: 'Eólica', data: [0, 1, 0, 6, 6, 4], color: undefined },
-          { name: 'Solar',  data: [1, 9, 15, 21, 22, 14], color: undefined }
-        ]
-      },
-      // Barras 2: Histórico anual matriz completa
-      {
-        chart: { type: 'column', height: 350 },
-        title: { text: 'Histórico anual matriz completa' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
-        xAxis: {
-          categories: ['2020','2021','2022','2023','2024','2025','2026','2027','2028'],
-          title: { text: null }
-        },
-        yAxis: { title: { text: 'Capacidad Instalada (GW)' } },
-        plotOptions: {
-          column: { stacking: 'normal' }
-        },
-        series: [
-          { name: 'Solar',  data: [2.5, 2.7, 2.6, 2.8, 3.0, 3.5, 4.0, 5.5, 6.0] },
-          { name: 'Eólica', data: [11, 12, 12.5, 13, 14, 15, 16, 17, 18] }
-        ]
+const baseOptions = [
+  // Donut 1: Distribución por tecnología
+  {
+    chart: { type: 'pie', height: 300 },
+    title: { text: 'Distribución actual por tecnología' },
+    subtitle: { text: 'Fuente: XM. 2020-2024' },
+    plotOptions: {
+      pie: {
+        innerSize: '60%',
+        dataLabels: { enabled: true, format: '{point.name}: {point.y:.2f} MW' }
       }
-    ];
+    },
+    series: [{
+      name: 'Tecnología',
+      colorByPoint: true,
+      data: [
+        { name: 'Solar', y: 1960.05, color: '#FFC800' },
+        { name: 'Eólica', y: 120.06, color: '#9C9C9C' }
+      ]
+    }],
+    tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' }
+  },
+
+  // Donut 2: Distribución por categoría
+  {
+    chart: { type: 'pie', height: 300 },
+    title: { text: 'Distribución actual por categoría' },
+    subtitle: { text: 'Fuente: XM. 2020-2024' },
+    plotOptions: {
+      pie: {
+        innerSize: '60%',
+        dataLabels: { enabled: true, format: '{point.name}: {point.y:.2f} MW' }
+      }
+    },
+    series: [{
+      name: 'Categoría',
+      colorByPoint: true,
+      data: [
+        { name: 'AG', y: 1960.05, color: '#FFC800' },
+        { name: 'GD', y: 120.06, color: '#FF9900' }
+      ]
+    }],
+    tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' }
+  },
+
+  // Barras 1: Proyectos próximos 6 meses
+  {
+    chart: { type: 'column', height: 350 },
+    title: { text: 'Número de proyectos próximos 6 meses' },
+    subtitle: { text: 'Fuente: XM. 2020-2024' },
+    xAxis: {
+      categories: ['Junio','Julio','Agosto','Septiembre','Octubre','Noviembre'],
+      title: { text: null }
+    },
+    yAxis: { title: { text: 'Número de proyectos' } },
+    plotOptions: {
+      column: { stacking: 'normal' }
+    },
+    series: [
+      { name: 'Eólica', data: [0, 1, 0, 6, 6, 4], color: '#FFC800' },
+      { name: 'Solar',  data: [1, 9, 15, 21, 22, 14], color: '#FF9900' }
+    ]
+  },
+
+  // Barras 2: Histórico anual matriz completa
+  {
+    chart: { type: 'column', height: 350 },
+    title: { text: 'Histórico anual matriz completa' },
+    subtitle: { text: 'Fuente: XM. 2020-2024' },
+    xAxis: {
+      categories: ['2020','2021','2022','2023','2024','2025','2026','2027','2028'],
+      title: { text: null }
+    },
+    yAxis: { title: { text: 'Capacidad Instalada (GW)' } },
+    plotOptions: {
+      column: { stacking: 'normal' }
+    },
+    series: [
+      { name: 'Solar',  data: [2.5, 2.7, 2.6, 2.8, 3.0, 3.5, 4.0, 5.5, 6.0], color: '#FFC800' },
+      { name: 'Eólica', data: [11, 12, 12.5, 13, 14, 15, 16, 17, 18], color: '#9C9C9C' }
+    ]
+  }
+];
 
     // Agregar export y fullscreen
     const withExport = baseOptions.map(opt => ({
       ...opt,
+        chart: {
+    ...opt.chart,
+    backgroundColor: '#262626' },
       exporting: {
         enabled: true,
         buttons: {
@@ -157,7 +165,7 @@ export function ResumenCharts() {
       {/* Dropdown externo */}
       <div className="mb-4">
         <select
-          className="bg-gray-800 text-gray-200 p-2 rounded"
+          className="bg-[#262626] text-gray-200 p-2 rounded"
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >
@@ -183,7 +191,7 @@ export function ResumenCharts() {
           return (
             <div
               key={idx}
-              className="bg-gray-900 p-4 rounded border border-gray-700 shadow relative"
+              className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative"
             >
               {/* Botón maximizar */}
               <button
