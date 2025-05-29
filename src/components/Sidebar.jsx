@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import React from 'react'
 import {
   LayoutDashboard,
@@ -9,9 +8,7 @@ import {
   TrendingUp,
   Thermometer,
   ChevronLeft,
-  ChevronRight,
-  Fuel,
-  Leaf
+  ChevronRight
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -40,10 +37,6 @@ import DashboardOff from '../assets/Dashboard-off.svg'
 export function Sidebar({ open, toggle }) {
   const { pathname } = useLocation()
 
-  const handleToggle = () => {
-    toggle()
-  }
-
   const sections = [
     {
       title: 'Inicio',
@@ -52,7 +45,7 @@ export function Sidebar({ open, toggle }) {
       activeIcon: DashboardOn
     },
     {
-      title: 'ESTRATEGIA 6WG',
+      title: 'ESTRATEGIA 6GW',
       items: [
         {
           title: 'Resumen',
@@ -83,7 +76,7 @@ export function Sidebar({ open, toggle }) {
           path: '/acciones_estrategicas',
           icon: TermicaOff,
           activeIcon: TermicaOn
-        },
+        }
       ]
     },
     {
@@ -118,7 +111,7 @@ export function Sidebar({ open, toggle }) {
           path: '/demanda',
           icon: DemandaOff,
           activeIcon: DemandaOn
-        },
+        }
       ]
     },
     {
@@ -141,22 +134,21 @@ export function Sidebar({ open, toggle }) {
           path: '/GLP',
           icon: GLPOff,
           activeIcon: GLPOn
-        },
+        }
       ]
     }
   ]
 
   return (
     <aside
-      className={`bg-gray-900 text-gray-300 h-screen overflow-y-auto flex flex-col
-        transition-all duration-300 ${
-          open ? 'w-60 p-4' : 'w-16 p-2'
-        }`}
+      className={`bg-[#262626] font-sans text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300 ${
+        open ? 'w-60 p-4' : 'w-16 p-2'
+      }`}
     >
       {/* Toggle button */}
       <div className="flex justify-end mb-4">
         <button
-          onClick={handleToggle}
+          onClick={toggle}
           className="text-white focus:outline-none"
           title="Expandir/Contraer"
         >
@@ -172,46 +164,30 @@ export function Sidebar({ open, toggle }) {
                 <h4
                   className={`text-xs font-semibold text-gray-400 mb-2 ${
                     open ? '' : 'sr-only'
-                  }`}
-                >
+                  }`}>
                   {section.title}
                 </h4>
                 <ul className="space-y-1">
                   {section.items.map((item, i) => {
                     const isActive = pathname === item.path
-                    const rawIcon =
-                      isActive && item.activeIcon
-                        ? item.activeIcon
-                        : item.icon
-
+                    const IconSVG = isActive ? item.activeIcon : item.icon
                     return (
                       <li key={i}>
                         <Link
                           to={item.path}
                           className={`flex items-center px-2 py-1 rounded hover:bg-gray-700 transition ${
-                            isActive ? 'bg-gray-800' : ''
-                          }`}
-                        >
-                          {/* icono */}
-                          {typeof rawIcon === 'string' ? (
-                            <img
-                              src={rawIcon}
-                              alt={item.title}
-                              className="w-5 h-5 flex-shrink-0"
-                            />
-                          ) : (
-                            <span className="flex-shrink-0">{rawIcon}</span>
-                          )}
-
-                          {/* texto */}
+                            isActive ? '' : ''
+                          }`}>
+                          <img
+                            src={IconSVG}
+                            alt={item.title}
+                            className="w-5 h-5 flex-shrink-0"
+                          />
                           {open && (
                             <span
                               className={`ml-3 text-sm whitespace-nowrap ${
-                                isActive
-                                  ? 'text-[#B8FF65]'
-                                  : 'text-gray-300'
-                              }`}
-                            >
+                                isActive ? 'text-[#FFC800]' : 'text-gray-300'
+                              }`}>
                               {item.title}
                             </span>
                           )}
@@ -222,37 +198,19 @@ export function Sidebar({ open, toggle }) {
                 </ul>
               </>
             ) : (
-              // enlace único (sin items)
-              <Link
-                to={section.path}
-                className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
-                  pathname === section.path ? 'bg-gray-800' : ''
-                }`}
-              >
-                {/* icono */}
-                {typeof section.icon === 'string' ? (
-                  <img
-                    src={section.icon}
-                    alt={section.title}
-                    className="w-5 h-5 flex-shrink-0"
-                  />
-                ) : (
-                  <span className="flex-shrink-0">{section.icon}</span>
-                )}
-
-                {/* texto */}
-                {open && (
-                  <span
-                    className={`ml-3 ${
-                      pathname === section.path
-                        ? 'text-[#B8FF65]'
-                        : 'text-gray-300'
-                    }`}
-                  >
-                    {section.title}
-                  </span>
-                )}
-              </Link>
+            <Link
+              to={section.path}
+              className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
+               pathname === section.path ? 'text-[#FFC800]' : 'text-gray-300'
+              }`}
+            >
+              <img
+                src={section.icon}
+                alt={section.title}
+                className="w-5 h-5 flex-shrink-0"
+              />
+              {open && <span className="ml-3">{section.title}</span>}
+            </Link>
             )}
           </div>
         ))}

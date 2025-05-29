@@ -1,4 +1,5 @@
-import { Zap, BarChart, Flame, Wind } from 'lucide-react';
+import React from 'react'
+import { Zap, BarChart, Flame, Wind } from 'lucide-react'
 
 const indicadores = [
   {
@@ -29,27 +30,53 @@ const indicadores = [
     icono: <Wind className="text-lime-400" size={28} />,
     fecha: 'Actualizado el: 8/5/2025'
   }
-];
+]
 
 export function IndicadoresResumen() {
   return (
     <section className="mb-6">
-      <h2 className="text-xl font-semibold mb-4">Índices</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h2 className="text-xl font-semibold mb-4 text-white">Índices</h2>
+
+      {/* Contenedor: flex-wrap para filas */}
+      <div className="flex flex-wrap gap-4">
         {indicadores.map((i, idx) => (
-          <div key={idx} className="bg-gray-900 p-4 rounded border border-gray-700 shadow">
-            <div className="flex items-center mb-2 space-x-2">
+          <div
+            key={idx}
+            className="
+              flex flex-col items-start gap-3
+              w-[261.5px] h-[156px] p-[20px]
+              bg-[#262626] border border-[#575756]
+              rounded-[12px]
+            "
+          >
+            {/* Icono + Título con layout y tipografía propias */}
+            <div className="flex items-start gap-3 self-stretch">
               {i.icono}
-              <h3 className="text-sm font-medium text-gray-300">{i.titulo}</h3>
+              <h3 className="text-[18px] font-normal leading-[26px] text-[#B0B0B0] font-sans">
+                {i.titulo}
+              </h3>
             </div>
-            <div className="text-xl font-semibold text-white">{i.valor}</div>
-            <div className="text-xs text-gray-400 flex items-center space-x-2">
-              <span className="bg-gray-800 px-2 py-0.5 rounded text-white text-[11px]">{i.variacion}</span>
+
+            {/* Valor grande */}
+            <div className="text-xl font-semibold text-white">
+              {i.valor}
             </div>
-            <div className="text-xs text-gray-500 mt-2">{i.fecha}</div>
+
+            {/* Variación */}
+            <div className="
+              bg-gray-800 px-2 py-0.5 rounded text-white
+              text-[11px] font-medium
+            ">
+              {i.variacion}
+            </div>
+
+            {/* Fecha */}
+            <div className="text-xs text-gray-500">
+              {i.fecha}
+            </div>
           </div>
         ))}
       </div>
     </section>
-  );
+  )
 }

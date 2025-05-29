@@ -15,6 +15,7 @@ import { CapacidadHistorica } from '../components/CapacidadHistorica'
 import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
 import { DespachoTecnologia } from '../components/DespachoTecnologia';
+import { GeneracionHoraria } from '../components/GeneracionHoraria';
 
 export default function Resumen() {
   const navigate = useNavigate()
@@ -154,6 +155,7 @@ export default function Resumen() {
       <ResumenCharts />
       <CapacidadInstalada />
       <DespachoTecnologia />
+      <GeneracionHoraria />
     </div>
   )
 }
