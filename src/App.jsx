@@ -10,12 +10,19 @@ import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import { Banner6GW } from './components/Banner6GW';
 import { Routes, Route } from 'react-router-dom';
 import Resumen from './pages/resumen';
-import Proyectos from './pages/Proyectos075'
+import Proyectos from './pages/Proyectos075';
+import { LoginForm } from './components/LoginForm';
+import { TwoFactorForm } from './components/TwoFactorForm';
+import { AuthProvider, useAuth } from './context/AuthForm';
 
-export default function App() {
+function AppContent() {
+  const { step } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  return (
+  if (step === 'login') return <LoginForm />;
+  if (step === '2fa') return <TwoFactorForm />;
+
+return (
     <div className="relative">
       {/* Header fijo */}
       <Header />
@@ -64,3 +71,12 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
