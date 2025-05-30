@@ -110,7 +110,7 @@ export function GeneracionHoraria() {
         {charts.map((opt, idx) => (
           <div
             key={idx}
-            className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative"
+            className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
           >
             <button
               className="absolute top-2 right-2 text-gray-300 hover:text-white"

@@ -191,7 +191,7 @@ const baseOptions = [
           return (
             <div
               key={idx}
-              className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative"
+              className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
               {/* Botón maximizar */}
               <button

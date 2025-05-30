@@ -114,7 +114,7 @@ export function DespachoTecnologia() {
   };
 
   return (
-    <div className="bg-[#262626] p-4 rounded-lg border border-[#262626] shadow">
+    <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow">
       <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
     </div>
   );

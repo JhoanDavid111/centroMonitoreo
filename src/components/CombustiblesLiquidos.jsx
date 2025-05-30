@@ -164,7 +164,7 @@ const colores = [
       {/* Dropdown externo */}
       <div className="mb-4">
         <select
-          className="bg-[#262626] text-gray-200 p-2 rounded border border-gray-700 font-sans"
+          className="bg-[#262626] text-gray-200 p-2 rounded border border-[#666666] font-sans"
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >
@@ -190,7 +190,7 @@ const colores = [
           return (
             <div
               key={idx}
-              className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative"
+              className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
               <button
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"

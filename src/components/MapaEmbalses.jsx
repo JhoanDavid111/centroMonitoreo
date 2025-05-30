@@ -62,7 +62,7 @@ export function MapaEmbalses() {
   return (
     <section className="mt-8 grid grid-cols-1 xl:grid-cols-4 gap-6">
       {/* Mapa */}
-      <div className="map-container xl:col-span-3 bg-[#262626] rounded border border-gray-700 shadow overflow-hidden h-[650px] p-2 relative">
+      <div className="map-container xl:col-span-3 bg-[#262626] rounded border border-[#666666] shadow overflow-hidden h-[650px] p-2 relative">
         {/* Controles de zoom */}
         <div className="absolute top-2 right-2 z-10 flex flex-col space-y-2">
           <button
@@ -80,7 +80,7 @@ export function MapaEmbalses() {
         {/* Modal de detalles */}
         {selectedDept && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-            <div className="bg-[#262626] p-6 rounded-lg border border-gray-700 max-w-md w-full">
+            <div className="bg-[#262626] p-6 rounded-lg border border-[#666666] max-w-md w-full">
               <h2 className="text-lg font-bold text-yellow-400 mb-4">
                 DEPARTAMENTO DE {selectedDept.name.toUpperCase()}: {selectedDept.porcentaje.toFixed(2)}%
               </h2>
@@ -120,7 +120,7 @@ export function MapaEmbalses() {
 
       {/* Estadísticas */}
       <div className="flex flex-col gap-4">
-        <div className="bg-[#262626] p-4 rounded border border-gray-700">
+        <div className="bg-[#262626] p-4 rounded border border-[#666666]">
           <h3 className="text-sm text-gray-400">Total nacional</h3>
           <p className="text-2xl font-bold text-white">30,02%</p>
           <span className="text-xs text-gray-400">
@@ -131,7 +131,7 @@ export function MapaEmbalses() {
         {embalses.map((e, i) => (
           <div
             key={i}
-            className="bg-[#262626] p-3 rounded border border-gray-700 text-white flex justify-between items-center"
+            className="bg-[#262626] p-3 rounded border border-[#666666] text-white flex justify-between items-center"
           >
             <span className="text-sm">{e.region}:</span>
             <span className="font-semibold">{e.porcentaje.toFixed(2)}%</span>

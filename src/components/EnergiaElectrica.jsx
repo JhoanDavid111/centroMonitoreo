@@ -191,7 +191,7 @@ export function EnergiaElectrica() {
       {/* Filtro externo */}
       <div className="mb-4">
         <select
-          className="bg-[#262626] text-gray-200 p-2 rounded border border-gray-700 font-sans"
+          className="bg-[#262626] text-gray-200 p-2 rounded border border-[#666666] font-sans"
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >

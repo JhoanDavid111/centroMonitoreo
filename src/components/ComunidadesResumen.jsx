@@ -27,7 +27,7 @@ export function ComunidadesResumen() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sección Comunidades Energéticas */}
-            <div className="bg-[#262626] p-4 rounded-lg border border-gray-700">
+            <div className="bg-[#262626] p-4 rounded-lg border border-[#666666]">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Comunidades Energéticas
               </h3>
@@ -37,7 +37,7 @@ export function ComunidadesResumen() {
                   return (
                     <div
                       key={i}
-                      className="bg-[#262626] p-4 rounded-lg border border-gray-700"
+                      className="bg-[#262626] p-4 rounded-lg border border-[#666666]"
                     >
                       <div className="flex items-center mb-2">
                         <Icon className="text-yellow-400" size={20} />
@@ -56,7 +56,7 @@ export function ComunidadesResumen() {
             </div>
 
             {/* Sección Colombia Solar */}
-            <div className="bg-[#262626] p-4 rounded-lg border border-gray-700">
+            <div className="bg-[#262626] p-4 rounded-lg border border-[#666666]">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Colombia Solar
               </h3>
@@ -66,7 +66,7 @@ export function ComunidadesResumen() {
                   return (
                     <div
                       key={i}
-                      className="bg-[#262626] p-4 rounded-lg border border-gray-700"
+                      className="bg-[#262626] p-4 rounded-lg border border-[#666666]"
                     >
                       <div className="flex items-center mb-2">
                         <Icon className="text-yellow-400" size={20} />

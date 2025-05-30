@@ -128,7 +128,7 @@ export default function Resumen() {
             return (
               <div
                 key={i}
-                className="bg-[#262626] p-5 rounded-lg border border-gray-700 shadow"
+                className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow"
               >
                 <div className="flex items-center mb-2">
                   <Icon className="text-[#FFC800]" size={20} />
