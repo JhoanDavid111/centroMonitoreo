@@ -89,7 +89,7 @@ export default function Resumen() {
           className="w-full object-contain max-h-[240px]"
         />
         <div className="absolute inset-0 flex flex-col justify-center items-start px-6">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-4xl font-bold text-white">
             Estrategia 6GW Plus
           </h1>
         </div>

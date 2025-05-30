@@ -66,8 +66,8 @@ export function Sidebar({ open, toggle }) {
           activeIcon: GLPOn
         },
         {
-          title: 'Proyectos 075',
-          path: '/proyectos_075',
+          title: 'Proyectos075',
+          path: '/proyectos075',
           icon: CombustiblesOff,
           activeIcon: CombustiblesOn
         },

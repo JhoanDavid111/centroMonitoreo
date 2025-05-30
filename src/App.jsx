@@ -10,6 +10,7 @@ import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import { Banner6GW } from './components/Banner6GW';
 import { Routes, Route } from 'react-router-dom';
 import Resumen from './pages/resumen';
+import Proyectos from './pages/Proyectos075'
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,6 +46,7 @@ export default function App() {
 
             {/* Ruta “Resumen” */}
             <Route path="/6GW" element={<Resumen />} />
+            <Route path="/proyectos075" element={<Proyectos />} />
 
             {/* Ruta de estrategia 6GW */}
             <Route
