@@ -11,23 +11,24 @@ import { Banner6GW } from './components/Banner6GW';
 import { Routes, Route } from 'react-router-dom';
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
-import { LoginForm } from './components/LoginForm';
-import { TwoFactorForm } from './components/TwoFactorForm';
 import { AuthProvider, useAuth } from './context/AuthForm';
+import AuthFormScreen from './components/AuthFormScreen';
 
 function AppContent() {
   const { step } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  if (step === 'login') return <LoginForm />;
-  if (step === '2fa') return <TwoFactorForm />;
+  // Mostrar pantalla de autenticación hasta que esté autenticado
+  if (step !== 'authenticated') {
+    return <AuthFormScreen />;
+  }
 
-return (
+  return (
     <div className="relative">
       {/* Header fijo */}
       <Header />
 
-      {/* Contenedor principal: empujado hacia abajo para dejar espacio al header */}
+      {/* Contenedor principal */}
       <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
         <Sidebar
           open={sidebarOpen}
@@ -36,7 +37,7 @@ return (
 
         <div className="flex-1 text-white p-6 overflow-auto">
           <Routes>
-            {/* Ruta principal: con banner */}
+            {/* Ruta principal */}
             <Route
               path="/"
               element={
@@ -50,12 +51,8 @@ return (
                 </>
               }
             />
-
-            {/* Ruta “Resumen” */}
             <Route path="/6GW" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
-
-            {/* Ruta de estrategia 6GW */}
             <Route
               path="/estrategia-6gw"
               element={

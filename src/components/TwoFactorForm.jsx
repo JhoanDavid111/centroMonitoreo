@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthForm';
+import logo from '../assets/logosEnergiaUpme.svg'
 
-export function TwoFactorForm() {
-  const { verifyCode } = useAuth();
-  const [code, setCode] = useState('');
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    verifyCode(code);
-  };
-
+export default function TwoFactorForm({ onVerify, error }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1d1d1d] text-white">
-      <form onSubmit={handleSubmit} className="bg-[#262626] p-8 rounded shadow-lg space-y-4 w-80">
-        <h2 className="text-xl font-bold">Verificación 2FA</h2>
-        <input type="text" placeholder="Código de verificación" className="w-full p-2 bg-gray-800 border border-gray-600 rounded" value={code} onChange={e => setCode(e.target.value)} />
-        <button type="submit" className="w-full bg-[#FFC800] hover:bg-yellow-400 text-black p-2 rounded font-bold">Verificar</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-[#262626] font-sans">
+      <div className="bg-[#1d1d1d] p-8 rounded shadow-md w-full max-w-sm text-white">
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Logo Energía UPME" className="h-16" />
+        </div>
+        <h2 className="text-2xl font-bold mb-4 text-center">Verificación 2FA</h2>
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            const code = e.target.code.value
+            onVerify(code)
+          }}
+          className="space-y-4"
+        >
+          <input
+            name="code"
+            type="text"
+            placeholder="Código de verificación"
+            required
+            className="w-full px-4 py-2 rounded bg-[#333] text-white placeholder-gray-400"
+          />
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <button
+            type="submit"
+            className="w-full bg-[#FFC800] hover:bg-[#e6b000] text-black font-semibold py-2 rounded"
+          >
+            Verificar
+          </button>
+        </form>
+      </div>
     </div>
-  );
+  )
 }
