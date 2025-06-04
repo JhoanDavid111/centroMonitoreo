@@ -11,6 +11,7 @@ import { Banner6GW } from './components/Banner6GW';
 import { Routes, Route } from 'react-router-dom';
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
+import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
 import { AuthProvider, useAuth } from './context/AuthForm';
 import AuthFormScreen from './components/AuthFormScreen';
 
@@ -53,6 +54,7 @@ function AppContent() {
             />
             <Route path="/6GW" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
+            <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
             <Route
               path="/estrategia-6gw"
               element={
