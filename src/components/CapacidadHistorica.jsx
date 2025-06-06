@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+// src/components/CapacidadHistorica.jsx
+import React, { useRef, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
@@ -6,112 +7,248 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// Carga de módulos
+// Carga de módulos de Highcharts
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema oscuro global con Nunito Sans
+// Configuración global del tema oscuro + Nunito Sans
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',
     style: { fontFamily: 'Nunito Sans, sans-serif' },
     plotBorderWidth: 0,
-    plotBackgroundColor: '#262626'
+    plotBackgroundColor: 'transparent'
   },
-  title: { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
-  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
+  title: {
+    style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif', fontWeight: '600' }
+  },
+  subtitle: {
+    style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' }
+  },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333'
-  },
-  yAxis: [
-    {
-      labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-      title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-      gridLineColor: '#333'
+    type: 'datetime',
+    labels: {
+      style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' },
+      rotation: -45,
+      format: '{value:%Y-%m-%d}'
     },
-    {
-      labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-      title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-      opposite: true,
-      gridLineColor: '#333'
-    }
-  ],
+    title: {
+      style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 'normal' },
+      text: 'Fecha'
+    },
+    gridLineColor: '#333',
+    tickInterval: 30 * 24 * 3600 * 1000 // un mes
+  },
+  yAxis: {
+    labels: {
+      style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' }
+    },
+    title: {
+      style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontWeight: 'normal' }
+    },
+    gridLineColor: '#333',
+    min: 0
+  },
   legend: {
     itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: {
-    backgroundColor: '#262626',
+    backgroundColor: '#1f2937',
     style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
-    shared: true
+    shared: true,
+    xDateFormat: '%Y-%m-%d',
+    valueSuffix: ' MW'
+  },
+  plotOptions: {
+    area: {
+      stacking: 'normal',
+      marker: {
+        enabled: false,
+        symbol: 'circle',
+        radius: 2,
+        states: { hover: { enabled: true } }
+      },
+      lineWidth: 1.5
+    }
   }
 });
 
 export function CapacidadHistorica() {
   const chartRef = useRef(null);
 
-  // Etiquetas de fechas (trimestrales de ene‑2020 a oct‑2028)
-  const categories = [
-    'ene-2020','abr-2020','jul-2020','oct-2020',
-    'ene-2021','abr-2021','jul-2021','oct-2021',
-    'ene-2022','abr-2022','jul-2022','oct-2022',
-    'ene-2023','abr-2023','jul-2023','oct-2023',
-    'ene-2024','abr-2024','jul-2024','oct-2024',
-    'ene-2025','abr-2025','jul-2025','oct-2025',
-    'ene-2026','abr-2026','jul-2026','oct-2026',
-    'ene-2027','abr-2027','jul-2027','oct-2027',
-    'ene-2028','abr-2028','jul-2028','oct-2028'
-  ];
+  // Fecha de corte para la proyección: 27 de mayo de 2025
+  const projectionCutoffDate = Date.UTC(2025, 4, 27);
 
-  // Datos de ejemplo: reemplaza con tus valores reales
-  const capacidadData = [
-    120, 130, 125, 140, 150, 160, 170, 180,
-    200, 210, 220, 230, 250, 300, 350, 400,
-    450, 500, 550, 600, 650, 700, 800, 1000,
-    1500, 1800, 2000, 2100, 2200, 2300, 2400, 2500,
-    2600, 2700
-  ];
-  const proyectosData = [
-    5, 6, 6, 7, 7, 8, 8, 9,
-    9, 10, 12, 14, 16, 18, 20, 22,
-    25, 30, 35, 40, 45, 50, 60, 75,
-    90, 100, 110, 120, 130, 140, 150, 160,
-    170, 180
-  ];
-
-  const options = {
-    chart: { 
-      type: 'area', 
-      height: 450, 
-      zoomType: '',
-      backgroundColor: '#262626',
-      plotBackgroundColor: '#262626'
+  // Datos FNCER para 2025 - Capacidad Instalada (MW)
+  const fncerData = [
+    {
+      name: 'Solar',
+      data: [
+        [Date.UTC(2025, 0, 1), 168],
+        [Date.UTC(2025, 1, 1), 221],
+        [Date.UTC(2025, 2, 1), 105],
+        [Date.UTC(2025, 3, 1), 188],
+        [Date.UTC(2025, 4, 1), 92],
+        [Date.UTC(2025, 5, 1), 240],
+        [Date.UTC(2025, 6, 1), 135],
+        [Date.UTC(2025, 7, 1), 203],
+        [Date.UTC(2025, 8, 1), 118],
+        [Date.UTC(2025, 9, 1), 176],
+        [Date.UTC(2025, 10, 1), 233],
+        [Date.UTC(2025, 11, 1), 159]
+      ],
+      color: '#deed1b',
+      zoneAxis: 'x',
+      zones: [
+        { value: projectionCutoffDate },
+        {
+          color: 'rgba(222, 237, 27, 0.7)',
+          fillColor: 'rgba(222, 237, 27, 0.3)'
+        }
+      ],
+      fillOpacity: 0.5
     },
-    title: { text: 'Capacidad instalada / No. de proyectos histórica y proyectada' },
-    subtitle: { text: 'Fuente: XM. 2020-2028' },
-    xAxis: { categories },
-    yAxis: [
-      { title: { text: 'Capacidad Instalada (GW)' } },
-      { title: { text: 'Número de proyectos' }, opposite: true }
-    ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'top' },
-    exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } },
-    series: [
-      { name: 'Capacidad instalada', data: capacidadData, yAxis: 0, color: '#FFC800', fillOpacity: 0.5 },
-      { name: 'Número de proyectos', data: proyectosData, yAxis: 1, type: 'line', color: '#FF9900' }
-    ],
+    {
+      name: 'Eólica',
+      data: [
+        [Date.UTC(2025, 0, 1), 133],
+        [Date.UTC(2025, 1, 1), 78],
+        [Date.UTC(2025, 2, 1), 185],
+        [Date.UTC(2025, 3, 1), 102],
+        [Date.UTC(2025, 4, 1), 155],
+        [Date.UTC(2025, 5, 1), 68],
+        [Date.UTC(2025, 6, 1), 193],
+        [Date.UTC(2025, 7, 1), 115],
+        [Date.UTC(2025, 8, 1), 170],
+        [Date.UTC(2025, 9, 1), 88],
+        [Date.UTC(2025, 10, 1), 143],
+        [Date.UTC(2025, 11, 1), 199]
+      ],
+      color: '#183e34',
+      zoneAxis: 'x',
+      zones: [
+        { value: projectionCutoffDate },
+        {
+          color: 'rgba(24, 62, 52, 0.7)',
+          fillColor: 'rgba(24, 62, 52, 0.3)'
+        }
+      ],
+      fillOpacity: 0.5
+    },
+    {
+      name: 'Biomasa',
+      data: [
+        [Date.UTC(2025, 0, 1), 58],
+        [Date.UTC(2025, 1, 1), 33],
+        [Date.UTC(2025, 2, 1), 71],
+        [Date.UTC(2025, 3, 1), 25],
+        [Date.UTC(2025, 4, 1), 64],
+        [Date.UTC(2025, 5, 1), 48],
+        [Date.UTC(2025, 6, 1), 77],
+        [Date.UTC(2025, 7, 1), 29],
+        [Date.UTC(2025, 8, 1), 52],
+        [Date.UTC(2025, 9, 1), 39],
+        [Date.UTC(2025, 10, 1), 68],
+        [Date.UTC(2025, 11, 1), 43]
+      ],
+      color: '#05d80a',
+      zoneAxis: 'x',
+      zones: [
+        { value: projectionCutoffDate },
+        {
+          color: 'rgba(5, 216, 10, 0.7)',
+          fillColor: 'rgba(5, 216, 10, 0.3)'
+        }
+      ],
+      fillOpacity: 0.5
+    }
+  ];
+
+  // Opciones para este Highcharts
+  const options = {
+    chart: {
+      type: 'area',
+      height: 600,
+      zoomType: ''
+    },
+    title: {
+      text: 'Capacidad Instalada de entrada de nuevos proyectos'
+    },
+    subtitle: {
+      text: 'UPME'
+    },
+    legend: {
+      align: 'center',
+      verticalAlign: 'top',
+      layout: 'horizontal'
+    },
+    xAxis: {
+      plotLines: [
+        {
+          color: 'red',
+          dashStyle: 'Dash',
+          value: projectionCutoffDate,
+          width: 2,
+          label: {
+            text: 'Hoy',
+            rotation: -90,
+            align: 'left',
+            textAlign: 'left',
+            verticalAlign: 'top',
+            x: -8,
+            y: 17,
+            style: {
+              color: 'black',
+              fontFamily: 'Nunito Sans, sans-serif',
+              fontWeight: 'bold'
+            }
+          },
+          zIndex: 5
+        }
+      ]
+    },
+    yAxis: {
+      title: {
+        text: 'Capacidad Instalada (MW)',
+        style: { fontWeight: 'bold', fontFamily: 'Nunito Sans, sans-serif' }
+      },
+      min: 0
+    },
+    exporting: {
+      enabled: true,
+      buttons: {
+        contextButton: {
+          menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
+        }
+      }
+    },
+    series: fncerData,
     responsive: {
-      rules: [{
-        condition: { maxWidth: 600 },
-        chartOptions: { legend: { layout: 'vertical', align: 'center', verticalAlign: 'bottom' } }
-      }]
+      rules: [
+        {
+          condition: { maxWidth: 600 },
+          chartOptions: {
+            legend: {
+              layout: 'vertical',
+              align: 'center',
+              verticalAlign: 'bottom'
+            }
+          }
+        }
+      ]
     }
   };
+
+  // Forzamos redraw en el montaje
+  useEffect(() => {
+    if (chartRef.current && chartRef.current.chart) {
+      chartRef.current.chart.reflow();
+    }
+  }, []);
 
   return (
     <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow">
