@@ -40,7 +40,7 @@ Highcharts.setOptions({
     backgroundColor: '#1f2937',
     style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
     shared: true,
-    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y:.2f}</b><br/>'
+    pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.2f} MW</b><br/>'
   }
 });
 
@@ -55,58 +55,81 @@ export function CapacidadInstalada() {
     })
       .then(res => res.json())
       .then(data => {
-        const sorted = data.sort(
-          (a, b) =>
-            new Date(a.fecha_entrada_operacion) -
-            new Date(b.fecha_entrada_operacion)
+        // 1) ordenar cronológicamente
+        const sorted = [...data].sort(
+          (a, b) => new Date(a.fecha_entrada_operacion) - new Date(b.fecha_entrada_operacion)
         );
-        const categories = sorted.map(item => {
-          const d = new Date(item.fecha_entrada_operacion);
-          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-            d.getDate()
-          ).padStart(2, '0')}`;
-        });
-        const series = [
-          {
-            name: 'Capacidad instalada  (MW)',
-            data: sorted.map(item => item.capacidad_acumulada),
-            color: '#FFC800'
+        // 2) extraer fechas únicas (categorías)
+        const categories = Array.from(new Set(
+          sorted.map(item => item.fecha_entrada_operacion.slice(0,10))
+        ));
+        // 3) agrupar por fuente_energia
+        const fuentes = Array.from(new Set(sorted.map(i => i.fuente_energia)));
+        // 4) para cada fuente y cada fecha, sumar capacidad_acumulada
+        const series = fuentes.map(fuente => {
+          // map fecha -> suma
+          const mapFecha = {};
+          sorted.forEach(item => {
+            if (item.fuente_energia === fuente) {
+              const fecha = item.fecha_entrada_operacion.slice(0,10);
+              mapFecha[fecha] = (mapFecha[fecha]||0) + item.capacidad_acumulada;
+            }
+          });
+          // generar datos en orden de categories
+          const dataF = categories.map(fecha => mapFecha[fecha] || 0);
+          // asignar color según fuente
+          const colorMap = {
+            AGUA: '#87CEEB',
+            BIOMASA: '#05D80A',
+            'RAD SOLAR': '#FFD700',
+            VIENTO: '#FF9900'
+          };
+          return {
+            name: fuente,
+            data: dataF,
+            color: colorMap[fuente] || '#ccc'
           }
-        ];
+        });
 
         setOptions({
-          chart: { type: 'area', height: 400, backgroundColor: '#262626' },
-          title: { text: 'Capacidad Instalada de proyectos' },
+          chart: {
+            type: 'area',
+            height: 450,
+            backgroundColor: '#262626'
+          },
+          title: { text: 'Capacidad acumulada por tipo de proyecto' },
           subtitle: { text: 'Fuente: API 6G Proyecto' },
           xAxis: {
             categories,
             title: {
-              text: 'Fecha de puesta en operación',
+              text: 'Fecha de entrada en operación',
               style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-            }
+            },
+            tickInterval: Math.ceil(categories.length / 8),  // mostrar ~8 labels
+            gridLineDashStyle: 'Dash'
           },
           yAxis: {
             title: {
-              text: 'Capacidad instalada (MW)',
+              text: 'Capacidad acumulada (MW)',
               style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
             },
             min: 0,
-            gridLineColor: '#333'
+            tickAmount: 6,            // alrededor de 6 líneas horizontales
+            gridLineDashStyle: 'Dash'
           },
           plotOptions: {
-            area: { stacking: 'normal', marker: { enabled: false } }
+            area: {
+              stacking: 'normal',
+              marker: { enabled: false },
+              lineWidth: 1
+            }
           },
           series,
           exporting: {
             enabled: true,
             buttons: {
               contextButton: {
-                menuItems: [
-                  'downloadPNG',
-                  'downloadJPEG',
-                  'downloadPDF',
-                  'downloadSVG'
-                ]
+                menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
           }
@@ -116,10 +139,9 @@ export function CapacidadInstalada() {
   }, []);
 
   if (!options) return null;
-
   return (
     <section className="mt-8">
-      {/* Contenedor al 100% de ancho */}
+      {/* contenedor a full width */}
       <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative">
         <button
           className="absolute top-2 right-2 text-gray-300 hover:text-white"

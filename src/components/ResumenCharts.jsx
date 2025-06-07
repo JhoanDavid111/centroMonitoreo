@@ -47,51 +47,32 @@ export function ResumenCharts() {
   useEffect(() => {
     async function fetchData() {
       // 1) Distribución por tecnología
-      const techRes = await fetch(
+      const techJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      const techJson = await techRes.json();
+      )).json();
 
       // 2) Distribución por categoría
-      const catRes = await fetch(
+      const catJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      const catJson = await catRes.json();
+      )).json();
 
       // 3) Histórico anual matriz completa
-      const matRes = await fetch(
+      const matJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      const matJson = await matRes.json();
+      )).json();
 
-      // Mapeos de color
-      const techColor = {
-        PCH: '#FFC800',
-        BIOMASA: '#05d80a',
-        'RAD SOLAR': '#9C9C9C',
-        VIENTO: '#87CEEB'
-      };
-      const catColor = {
-        'AUTOG PEQ. ESCALA': '#FFC800',
-        AUTOGENERADOR: '#FF9900',
-        'GEN. DISTRIBUIDA': '#4caf50',
-        NORMAL: '#9C9C9C'
-      };
-      const matColor = {
-        BIOMASA: '#05d80a',
-        'HIDRÁULICA': '#4169E1',
-        'RAD SOLAR': '#9C9C9C',
-        'TÉRMICA': '#A52A2A'
-      };
+      // Colores
+      const techColor = { PCH: '#FFC800', BIOMASA: '#05d80a', 'RAD SOLAR': '#9C9C9C', VIENTO: '#87CEEB' };
+      const catColor  = { 'AUTOG PEQ. ESCALA': '#FFC800', AUTOGENERADOR: '#FF9900', 'GEN. DISTRIBUIDA': '#4caf50', NORMAL: '#9C9C9C' };
+      const matColor  = { BIOMASA: '#05d80a', HIDRÁULICA: '#4169E1', 'RAD SOLAR': '#9C9C9C', TÉRMICA: '#A52A2A' };
 
-      // Construir opciones dinámicas
-      const options = [];
+      const opts = [];
 
-      // Opción 1: tecnología
-      options.push({
+      // 1) Pie tecnología
+      opts.push({
         chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
         title: { text: 'Distribución actual por tecnología' },
         subtitle: { text: 'Fuente: API 6G Proyecto' },
@@ -112,11 +93,11 @@ export function ResumenCharts() {
           }))
         }],
         tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } }
+        exporting: { enabled: true }
       });
 
-      // Opción 2: categoría
-      options.push({
+      // 2) Pie categoría
+      opts.push({
         chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
         title: { text: 'Distribución actual por categoría' },
         subtitle: { text: 'Fuente: API 6G Proyecto' },
@@ -137,22 +118,25 @@ export function ResumenCharts() {
           }))
         }],
         tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } }
+        exporting: { enabled: true }
       });
 
-      // Opción 3: proyectos próximos 6 meses (estático)
-      options.push({
+      // 3) Column proyectos próximos 6 meses
+      opts.push({
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Número de proyectos próximos 6 meses' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         xAxis: {
           categories: ['Junio','Julio','Agosto','Septiembre','Octubre','Noviembre'],
+          tickInterval: 1,
           labels: { style: { color: '#ccc', fontSize: '10px' } },
+          title: { text: 'Mes', style: { color: '#ccc' } },
           gridLineColor: '#333'
         },
         yAxis: {
           title: { text: 'Número de proyectos', style: { color: '#ccc' } },
           labels: { style: { color: '#ccc', fontSize: '10px' } },
+          tickAmount: 5,
           gridLineColor: '#333'
         },
         plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
@@ -160,24 +144,26 @@ export function ResumenCharts() {
           { name: 'Eólica', data: [0,1,0,6,6,4], color: '#FFC800' },
           { name: 'Solar',  data: [1,9,15,21,22,14], color: '#FF9900' }
         ],
-        exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } }
+        exporting: { enabled: true }
       });
 
-      // Opción 4: histórico anual matriz completa
-      // Extraer categorías de años dinámicamente
+      // 4) Column histórico anual matriz completa
       const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
-      options.push({
+      opts.push({
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Histórico anual matriz completa' },
         subtitle: { text: 'Fuente: API 6G Proyecto' },
         xAxis: {
           categories: years,
+          tickInterval: 1,
           labels: { style: { color: '#ccc', fontSize: '10px' } },
+          title: { text: 'Año', style: { color: '#ccc' } },
           gridLineColor: '#333'
         },
         yAxis: {
           title: { text: 'Capacidad Instalada (GW)', style: { color: '#ccc' } },
           labels: { style: { color: '#ccc', fontSize: '10px' } },
+          tickAmount: 6,
           gridLineColor: '#333'
         },
         plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
@@ -186,10 +172,10 @@ export function ResumenCharts() {
           data: years.map(y => row[y] ?? 0),
           color: matColor[row.fuente] || '#666666'
         })),
-        exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } }
+        exporting: { enabled: true }
       });
 
-      setCharts(options);
+      setCharts(opts);
     }
 
     fetchData().catch(console.error);
@@ -250,3 +236,4 @@ export function ResumenCharts() {
 }
 
 export default ResumenCharts;
+

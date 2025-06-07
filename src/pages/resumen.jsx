@@ -150,10 +150,9 @@ export default function Resumen() {
       {/* Sección desplegable de Comunidades y Colombia Solar */}
       <ComunidadesResumen />
       <div className="px-2">
-      <CapacidadHistorica />
+      <CapacidadInstalada />
      </div>
       <ResumenCharts />
-      <CapacidadInstalada />
       <GeneracionHoraria />
     </div>
   )
