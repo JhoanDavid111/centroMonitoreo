@@ -154,7 +154,6 @@ export default function Resumen() {
      </div>
       <ResumenCharts />
       <CapacidadInstalada />
-      <DespachoTecnologia />
       <GeneracionHoraria />
     </div>
   )
