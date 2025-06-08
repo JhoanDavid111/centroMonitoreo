@@ -1,3 +1,4 @@
+// src/components/MapaCreg075.jsx
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -5,7 +6,6 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Fix para íconos en React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -22,7 +22,7 @@ const colores = {
   'Térmica': '#17becf',
 };
 
-export function MapaCreg075 (){
+export function MapaCreg075() {
   const mapRef = useRef(null);
   const layerGroupRef = useRef(null);
   const [geoData, setGeoData] = useState([]);
@@ -89,11 +89,17 @@ export function MapaCreg075 (){
   };
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div id="map" style={{ height: '80vh' }}></div>
+    <div className="mt-6 relative text-white font-sans">
+      {/* Título agregado */}
+    <h2 className="text-2xl font-semibold mb-4 text-white text-center" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
+      Mapa Creg 075
+    </h2>
+
+      <div id="map" style={{ height: '80vh', borderRadius: 8 }}></div>
+
       <div className="legend" style={{
         position: 'absolute',
-        top: 10,
+        top: 60,
         left: 10,
         background: 'white',
         padding: 10,
@@ -109,21 +115,19 @@ export function MapaCreg075 (){
         {Object.entries(colores).map(([tipo, color]) => (
           <div key={tipo}>
             <span
-                className="legend-color"
-                style={{
-                    
-                  background: colores[tipo],
-                  display: "inline-block",
-                  width: 12,
-                  height: 12,
-                  borderRadius: "50%",
-                  marginRight: 5,
-                }}
-              ></span>
+              className="legend-color"
+              style={{
+                background: color,
+                display: 'inline-block',
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                marginRight: 5,
+              }}
+            ></span>
             {tipo}
           </div>
         ))}
-
         <br /><strong>Filtrar por tecnología</strong><br />
         {Object.keys(colores).map((tipo) => (
           <label key={tipo}>
@@ -136,10 +140,10 @@ export function MapaCreg075 (){
         ))}
 
         <br /><br /><strong>Tamaño por capacidad (MW)</strong><br />
-        <div><span style={{ background: '#ccc', width: 6, height: 6, borderRadius: '50%', display: 'inline-block', marginRight: 5, color:'black' }}></span> ~ 1 MW</div>
+        <div><span style={{ background: '#ccc', width: 6, height: 6, borderRadius: '50%', display: 'inline-block', marginRight: 5 }}></span> ~ 1 MW</div>
         <div><span style={{ background: '#ccc', width: 12, height: 12, borderRadius: '50%', display: 'inline-block', marginRight: 5 }}></span> ~ 10 MW</div>
         <div><span style={{ background: '#ccc', width: 24, height: 24, borderRadius: '50%', display: 'inline-block', marginRight: 5 }}></span> ~ 100 MW</div>
       </div>
     </div>
   );
-};
+}

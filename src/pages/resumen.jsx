@@ -14,10 +14,10 @@ import { ComunidadesResumen } from '../components/ComunidadesResumen'
 import { CapacidadHistorica } from '../components/CapacidadHistorica'
 import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
-import { DespachoTecnologia } from '../components/DespachoTecnologia';
 import { GeneracionHoraria } from '../components/GeneracionHoraria';
 import { MapaCreg075 } from '../components/MapaCreg075';
 import { MapaCreg174 } from '../components/MapaCreg174';
+import { GeneracionDespacho } from '../components/GeneracionDespacho';
 
 export default function Resumen() {
   const navigate = useNavigate()
@@ -157,6 +157,7 @@ export default function Resumen() {
       <ResumenCharts />
       <MapaCreg075 />
       <MapaCreg174 />
+      <GeneracionDespacho />
       <GeneracionHoraria />
     </div>
   )

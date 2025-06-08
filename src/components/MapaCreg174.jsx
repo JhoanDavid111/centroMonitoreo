@@ -75,10 +75,18 @@ export function MapaCreg174 () {
 
   return (
     <div style={{ position: 'relative' }}>
+      <h2
+        className="text-2xl font-semibold mb-4 text-white text-center"
+        style={{ fontFamily: 'Nunito Sans, sans-serif' }}
+      >
+        Mapa Creg 174
+      </h2>
+
       <div id="map2" style={{ height: "80vh" }}></div>
+
       <div className="legend" style={{
         position: 'absolute',
-        top: 10,
+        top: 60,
         left: 10,
         background: 'white',
         padding: 10,
@@ -97,7 +105,6 @@ export function MapaCreg174 () {
               <span
                 className="legend-color"
                 style={{
-                    
                   background: colores[tipo],
                   display: "inline-block",
                   width: 12,
