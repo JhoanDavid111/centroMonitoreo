@@ -86,21 +86,23 @@ export function GeneracionDespacho() {
         const tickInt = Math.max(1, Math.ceil(categories.length / 12))
 
         // Series por tecnología
-        const techs = ['COGENERADOR','EOLICA','HIDRAULICA','SOLAR','TERMICA']
+        const techs = ['TERMICA','COGENERADOR','HIDRAULICA','SOLAR','EOLICA']
         const colorMap = {
-          COGENERADOR: '#808080',
           EOLICA: '#87CEEB',
-          HIDRAULICA: '#4169E1',
           SOLAR: '#FFD700',
+          HIDRAULICA: '#4169E1',
+          COGENERADOR: '#808080',
           TERMICA: '#A52A2A'
         }
-        const series = techs.map(tech => ({
-          name: tech,
-          data: categories.map(date => {
+        const series = techs.map((tech, idx) => ({
+        name: tech,
+        data: categories.map(date => {
             const rec = sorted.find(d => d.fecha.slice(0,10) === date)
             return rec && rec[tech] != null ? rec[tech] : 0
-          }),
-          color: colorMap[tech]
+        }),
+        color: colorMap[tech],
+        index: idx, 
+        legendIndex: idx 
         }))
 
         setOptions({

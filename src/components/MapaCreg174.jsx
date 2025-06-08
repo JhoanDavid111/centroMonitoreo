@@ -79,7 +79,7 @@ export function MapaCreg174 () {
         className="text-2xl font-semibold mb-4 text-white text-center"
         style={{ fontFamily: 'Nunito Sans, sans-serif' }}
       >
-        Mapa Creg 174
+        Proyectos de autogeneración y generación distribuida - CREG 174
       </h2>
 
       <div id="map2" style={{ height: "80vh" }}></div>

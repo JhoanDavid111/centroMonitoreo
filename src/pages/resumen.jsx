@@ -97,32 +97,33 @@ export default function Resumen() {
         </div>
       </div>
 
-      {/* Total + Botón */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 mb-6 space-y-4 md:space-y-0">
-        <div>
-          <p style={{ color: '#FFC800' }} className="mb-1">
-            Capacidad instalada 6GW total:
-          </p>
-          <p className="text-5xl font-bold text-white">
-            {total.toLocaleString('es-CO', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}{' '}
-            MW
-          </p>
-        </div>
-        <button
-          onClick={() => navigate('/estrategia-6gw')}
-          className="bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition"
-        >
-          Ver seguimiento de proyectos
-        </button>
-      </div>
+{/* Total + Botón */}
+<div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
+  <div>
+    <p style={{ color: '#FFC800' }} className="mb-1">
+      Capacidad instalada 6GW+ total:
+    </p>
+    <p className="text-5xl font-bold text-white">
+      {total.toLocaleString('es-CO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}{' '}
+      MW
+    </p>
+  </div>
+
+  <button
+    onClick={() => navigate('/estrategia-6gw')}
+    className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
+  >
+    Ver seguimiento de proyectos
+  </button>
+</div>
 
       {/* Índices */}
       <div className="px-2">
         <h2 className="text-2xl font-semibold text-gray-200 mb-4">
-          Índices 6GW
+          Índices 6GW+
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {indices.map((card, i) => {

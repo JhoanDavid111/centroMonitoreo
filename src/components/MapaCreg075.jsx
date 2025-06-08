@@ -92,7 +92,7 @@ export function MapaCreg075() {
     <div className="mt-6 relative text-white font-sans">
       {/* Título agregado */}
     <h2 className="text-2xl font-semibold mb-4 text-white text-center" style={{ fontFamily: 'Nunito Sans, sans-serif' }}>
-      Mapa Creg 075
+      Asignaciones de puntos de conexión - CREG 075
     </h2>
 
       <div id="map" style={{ height: '80vh', borderRadius: 8 }}></div>
