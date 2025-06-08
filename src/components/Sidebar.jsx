@@ -49,7 +49,7 @@ export function Sidebar({ open, toggle }) {
       items: [
         {
           title: 'Resumen',
-          path: '/6GW',
+          path: '/6GW+',
           icon: GWOff,
           activeIcon: GWOn
         },
