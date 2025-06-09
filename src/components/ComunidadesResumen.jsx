@@ -6,12 +6,12 @@ export function ComunidadesResumen() {
 
   // Datos de ejemplo para cada tarjeta
   const datosComunidades = [
-    { icon: Zap, label: 'Comunidades instaladas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
-    { icon: Activity, label: 'Comunidades proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: Zap, label: 'Comunidades instaladas', number: '---', value: '---', updated: '8/5/2025' },
+    { icon: Activity, label: 'Comunidades proyectadas', number: '---', value: '---', updated: '8/5/2025' },
   ]
   const datosSolar = [
-    { icon: Sun, label: 'Colombia Solar', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
-    { icon: Leaf, label: 'Colombia Solar', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: Sun, label: 'Colombia Solar', number: '---', value: '---', updated: '8/5/2025' },
+    { icon: Leaf, label: 'Colombia Solar', number: '---', value: '---', updated: '8/5/2025' },
   ]
 
   return (

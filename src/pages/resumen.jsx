@@ -27,50 +27,50 @@ export default function Resumen() {
     {
       icon: Lightbulb,
       label: 'Capacidad instalada en operación',
-      value: '1363,70 MW',
-      updated: '8/5/2025'
+      value: '1552,94 MW',
+      updated: '9/06/2025'
     },
     {
       icon: RefreshCw,
       label: 'Capacidad instalada en pruebas',
-      value: '716,41 MW',
-      updated: '8/5/2025'
+      value: '572,98 MW',
+      updated: '9/06/2025'
     },
     {
       icon: Clock6,
-      label: 'MW por entrar en 6 meses por 075',
-      value: '547 MW',
-      updated: '8/5/2025'
+      label: 'MW por entrar hasta Julio 2026 por 075',
+      value: '4147,49 MW',
+      updated: '9/06/2025'
     },
     {
       icon: Wind,
       label: 'FNCER gran escala',
-      value: '225,40 MW',
-      updated: '8/5/2025'
+      value: '1759,59 MW',
+      updated: '9/06/2025'
     },
     {
       icon: Activity,
       label: 'Autogeneración a gran escala (AGGE)',
-      value: '177,38 MW',
-      updated: '8/5/2025'
+      value: '133,08 MW',
+      updated: '9/06/2025'
     },
     {
       icon: Zap,
       label: 'Generación distribuida (GD)',
-      value: '716,41 MW',
+      value: '18,04 MW',
       updated: '8/5/2025'
     },
     {
       icon: Thermometer,
       label: 'Autogeneración a pequeña escala (AGPE)',
-      value: '547 MW',
-      updated: '8/5/2025'
+      value: '215,20 MW',
+      updated: '9/06/2025'
     },
     {
       icon: MapPin,
       label: 'Zonas no interconectadas (ZNI)',
-      value: '225,40 MW',
-      updated: '8/5/2025'
+      value: '13,9 MW',
+      updated: '9/06/2025'
     }
   ]
 
@@ -104,11 +104,11 @@ export default function Resumen() {
       Capacidad instalada 6GW+ total:
     </p>
     <p className="text-5xl font-bold text-white">
-      {total.toLocaleString('es-CO', {
+      {/* {total.toLocaleString('es-CO', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })}{' '}
-      MW
+      })}{' '} */}
+      2.125,92 MW
     </p>
   </div>
 

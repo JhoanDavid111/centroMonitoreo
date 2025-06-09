@@ -19,13 +19,13 @@ const ResumenCharts2 = () => {
         type: 'pie'
       },
       title: {
-        text: 'Distribución de Capacidad Instalada'
+        text: 'Distribución de Capacidad Instalada por Tecnología'
       },
       subtitle: {
-        text: 'Fecha: 2025-07-01'
+        text: 'Fecha: 2025-06-09'
       },
       tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>Valor: <b>{point.y} MW</b>'
+        pointFormat: '<b>{series.name}</b>: <b>{point.percentage:.1f}%</b><br>Valor: <b>{point.y} MW</b>'
       },
       accessibility: {
         point: {
@@ -50,9 +50,10 @@ const ResumenCharts2 = () => {
         name: 'Capacidad',
         colorByPoint: false,
         data: [
-          { name: 'Solar', y: 135, color: '#deed1b' },
-          { name: 'Eólica', y: 193, color: '#183e34' },
-          { name: 'Biomasa', y: 77, color: '#05d80a' }
+          { name: 'BIOMASA', y: 15.15, color: '#deed1b' },
+          { name: 'EOLICA', y: 12, color: '#183e34' },
+          { name: 'PCH', y: 6.1, color: '#007bff' },
+          { name: 'SOLAR', y: 2092.67, color: '#ffc107' }
         ]
       }]
     });
@@ -63,7 +64,7 @@ const ResumenCharts2 = () => {
         type: 'pie'
       },
       title: {
-        text: 'Distribución de Capacidad Instalada'
+        text: 'Distribución de Capacidad Instalada por Tipo de Proyecto'
       },
       subtitle: {
         text: 'Fecha: 2025-07-01'
@@ -94,9 +95,10 @@ const ResumenCharts2 = () => {
         name: 'Capacidad',
         colorByPoint: false,
         data: [
-          { name: 'Solar', y: 135, color: '#deed1b' },
-          { name: 'Eólica', y: 193, color: '#183e34' },
-          { name: 'Biomasa', y: 77, color: '#05d80a' }
+          { name: 'AGGE', y: 133.08, color: '#deed1b' },
+          { name: 'AGPE', y: 215.21, color: '#183e34' },
+          { name: 'Generacion Centralizada	', y: 1759.59, color: '#007bff' },
+          { name: 'Generacion Distribuida	', y: 18.04, color: '#ffc107' }
         ]
       }]
     });
