@@ -6,6 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import CapacidadInstalada2 from './CapacidadInstalada2'
 
 // Cargar módulos de Highcharts
 Exporting(Highcharts);
@@ -14,34 +15,35 @@ ExportData(Highcharts);
 FullScreen(Highcharts);
 
 // Tema global
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' }
-  },
-  title: { style: { color: '#fff' } },
-  subtitle: { style: { color: '#aaa' } },
-  xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
-    gridLineColor: '#333',
-    gridLineDashStyle: 'Dash'
-  },
-  legend: {
-    itemStyle: { color: '#ccc' },
-    itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' },
-    shared: true
-  }
-});
+// Highcharts.setOptions({
+//   chart: {
+//     backgroundColor: '#262626',
+//     style: { fontFamily: 'Nunito Sans, sans-serif' }
+//   },
+//   title: { style: { color: '#fff' } },
+//   subtitle: { style: { color: '#aaa' } },
+//   xAxis: {
+//     labels: { style: { color: '#ccc', fontSize: '10px' } },
+//     title: { style: { color: '#ccc' } },
+//     gridLineColor: '#333',
+//     gridLineDashStyle: 'Dash'
+//   },
+//   legend: {
+//     itemStyle: { color: '#ccc' },
+//     itemHoverStyle: { color: '#fff' },
+//     itemHiddenStyle: { color: '#666' }
+//   },
+//   tooltip: {
+//     backgroundColor: '#1f2937',
+//     style: { color: '#fff', fontSize: '12px' },
+//     shared: true
+//   }
+// });
 
 export function CapacidadInstalada() {
   const chartRef = useRef(null);
-  const [options, setOptions] = useState(null);
+  /* const [options, setOptions] = useState(null); */
+  const [options, setOptions] = useState(1);
 
   useEffect(() => {
     const cutoff = '2023-12-15';
@@ -170,7 +172,8 @@ export function CapacidadInstalada() {
         >
           ⛶
         </button>
-        <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
+        {/* <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} /> */}
+        <CapacidadInstalada2/>
       </div>
     </section>
   );

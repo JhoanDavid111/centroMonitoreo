@@ -6,6 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import ResumenCharts2 from './ResumenCharts2';
 
 // Carga de módulos
 Exporting(Highcharts);
@@ -66,8 +67,8 @@ export function ResumenCharts() {
 
       // Colores
       const techColor = { PCH: '#FFC800', BIOMASA: '#05d80a', 'RAD SOLAR': '#9C9C9C', VIENTO: '#87CEEB' };
-      const catColor  = { 'AUTOG PEQ. ESCALA': '#FFC800', AUTOGENERADOR: '#FF9900', 'GEN. DISTRIBUIDA': '#4caf50', NORMAL: '#9C9C9C' };
-      const matColor  = { BIOMASA: '#05d80a', HIDRÁULICA: '#4169E1', 'RAD SOLAR': '#9C9C9C', TÉRMICA: '#A52A2A' };
+      const catColor = { 'AUTOG PEQ. ESCALA': '#FFC800', AUTOGENERADOR: '#FF9900', 'GEN. DISTRIBUIDA': '#4caf50', NORMAL: '#9C9C9C' };
+      const matColor = { BIOMASA: '#05d80a', HIDRÁULICA: '#4169E1', 'RAD SOLAR': '#9C9C9C', TÉRMICA: '#A52A2A' };
 
       const opts = [];
 
@@ -127,7 +128,7 @@ export function ResumenCharts() {
         title: { text: 'Número de proyectos próximos 6 meses' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         xAxis: {
-          categories: ['Junio','Julio','Agosto','Septiembre','Octubre','Noviembre'],
+          categories: ['Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre'],
           tickInterval: 1,
           labels: { style: { color: '#ccc', fontSize: '10px' } },
           title: { text: 'Mes', style: { color: '#ccc' } },
@@ -141,8 +142,8 @@ export function ResumenCharts() {
         },
         plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
         series: [
-          { name: 'Eólica', data: [0,1,0,6,6,4], color: '#FFC800' },
-          { name: 'Solar',  data: [1,9,15,21,22,14], color: '#FF9900' }
+          { name: 'Eólica', data: [0, 1, 0, 6, 6, 4], color: '#FFC800' },
+          { name: 'Solar', data: [1, 9, 15, 21, 22, 14], color: '#FF9900' }
         ],
         exporting: { enabled: true }
       });
@@ -210,7 +211,7 @@ export function ResumenCharts() {
         </select>
       </div>
 
-      <div className={`grid ${gridClasses} gap-4`}>
+      {/* <div className={`grid ${gridClasses} gap-4`}>
         {displayed.map(({ opt, idx }) => (
           <div
             key={idx}
@@ -230,7 +231,8 @@ export function ResumenCharts() {
             />
           </div>
         ))}
-      </div>
+      </div> */}
+      <ResumenCharts2 />
     </section>
   );
 }
