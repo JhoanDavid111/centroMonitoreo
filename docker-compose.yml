@@ -1,0 +1,10 @@
+services:
+  app:
+    build: ./
+    container_name: 6gw_app
+    restart: always
+    volumes:
+      - ./dist:/usr/share/nginx/html
+      - ./:/app
+    ports:
+      - "7532:80"
