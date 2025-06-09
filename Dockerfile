@@ -10,15 +10,15 @@ COPY vite.config.js ./
 COPY . .
 
 # 4. Instala dependencias y compila la app
-RUN npm install
-RUN npm run build
+#RUN npm install
+#RUN npm run build
 
 # 5. Usa una imagen más liviana para servir los archivos
 FROM nginx:alpine
 
 # 6. Copia los archivos compilados al directorio de Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY --from=build /app /app 
+#COPY --from=build /app/dist /usr/share/nginx/html
+#COPY --from=build /app /app 
 RUN apk add --update nodejs npm
 WORKDIR /app
 
@@ -30,4 +30,5 @@ WORKDIR /app
 EXPOSE 80
 
 # 9. Comando por defecto
-CMD ["nginx", "-g", "daemon off;"]
+#CMD ["nginx", "-g", "daemon off;"]
+CMD ["/app/start_services.sh"]
