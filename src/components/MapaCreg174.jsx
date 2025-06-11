@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon   from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import creg174url from '../assets/CREG174_reproyectado_OK.geojson?url'
 
 // Fix para íconos en React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -41,7 +42,7 @@ export function MapaCreg174() {
       layerGroupRef.current = L.layerGroup().addTo(mapRef.current);
     }
     // Cargar GeoJSON
-    fetch("../../src/assets/CREG174_reproyectado_OK.geojson")
+    fetch(creg174url)
       .then(res => res.json())
       .then(data => setGeoData(data.features))
       .catch(console.error);

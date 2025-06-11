@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import creg075url from '../assets/CREG075.geojson?url'
 
 // Fix para íconos en React
 delete L.Icon.Default.prototype._getIconUrl
@@ -43,7 +44,7 @@ export function MapaCreg075() {
 
   // Cargar GeoJSON
   useEffect(() => {
-    fetch('../../src/assets/CREG075.geojson')
+    fetch(creg075url)
       .then(res => res.json())
       .then(data => setGeoData(data.features))
   }, [])
