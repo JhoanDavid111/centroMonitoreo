@@ -1,3 +1,4 @@
+// src/components/CapacidadInstalada.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -6,7 +7,6 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// Cargar módulos de Highcharts
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
@@ -17,47 +17,53 @@ export function CapacidadInstalada() {
   const [options, setOptions] = useState(null);
 
   useEffect(() => {
-    const cutoff = '2023-12-15';
-
     fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
-      .then(res => res.json())
+      .then(r => r.json())
       .then(data => {
-        // Ordenar y filtrar fechas
-        const sorted = data.slice().sort(
+        const sorted = [...data].sort(
           (a, b) => new Date(a.fecha_entrada_operacion) - new Date(b.fecha_entrada_operacion)
         );
-        const allDates = Array.from(new Set(
-          sorted.map(item => item.fecha_entrada_operacion.slice(0, 10))
-        ));
-        const categories = allDates.filter(fecha => fecha >= cutoff);
 
-        // Preparar series por fuente
-        const fuentes = Array.from(new Set(sorted.map(i => i.fuente_energia)));
+        const categories = Array.from(
+          new Set(sorted.map(item => item.fecha_entrada_operacion.slice(0, 10)))
+        );
+
         const colorMap = {
-          AGUA: '#87CEEB',
+          VIENTO: '#FF9900',
+          PCH: '#A0AEC0',
           BIOMASA: '#05D80A',
-          'RAD SOLAR': '#FFD700',
-          VIENTO: '#FF9900'
+          'RAD SOLAR': '#FFD700'
         };
-        const series = fuentes.map(fuente => {
-          // para cada fecha, tomar el último registro de ese día
-          const lastByDate = {};
-          let proyectoByDate = {};
+
+        const ordenDeseado = ['VIENTO', 'PCH', 'BIOMASA', 'RAD SOLAR'];
+
+        const series = ordenDeseado.map(fuente => {
+          const maxByDate = {};
+          const nameByDate = {};
           sorted.forEach(item => {
             const fecha = item.fecha_entrada_operacion.slice(0, 10);
-            if (item.fuente_energia === fuente && fecha >= cutoff) {
-              lastByDate[fecha] = item.capacidad_acumulada;
-              proyectoByDate[fecha] = item.nombre_proyecto;
+            if (item.fuente_energia === fuente) {
+              const cap = item.capacidad_acumulada;
+              if (!(fecha in maxByDate) || cap > maxByDate[fecha]) {
+                maxByDate[fecha] = cap;
+                nameByDate[fecha] = item.nombre_proyecto;
+              }
             }
           });
-          // construir arreglo de puntos
-          const dataPoints = categories.map(fecha => ({
-            y: lastByDate[fecha] ?? 0,
-            proyecto: proyectoByDate[fecha] ?? '—'
-          }));
+
+          let lastValue = 0;
+          let lastProject = '—';
+          const dataPoints = categories.map(fecha => {
+            if (fecha in maxByDate) {
+              lastValue = maxByDate[fecha];
+              lastProject = nameByDate[fecha];
+            }
+            return { y: lastValue, proyecto: lastProject };
+          });
+
           return {
             name: fuente,
             data: dataPoints,
@@ -65,50 +71,66 @@ export function CapacidadInstalada() {
           };
         });
 
-        // Configuración del chart
         setOptions({
+          legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'bottom',
+            y: 25, // ⬅️ Aumenta este valor para bajarlo más
+            itemStyle: {
+              color: '#ccc',
+              fontSize: '12px'
+            },
+            itemHoverStyle: {
+              color: '#fff'
+            }
+          },
           chart: {
             type: 'area',
-            height: 450,
             backgroundColor: '#262626',
-            marginLeft: 80
+            height: 450,
+            marginBottom: 100
           },
           title: { text: 'Capacidad acumulada por tipo de proyecto' },
-          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          subtitle: {
+            text: 'Fuente: API 6G Proyecto',
+            style: { color: '#AAA', fontSize: '12px' }
+          },
           xAxis: {
             categories,
-            tickInterval: 1,
+            tickInterval: Math.ceil(categories.length / 10),
             labels: {
               rotation: -45,
-              style: { color: '#ccc', fontSize: '10px' }
+              y: 18,
+              style: { color: '#CCC', fontSize: '10px' }
             },
             title: {
               text: 'Fecha de entrada en operación',
-              style: { color: '#ccc' }
+              style: { color: '#FFF' }
             },
-            gridLineColor: '#333',
-            gridLineDashStyle: 'Dash'
+            lineColor: '#555',
+            tickColor: '#888',
+            tickLength: 5
           },
           yAxis: {
             min: 0,
             tickAmount: 6,
+            gridLineDashStyle: 'Dash',
+            gridLineColor: '#444',
             title: {
               text: 'Capacidad acumulada (MW)',
-              style: { color: '#fff', fontSize: '12px' }
+              style: { color: '#FFF' }
             },
             labels: {
-              enabled: true,
-              style: { color: '#fff', fontSize: '10px' },
               formatter() {
                 return this.value.toLocaleString() + ' MW';
-              }
-            },
-            gridLineColor: '#444444',
-            gridLineDashStyle: 'Dash'
+              },
+              style: { color: '#CCC', fontSize: '10px' }
+            }
           },
           tooltip: {
-            backgroundColor: '#1f2937',
-            style: { color: '#fff', fontSize: '12px' },
+            backgroundColor: '#1F2937',
+            style: { color: '#FFF', fontSize: '12px' },
             shared: true,
             formatter() {
               let s = `<b>Fecha: ${this.x}</b>`;
@@ -131,52 +153,36 @@ export function CapacidadInstalada() {
             enabled: true,
             buttons: {
               contextButton: {
-                menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
+                menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
               }
             }
           }
         });
 
-        // Forzar redraw para asegurarnos de que el eje X se calcule
-        setTimeout(() => {
-          if (chartRef.current?.chart) {
-            chartRef.current.chart.redraw();
-          }
-        }, 100);
+        setTimeout(() => chartRef.current?.chart?.redraw(), 200);
       })
       .catch(err => console.error('Error al cargar datos:', err));
   }, []);
 
-  // Hasta que carguen las opciones no renderizamos el chart
   if (!options) return null;
 
   return (
     <section className="mt-8">
-      <div
-        className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
-        style={{
-          overflowX: 'auto',
-          paddingBottom: '40px'  // espacio para las etiquetas rotadas
-        }}
-      >
+      <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative">
         <button
           className="absolute top-2 right-2 text-gray-300 hover:text-white"
           onClick={() => chartRef.current.chart.fullscreen.toggle()}
           title="Maximizar gráfico"
-        >
-          ⛶
-        </button>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={options}
-          ref={chartRef}
-        />
+        >⛶</button>
+        <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
     </section>
   );
 }
 
 export default CapacidadInstalada;
+
+
 
 
 
