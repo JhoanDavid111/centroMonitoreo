@@ -27,41 +27,29 @@ export function CapacidadInstalada() {
           (a, b) => new Date(a.fecha_entrada_operacion) - new Date(b.fecha_entrada_operacion)
         );
 
-        const categories = Array.from(
-          new Set(sorted.map(item => item.fecha_entrada_operacion.slice(0, 10)))
+        const categories = sorted.map(item =>
+          item.fecha_entrada_operacion.slice(0, 10)
         );
 
+        // Detectar las fuentes de energía dinámicamente
+        const allFuentes = Object.keys(sorted[0]).filter(k => k !== 'fecha_entrada_operacion');
+
         const colorMap = {
+          SOLAR: '#FFD700',
+          EOLICA: '#1E90FF',
           VIENTO: '#FF9900',
           PCH: '#A0AEC0',
           BIOMASA: '#05D80A',
           'RAD SOLAR': '#FFD700'
         };
 
-        const ordenDeseado = ['VIENTO', 'PCH', 'BIOMASA', 'RAD SOLAR'];
-
-        const series = ordenDeseado.map(fuente => {
-          const maxByDate = {};
-          const nameByDate = {};
-          sorted.forEach(item => {
-            const fecha = item.fecha_entrada_operacion.slice(0, 10);
-            if (item.fuente_energia === fuente) {
-              const cap = item.capacidad_acumulada;
-              if (!(fecha in maxByDate) || cap > maxByDate[fecha]) {
-                maxByDate[fecha] = cap;
-                nameByDate[fecha] = item.nombre_proyecto;
-              }
-            }
-          });
-
+        const series = allFuentes.map(fuente => {
           let lastValue = 0;
-          let lastProject = '—';
-          const dataPoints = categories.map(fecha => {
-            if (fecha in maxByDate) {
-              lastValue = maxByDate[fecha];
-              lastProject = nameByDate[fecha];
+          const dataPoints = sorted.map(item => {
+            if (item[fuente] !== undefined) {
+              lastValue = item[fuente];
             }
-            return { y: lastValue, proyecto: lastProject };
+            return { y: lastValue, proyecto: '' };
           });
 
           return {
@@ -76,7 +64,7 @@ export function CapacidadInstalada() {
             layout: 'horizontal',
             align: 'center',
             verticalAlign: 'bottom',
-            y: 25, // ⬅️ Aumenta este valor para bajarlo más
+            y: 25,
             itemStyle: {
               color: '#ccc',
               fontSize: '12px'
@@ -136,7 +124,6 @@ export function CapacidadInstalada() {
               let s = `<b>Fecha: ${this.x}</b>`;
               this.points.forEach(pt => {
                 s += `<br/><span style="color:${pt.color}">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString()} MW</b>`;
-                s += `<br/>&nbsp;&nbsp;<i>${pt.point.proyecto}</i>`;
               });
               return s;
             }
@@ -173,7 +160,9 @@ export function CapacidadInstalada() {
           className="absolute top-2 right-2 text-gray-300 hover:text-white"
           onClick={() => chartRef.current.chart.fullscreen.toggle()}
           title="Maximizar gráfico"
-        >⛶</button>
+        >
+          ⛶
+        </button>
         <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
     </section>
@@ -181,6 +170,7 @@ export function CapacidadInstalada() {
 }
 
 export default CapacidadInstalada;
+
 
 
 

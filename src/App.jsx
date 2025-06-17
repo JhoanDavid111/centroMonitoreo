@@ -54,7 +54,6 @@ function AppContent() {
             />
             <Route path="/6GW+" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
-            <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
             <Route
               path="/estrategia-6gw"
               element={

@@ -65,61 +65,71 @@ export function ResumenCharts() {
       )).json();
 
       // Colores
-      const techColor = { PCH: '#FFC800', BIOMASA: '#05d80a', 'RAD SOLAR': '#9C9C9C', VIENTO: '#87CEEB' };
-      const catColor  = { 'AUTOG PEQ. ESCALA': '#FFC800', AUTOGENERADOR: '#FF9900', 'GEN. DISTRIBUIDA': '#4caf50', NORMAL: '#9C9C9C' };
+      const techColor = {
+      BIOMASA: '#05D80A',     // verde
+      EOLICA:  '#1E90FF',     // azul
+      PCH:     '#FFC800',     // amarillo
+      SOLAR:   '#9C9C9C'      // gris claro
+    };
+      const catColor = {
+      AGGE: 'orange',
+      AGPE: '#17BECF',                         // celeste
+      'Generacion Centralizada': '#9467BD',   // púrpura
+      'Generacion Distribuida': '#FF7F0E'      // naranja fuerte
+    };
       const matColor  = { BIOMASA: '#05d80a', HIDRÁULICA: '#4169E1', 'RAD SOLAR': '#9C9C9C', TÉRMICA: '#A52A2A' };
 
       const opts = [];
 
-      // 1) Pie tecnología
-      opts.push({
-        chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
-        title: { text: 'Distribución actual por tecnología' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        plotOptions: {
-          pie: {
-            innerSize: '60%',
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-            showInLegend: true
-          }
-        },
-        series: [{
-          name: 'Tecnología',
-          colorByPoint: false,
-          data: techJson.map(d => ({
-            name: d.tecnologia,
-            y: d.capacidad_efectiva_mw,
-            color: techColor[d.tecnologia] || '#666666'
-          }))
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true }
-      });
+     // 1) Pie tecnología
+    opts.push({
+      chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
+      title: { text: 'Distribución actual por tecnología' },
+      subtitle: { text: 'Fuente: API 6G Proyecto' },
+      plotOptions: {
+        pie: {
+          innerSize: '60%',
+          dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+          showInLegend: true
+        }
+      },
+      series: [{
+        name: 'Tecnología',
+        colorByPoint: false,
+        data: techJson.map(d => ({
+          name: d.tipo_tecnologia,
+          y: d.capacidad_mw,
+          color: techColor[d.tipo_tecnologia] || '#666666'
+        }))
+      }],
+      tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+      exporting: { enabled: true }
+    });
 
-      // 2) Pie categoría
-      opts.push({
-        chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
-        title: { text: 'Distribución actual por categoría' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        plotOptions: {
-          pie: {
-            innerSize: '60%',
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-            showInLegend: true
-          }
-        },
-        series: [{
-          name: 'Categoría',
-          colorByPoint: false,
-          data: catJson.map(d => ({
-            name: d.categoria,
-            y: d.capacidad_efectiva_mw,
-            color: catColor[d.categoria] || '#666666'
-          }))
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true }
-      });
+    // 2) Pie categoría
+    opts.push({
+      chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
+      title: { text: 'Distribución actual por categoría' },
+      subtitle: { text: 'Fuente: API 6G Proyecto' },
+      plotOptions: {
+        pie: {
+          innerSize: '60%',
+          dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+          showInLegend: true
+        }
+      },
+      series: [{
+        name: 'Categoría',
+        colorByPoint: false,
+        data: catJson.map(d => ({
+          name: d.tipo_proyecto,
+          y: d.capacidad_mw,
+          color: catColor[d.tipo_proyecto] || '#666666'
+        }))
+      }],
+      tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+      exporting: { enabled: true }
+    });
 
       // 3) Column proyectos próximos 6 meses
       opts.push({
