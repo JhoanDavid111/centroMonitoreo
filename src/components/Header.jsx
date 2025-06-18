@@ -1,7 +1,23 @@
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase/config';
 import energiaLogo from '../assets/logosEnergiaUpme.svg';
-import { HelpCircle, Moon, User } from 'lucide-react';
+import { HelpCircle, Moon, User, LogOut } from 'lucide-react';
 
 export function Header() {
+  const { currentUser } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsDropdownOpen(false);
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
   return (
     <header
       className="
@@ -50,11 +66,46 @@ export function Header() {
           className="text-white cursor-pointer hover:text-gray-300"
           title="Modo oscuro"
         />
-        <User
-          size={28}
-          className="text-white cursor-pointer hover:text-gray-300"
-          title="Usuario"
-        />
+        
+        {/* Menú de usuario */}
+        <div className="relative">
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center space-x-2 focus:outline-none"
+          >
+            <User
+              size={28}
+              className="text-white cursor-pointer hover:text-gray-300"
+              title="Usuario"
+            />
+            {currentUser && (
+              <span className="text-white text-sm hidden md:inline-block">
+                {currentUser.displayName || currentUser.email.split('@')[0]}
+              </span>
+            )}
+          </button>
+          
+          {/* Dropdown menu */}
+          {isDropdownOpen && currentUser && (
+            <div className="absolute right-0 mt-2 w-48 bg-[#1d1d1d] rounded-md shadow-lg border border-[#575756] z-50">
+              <div className="px-4 py-3 border-b border-[#575756]">
+                <p className="text-sm text-white font-medium">
+                  {currentUser.displayName || 'Usuario'}
+                </p>
+                <p className="text-xs text-gray-300 truncate">
+                  {currentUser.email}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-sm text-white hover:bg-[#FFC800] hover:text-black flex items-center space-x-2"
+              >
+                <LogOut size={16} />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
