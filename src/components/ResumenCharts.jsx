@@ -67,17 +67,17 @@ export function ResumenCharts() {
       )).json();
 
       const techColor = {
-        BIOMASA: '#05D80A',
-        EOLICA: '#1E90FF',
-        PCH: '#FFC800',
-        SOLAR: '#9C9C9C'
+        BIOMASA: '#D3DF1E',
+        EOLICA: '#2CA02C',
+        PCH: '#1F77B4',
+        SOLAR: '#FFC800'
       };
 
       const catColor = {
-        AGGE: '#FF7F0E',
-        AGPE: '#17BECF',
-        'Generacion Centralizada': '#9467BD',
-        'Generacion Distribuida': '#2CA02C'
+        AGGE: '#D3DF1E',
+        AGPE: '#2CA02C',
+        'Generacion Centralizada': '#1F77B4',
+        'Generacion Distribuida': '#FFC800'
       };
 
       const matColor = {
@@ -98,12 +98,12 @@ export function ResumenCharts() {
 
       // 1) Pie tecnología
       opts.push({
-        chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
+        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
         title: { text: 'Distribución actual por tecnología' },
         subtitle: { text: 'Fuente: API 6G Proyecto' },
         plotOptions: {
           pie: {
-            innerSize: '60%',
+            innerSize: 0,
             dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
             showInLegend: true
           }
@@ -123,12 +123,12 @@ export function ResumenCharts() {
 
       // 2) Pie categoría
       opts.push({
-        chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
-        title: { text: 'Distribución actual por categoría' },
+        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+        title: { text: 'Distribución de Capacidad Instalada por Tipo de Proyecto' },
         subtitle: { text: 'Fuente: API 6G Proyecto' },
         plotOptions: {
           pie: {
-            innerSize: '60%',
+            innerSize: 0,
             dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
             showInLegend: true
           }
