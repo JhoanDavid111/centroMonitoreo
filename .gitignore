@@ -1,0 +1,39 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.env
+.env.*
+
+# Compilación y build
+build/
+dist/
+coverage/
+*.log
+.cache/
+.vite/
+
+# Editor: WebStorm (JetBrains)
+.idea/
+
+# Editor: VSCode
+.vscode/
+.history/
+.code-workspace
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Tests
+jest-coverage/
+cypress/videos/
+cypress/screenshots/
+
+# Optional: archivos temporales
+*.tmp
+*.bak
+*.swp
