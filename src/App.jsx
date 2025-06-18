@@ -1,4 +1,5 @@
-// src/App.jsx
+// File: src/App.jsx
+
 import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -8,20 +9,36 @@ import { MapaEmbalses } from './components/MapaEmbalses';
 import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import { Banner6GW } from './components/Banner6GW';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
-import { AuthProvider, useAuth } from './context/AuthForm';
-import AuthFormScreen from './components/AuthFormScreen';
+import { AuthProvider, useAuth } from './context/AuthContext'; // Cambiado a AuthContext
+import AuthButton from './components/AuthButton'; // Nuevo componente de autenticación
 
 function AppContent() {
-  const { step } = useAuth();
+  const { user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
 
-  // Mostrar pantalla de autenticación hasta que esté autenticado
-  if (step !== 'authenticated') {
-    return <AuthFormScreen />;
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#1d1d1d]">
+        <div className="text-white">Cargando aplicación...</div>
+      </div>
+    );
+  }
+
+  // Redirigir a login si no está autenticado
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <AuthButton /> {/* Componente de autenticación con Google */}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -54,6 +71,7 @@ function AppContent() {
             />
             <Route path="/6GW+" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
+            <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
             <Route
               path="/estrategia-6gw"
               element={
@@ -63,6 +81,7 @@ function AppContent() {
                 </div>
               }
             />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
@@ -77,4 +96,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
