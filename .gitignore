@@ -1,39 +1,73 @@
-# Node.js
+# ======================
+# Ignorar dependencias
+# ======================
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+.pnp
+.pnp.js
 package-lock.json
+
+# =======================
+# Variables de entorno
+# =======================
 .env
 .env.*
+firebase-debug.log
+firebase-export.json
 
-# Compilación y build
-build/
-dist/
-coverage/
-*.log
-.cache/
-.vite/
-
-# Editor: WebStorm (JetBrains)
+# =======================
+# Editor y configuración
+# =======================
 .idea/
-
-# Editor: VSCode
 .vscode/
-.history/
 .code-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.history/
 
-# Sistema
+# ======================
+# Archivos del sistema
+# ======================
 .DS_Store
 Thumbs.db
 
-# Tests
+# ======================
+# Build y compilación
+# ======================
+build/
+dist/
+.out/
+.next/
+.cache/
+.vite/
+.eslintcache
+
+# ======================
+# Testing
+# ======================
+coverage/
+.nyc_output/
 jest-coverage/
 cypress/videos/
 cypress/screenshots/
 
-# Optional: archivos temporales
+# ======================
+# Logs y temporales
+# ======================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 *.tmp
 *.bak
 *.swp
+*.pem
+
+# ======================
+# Archivos sensibles
+# ======================
+/src/firebase/config.js
+!src/firebase/config.example.js

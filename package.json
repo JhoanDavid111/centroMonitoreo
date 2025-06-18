@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "firebase": "^11.9.1",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.2",
     "leaflet": "^1.9.4",
