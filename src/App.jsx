@@ -12,8 +12,8 @@ import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AuthButton from './components/AuthButton';
-import PrivateRoute from './components/PrivateRoute';
+import { AuthButton, PrivateRoute } from './components/auth';
+
 
 function AppContent() {
   const { currentUser, loading } = useAuth();

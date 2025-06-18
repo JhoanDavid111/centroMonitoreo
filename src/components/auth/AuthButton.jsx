@@ -1,35 +1,38 @@
 import React, { useState } from 'react';
-import { auth, googleProvider } from '../firebase/config';
+import { auth, googleProvider } from '../../firebase/config';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logosEnergiaUpme.svg';
+import logo from '../../assets/logosEnergiaUPME.svg';
+import {ALLOWED_DOMAINS} from '../../config/allowedDomains';
+
 
 export default function AuthButton() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+   const handleLogin = async () => {
     setError('');
     setLoading(true);
     
     try {
-      // 1. Cerrar sesión previa para limpieza
       await signOut(auth);
-      
-      // 2. Autenticar con Google
       const result = await signInWithPopup(auth, googleProvider);
       const userEmail = result.user.email;
       
-      // 3. Validar dominio institucional
-      if (!userEmail || !userEmail.endsWith('@upme.gov.co')) {
+      // Validación modificada para múltiples dominios
+      const emailDomain = userEmail.split('@')[1];
+      const isAllowed = ALLOWED_DOMAINS.some(domain => 
+        emailDomain === domain || emailDomain.endsWith(`.${domain}`)
+      );
+
+      if (!userEmail || !isAllowed) {
         await signOut(auth);
-        setError('Solo cuentas institucionales @upme.gov.co permitidas');
+        setError(`Solo cuentas con dominios permitidos: ${ALLOWED_DOMAINS.join(', ')}`);
         setLoading(false);
         return;
       }
       
-      // 4. Redirigir solo si el correo es válido
       navigate('/dashboard');
       
     } catch (err) {
