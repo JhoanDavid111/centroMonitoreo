@@ -36,7 +36,7 @@ export function CapacidadInstalada() {
 
         const colorMap = {
           SOLAR: '#FFD700',
-          EOLICA: '#1E90FF',
+          EOLICA: '#73FFA5',
           VIENTO: '#FF9900',
           PCH: '#A0AEC0',
           BIOMASA: '#05D80A',
