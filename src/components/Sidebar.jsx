@@ -13,26 +13,30 @@ import {
 import { Link, useLocation } from 'react-router-dom'
 
 // Estas importaciones devuelven URLs al SVG en Vite
-import HidroOn from '../assets/hidrologia-on.svg'
-import HidroOff from '../assets/hidrologia-off.svg'
-import EnergiaOn from '../assets/EnergiaElectrica-on.svg'
-import EnergiaOff from '../assets/EnergiaElectrica-off.svg'
-import PreciosOn from '../assets/precios-on.svg'
-import PreciosOff from '../assets/precios-off.svg'
-import TermicaOn from '../assets/termica-on.svg'
-import TermicaOff from '../assets/termica-off.svg'
-import DemandaOn from '../assets/Demanda-on.svg'
-import DemandaOff from '../assets/Demanda-off.svg'
-import CombustiblesOn from '../assets/Gasolina-on.svg'
-import CombustiblesOff from '../assets/Gasolina-off.svg'
-import GasOn from '../assets/gas-on.svg'
-import GasOff from '../assets/gas-off.svg'
-import GLPOn from '../assets/GLP-on.svg'
-import GLPOff from '../assets/GLP-off.svg'
-import GWOn from '../assets/6GW-on.svg'
-import GWOff from '../assets/6GW-off.svg'
-import DashboardOn from '../assets/Dashboard-on.svg'
-import DashboardOff from '../assets/Dashboard-off.svg'
+import DashboardOff from '../assets/svg-icons/Dashboard-Off.svg'
+import DashboardOn from '../assets/svg-icons/Dashboard-On.svg'
+import GWOff from '../assets/svg-icons/6GW-off.svg'
+import GWOn from '../assets/svg-icons/6GW-on.svg'
+import ComunidadesEnergOff from '../assets/svg-icons/ComunidadesEnerg-Off.svg'
+import ComunidadesEnergOn from '../assets/svg-icons/ComunidadesEnerg-On.svg'
+import AutogeneracionOff from '../assets/svg-icons/Autogeneracion-Off.svg'
+import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg'
+import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg'
+import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
+import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Off.svg'
+import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg'
+import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg'
+import HidroOn from '../assets/svg-icons/Hidrologia-On.svg'
+import EnergiaOff from '../assets/svg-icons/EnergiaElectrica-Off.svg'
+import EnergiaOn from '../assets/svg-icons/EnergiaElectrica-On.svg'
+import PreciosOff from '../assets/svg-icons/Precios-Off.svg'
+import PreciosOn from '../assets/svg-icons/Precios-On.svg'
+import GeneracionTermicaOff from '../assets/svg-icons/GeneracionTermica-Off.svg'
+import GeneracionTermicaOn from '../assets/svg-icons/GeneracionTermica-On.svg'
+import DemandaOff from '../assets/svg-icons/Demanda-Off.svg'
+import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
+
+
 
 export function Sidebar({ open, toggle }) {
   const { pathname } = useLocation()
@@ -42,7 +46,7 @@ export function Sidebar({ open, toggle }) {
       title: 'Inicio',
       path: '/',
       icon: DashboardOff,
-      activeIcon: DashboardOn
+      activeIcon: DashboardOn,
     },
     {
       title: 'ESTRATEGIA 6GW',
@@ -56,26 +60,26 @@ export function Sidebar({ open, toggle }) {
         {
           title: 'Comunidades energéticas',
           path: '/comunidades_energeticas',
-          icon: GasOff,
-          activeIcon: GasOn
+          icon: ComunidadesEnergOff,
+          activeIcon: ComunidadesEnergOn
         },
         {
           title: 'Autogeneración y GD',
           path: '/autogeneracion',
-          icon: GLPOff,
-          activeIcon: GLPOn
+          icon: AutogeneracionOff,
+          activeIcon: AutogeneracionOn
         },
         {
           title: 'Proyectos075',
           path: '/proyectos075',
-          icon: CombustiblesOff,
-          activeIcon: CombustiblesOn
+          icon: Proyecto075Off,
+          activeIcon: Proyecto075On
         },
         {
           title: 'Acciones estratégicas',
           path: '/acciones_estrategicas',
-          icon: TermicaOff,
-          activeIcon: TermicaOn
+          icon: AccionesEstrategicasOff,
+          activeIcon: AccionesEstrategicasOn
         }
       ]
     },
@@ -103,8 +107,8 @@ export function Sidebar({ open, toggle }) {
         {
           title: 'Generación térmica',
           path: '/generacion',
-          icon: TermicaOff,
-          activeIcon: TermicaOn
+          icon: GeneracionTermicaOff,
+          activeIcon: GeneracionTermicaOn
         },
         {
           title: 'Demanda',
@@ -114,7 +118,7 @@ export function Sidebar({ open, toggle }) {
         }
       ]
     },
-    {
+    /*{
       title: 'TARIFAS',
       items: [
         {
@@ -136,13 +140,13 @@ export function Sidebar({ open, toggle }) {
           activeIcon: GLPOn
         }
       ]
-    }
+    } */
   ]
 
   return (
     <aside
       className={`bg-[#262626] font-sans text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300 ${
-        open ? 'w-60 p-4' : 'w-16 p-2'
+        open ? 'w-1/6 p-4' : 'w-16 p-2'
       }`}
     >
       {/* Toggle button */}
@@ -162,7 +166,7 @@ export function Sidebar({ open, toggle }) {
             {section.items ? (
               <>
                 <h4
-                  className={`text-xs font-semibold text-gray-400 mb-2 ${
+                  className={`text-sm font-semibold text-texto-secundario mb-2 text-[#D1D1D0] ${
                     open ? '' : 'sr-only'
                   }`}>
                   {section.title}
@@ -175,17 +179,17 @@ export function Sidebar({ open, toggle }) {
                       <li key={i}>
                         <Link
                           to={item.path}
-                          className={`flex items-center px-2 py-1 rounded hover:bg-gray-700 transition ${
+                          className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
                             isActive ? '' : ''
                           }`}>
                           <img
                             src={IconSVG}
                             alt={item.title}
-                            className="w-5 h-5 flex-shrink-0"
+                            className="w-6 h-6 flex-shrink-0"
                           />
                           {open && (
                             <span
-                              className={`ml-3 text-sm whitespace-nowrap ${
+                              className={`ml-3 text-base whitespace-nowrap ${
                                 isActive ? 'text-[#FFC800]' : 'text-gray-300'
                               }`}>
                               {item.title}
@@ -201,7 +205,7 @@ export function Sidebar({ open, toggle }) {
             <Link
               to={section.path}
               className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
-               pathname === section.path ? 'text-[#FFC800]' : 'text-gray-300'
+              pathname === section.path ? 'text-[#FFC800]' : 'text-gray-300'
               }`}
             >
               <img

@@ -6,7 +6,7 @@ export function Header() {
     <header
       className="
         fixed top-0 left-0 right-0
-        h-20
+        h-24
         bg-[#262626] border-b border-[#575756]
         flex items-center justify-between
         px-6
@@ -14,7 +14,7 @@ export function Header() {
       "
     >
       {/* Logos + título a la izquierda */}
-      <div className="flex items-center">
+      <div className="flex items-center w-1/2">
         {/* Logo Ministerio de Energía */}
         <img
           src={energiaLogo}
@@ -22,7 +22,7 @@ export function Header() {
           className="h-16 w-auto"
         />
         {/* Separador vertical */}
-        <div className="h-12 border-l border-[#575756] mx-6" />
+        <div className="h-12 border-l border-[#575756] ml-[100px] mr-7" />
 
         {/* Título */}
         <h1
@@ -44,11 +44,6 @@ export function Header() {
           size={28}
           className="text-white cursor-pointer hover:text-gray-300"
           title="Ayuda"
-        />
-        <Moon
-          size={28}
-          className="text-white cursor-pointer hover:text-gray-300"
-          title="Modo oscuro"
         />
         <User
           size={28}
