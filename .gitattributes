@@ -1,0 +1,14 @@
+# Asegurar EOL LF para archivos críticos (evita conflictos entre sistemas)
+*.css        text eol=lf
+*.geojson    text eol=lf
+*.html       text eol=lf
+*.js         text eol=lf
+*.jsx        text eol=lf
+*.json       text eol=lf
+*.gitattributes text eol=lf
+*.gitignore  text eol=lf
+
+# Ignorar archivos binarios (que no se deben alterar)
+*.jpg        binary
+*.png        binary
+*.svg        binary

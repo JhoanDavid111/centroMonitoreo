@@ -5,7 +5,6 @@ node_modules/
 bower_components/
 .pnp
 .pnp.js
-package-lock.json
 
 # =======================
 # Variables de entorno
