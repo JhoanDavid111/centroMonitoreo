@@ -49,7 +49,7 @@ export function Sidebar({ open, toggle }) {
       activeIcon: DashboardOn,
     },
     {
-      title: 'ESTRATEGIA 6GW',
+      title: 'ESTRATEGIA 6GW+',
       items: [
         {
           title: 'Resumen',
