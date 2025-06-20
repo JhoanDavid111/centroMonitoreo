@@ -662,7 +662,7 @@ const resumenANLAOptions = {
     backgroundColor: '#1a1a1a',
     borderColor: '#333',
     style: { color: '#fff' },
-    headerFormat: '<b>{point.x}</b><br/>',
+    headerFormat: '<b>{category}</b><br/>',
     pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
     useHTML: true
   },
@@ -808,6 +808,127 @@ const tiempoPromedioANLAOptions = {
   legend: { enabled: false }
 };
 
+const seriesData = [
+  {
+    name: 'La Guajira',
+    data: [
+      { name: '2018', y: 240.0, color: '#0B6623' },
+      { name: '2019', y: 346.5, color: '#32CD32' },
+      { name: '2020', y: 200.0, color: '#39FF14' },
+      { name: '2021', y: 571.2, color: '#228B22' },
+      { name: '2022', y: 571.2, color: '#3CB371' },
+      { name: '2023', y: 100.0, color: '#2E8B57' }
+    ]
+  },
+  {
+    name: 'Santander',
+    data: [
+      { name: '2019', y: 100.5, color: '#0B6623' },
+      { name: '2022', y: 200.0, color: '#32CD32' },
+      { name: '2023', y: 360.0, color: '#39FF14' },
+      { name: '2024', y: 200.0, color: '#228B22' }
+    ]
+  },
+  {
+    name: 'Atlántico',
+    data: [
+      {name:'2021', y: 599.5, color:'#0B6623'},
+      {name:'2022', y: 200.0, color:'#32CD32'}
+    ]
+  },
+  {
+    name: 'Cesar',
+    data: [
+      { name: '2019', y: 250.4, color: '#0B6623' },
+      { name: '2021', y: 101.0, color: '#32CD32' },
+      { name: '2023', y: 240.0, color: '#39FF14' },
+      { name: '2025', y: 200.0, color: '#228B22' }
+    ]
+  },
+  {
+    name: 'Cundinamarca',
+    data: [
+      { name: '2022', y: 300.0, color: '#0B6623' },
+      { name: '2023', y: 100.0, color: '#32CD32' }
+    ]
+  },
+  {
+    name: 'Córdoba - Sucre',
+    data: [
+      { name: '2025', y: 350.0, color: '#0B6623' }
+    ]
+  },
+  {
+    name: 'Córdoba',
+    data: [
+      { name: '2024', y: 200.0, color: '#0B6623' },
+      { name: '2025', y: 135.0, color: '#32CD32' }
+    ]
+  },
+  {
+    name: 'Otros',
+    data: [
+      { name: '2021', y: 121.3, color: '#0B6623' },
+      { name: '2022', y: 360.0, color: '#32CD32' },
+      { name: '2024', y: 250.0, color: '#39FF14' },
+      { name: '2025', y: 400.0, color: '#228B22' }
+    ]
+  }
+];
+
+const getChartOptions = (serie, index) => ({
+  chart: { type: 'column',
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: '#262626',
+    plotBorderWidth: 1,
+    plotBorderColor: '#262626'
+  },
+  title: {
+    text: serie.name,
+    style: {
+      fontSize: '14px',
+      fontWeight: 'bold',
+      color: '#fff'
+    }
+  },
+  xAxis: {
+    type: 'category',
+    tickInterval: 1,
+    title: { text: '', style: { fontWeight: 'bold', color: '#ccc' } },
+    labels: {
+      rotation: 0,
+      step: 1,
+      style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
+    },
+    crosshair: true
+  },
+  yAxis: {
+    title: { text: 'MW Licenciados', style: { fontWeight: 'bold', color: '#ccc' } },
+    min: 0,
+    gridLineWidth: 1,
+    labels: { style: { fontSize: '12px', color: '#eee' } },
+  },
+  legend: { enabled: false },
+  plotOptions: {
+    column: {
+      borderRadius: 4,
+      borderWidth: 0,
+      dataLabels: {
+        enabled: true,
+        format: '{point.y}',
+        style: { fontWeight: 'bold', color: '#fff' },
+        y: -20
+      },
+      pointPadding: 0.1,
+      groupPadding: 0.1
+    }
+  },
+  series: [{
+    name: serie.name,
+    data: serie.data
+  }]
+});
 
 export function GraficaCiclo1() {
   return (
@@ -855,8 +976,15 @@ export function GraficaANLA() {
           <HighchartsReact highcharts={Highcharts} options={resumenANLAOptions} />
         </div>
 
+        <h2 className="text-xl font-semibold mb-4 text-white">Evolución de la capacidad instalada Licienciada por Departamento</h2>
+
         {/* Bloque 2 expandido: subgrilla 3x3 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {seriesData.map((serie, index) => (
+              <div key={index} className="bg-[#262626] border border-[#666666] h-[420px] p-1">
+                <HighchartsReact highcharts={Highcharts} options={getChartOptions(serie, index)} />
+              </div>
+          ))}
 
         </div>
 
