@@ -35,12 +35,12 @@ export function CapacidadInstalada() {
         const allFuentes = Object.keys(sorted[0]).filter(k => k !== 'fecha_entrada_operacion');
 
         const colorMap = {
-          SOLAR: '#FFD700',
-          EOLICA: '#73FFA5',
+          SOLAR: '#FFC800',
+          EOLICA: '#5DFF97',
           VIENTO: '#FF9900',
-          PCH: '#A0AEC0',
-          BIOMASA: '#05D80A',
-          'RAD SOLAR': '#FFD700'
+          PCH: '#3B82F6',
+          BIOMASA: '#B39FFF',
+          'RAD SOLAR': '#FFC800'
         };
 
         const series = allFuentes.map(fuente => {
