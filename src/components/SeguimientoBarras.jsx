@@ -21,32 +21,32 @@ Highcharts.setOptions({
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent'
   },
-  title: { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
+  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
   subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
+    title:  { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
   yAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
+    title:  { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans' },
-    itemHoverStyle: { color: '#fff' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
+    itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' }
+    style:           { color: '#fff', fontSize: '12px' }
   }
 });
 
 export function SeguimientoBarras() {
   const chartRef = useRef(null);
-  const [view, setView] = useState('capacidad');  // <--- Aquí sin generic
+  const [view, setView] = useState('capacidad');
 
   // Categorías de avance
   const categories = [
@@ -65,29 +65,40 @@ export function SeguimientoBarras() {
   ];
 
   const options = {
-    chart: { type: 'column', height: 360, zoomType: '' },
-    title: { text: 'Capacidad instalada / No. de proyectos vs porcentaje de avance' },
-    subtitle: { text: 'Fuente: XM. 2020-2024' },
-    xAxis: { categories, title: { text: 'Porcentaje de avance' } },
+    chart:    { type: 'column', height: 360 },
+    title:    { text: 'Capacidad instalada / No. de proyectos vs porcentaje de avance', style: { color: '#fff' } },
+    subtitle: { text: 'Fuente: XM. 2020-2024', style: { color: '#aaa' } },
+    xAxis: {
+      categories,
+      title:        { text: 'Porcentaje de avance', style: { color: '#ccc' } },
+      tickInterval: 1,      // un tick por cada categoría
+      labels: {
+        style:         { color: '#ccc', fontSize: '10px' },
+        rotation:      -45,  // rota etiquetas para que quepan mejor
+        step:           1,   // fuerza a pintar cada etiqueta
+        autoRotation:   false
+      },
+      gridLineColor: '#333'
+    },
     yAxis: {
       title: {
         text: view === 'capacidad'
           ? 'Capacidad instalada en MW'
-          : 'Número de proyectos'
-      }
+          : 'Número de proyectos',
+        style: { color: '#ccc' }
+      },
+      labels: { style: { color: '#ccc', fontSize: '10px' } },
+      gridLineColor: '#333'
     },
     plotOptions: {
-    column: {
-        // desactivamos colorByPoint para que todas las barras compartan el mismo color
+      column: {
         colorByPoint: false,
-        // y fijamos el color deseado
-        color: '#FFC800'
-    }
+        color:        '#FFC800'
+      }
     },
     series: [{
       name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
-      data: view === 'capacidad' ? capacidadData : proyectosData,
-      color: '#FFC800'
+      data: view === 'capacidad' ? capacidadData : proyectosData
     }],
     exporting: {
       enabled: true,

@@ -17,22 +17,25 @@ FullScreen(Highcharts);
 
 // ——— Tema oscuro global ———
 Highcharts.setOptions({
-  chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
+  chart: {
+    backgroundColor: '#262626',
+    style: { fontFamily: 'Nunito Sans, sans-serif' }
+  },
+  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
   subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
+    title:  { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
   yAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title: { style: { color: '#ccc' } },
+    title:  { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: '#ccc' },
-    itemHoverStyle: { color: '#fff' },
+    itemStyle:       { color: '#ccc' },
+    itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' } }
@@ -40,31 +43,48 @@ Highcharts.setOptions({
 
 // ——— Columnas DataTable ———
 const columns = [
-  { name: 'ID', selector: row => row.id, sortable: true },
-  { name: 'Nombre', selector: row => row.nombre_proyecto, sortable: true },
-  { name: 'Promotor', selector: row => row.promotor, sortable: true },
-  { name: 'Capacidad (MW)', selector: row => row.capacidad_instalada_mw, sortable: true },
-  { name: 'FPO', selector: row => row.fpo, sortable: true },
-  { name: '% Avance', selector: row => row.porcentaje_avance_display, sortable: true }
+  { name: 'ID',              selector: row => row.id,                   sortable: true },
+  { name: 'Nombre',          selector: row => row.nombre_proyecto,      sortable: true },
+  { name: 'Tipo',            selector: row => row.tipo_proyecto,        sortable: true },
+  { name: 'Tecnología',      selector: row => row.tecnologia,           sortable: true },
+  { name: 'Ciclo',           selector: row => row.ciclo_asignacion,     sortable: true },
+  { name: 'Promotor',        selector: row => row.promotor,             sortable: true },
+  { name: 'Estado',          selector: row => row.estado_proyecto,      sortable: true },
+  { name: 'Departamento',    selector: row => row.departamento,         sortable: true },
+  { name: 'Municipio',       selector: row => row.municipio,            sortable: true },
+  { name: 'Capacidad (MW)',  selector: row => row.capacidad_instalada_mw,sortable: true },
+  { name: 'FPO',             selector: row => row.fpo,                  sortable: true },
+  { name: 'Priorizado',      selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
+  { name: 'Avance (%)',      selector: row => row.porcentaje_avance_display, sortable: true }
 ];
 
 // ——— Opciones base del gráfico ———
 const baseChartOptions = {
-  chart: { type: 'spline', height: 300 },
-  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
-  xAxis: { categories: [], title: { text: 'Fecha', style: { color: '#ccc' } } },
-  yAxis: { title: { text: '% de avance', style: { color: '#ccc' } }, min: 0, max: 100 },
-  tooltip: {
+  chart:    { type: 'spline', height: 300 },
+  title:    { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  xAxis:    {
+    categories: [],
+    title:      { text: 'Fecha', style: { color: '#ccc' } },
+    labels:     { style: { color: '#ccc', fontSize: '10px' } },
+    gridLineColor: '#333'
+  },
+  yAxis:    {
+    title: { text: 'Curva de Referencia', style: { color: '#ccc' } },
+    min: 0, max: 100
+  },
+  tooltip:  {
     backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' },
+    style:           { color: '#fff', fontSize: '12px' },
     formatter() {
       return `<b>${this.x}</b><br/>
               Avance: ${this.y}%<br/>
               Hito: ${this.point.hito_nombre}`;
     }
   },
-  plotOptions: { spline: { marker: { enabled: true } } },
-  series: [{ name: '% Avance', data: [] }],
+  plotOptions: {
+    spline: { marker: { enabled: true } }
+  },
+  series: [{ name: 'Curva de Referencia', data: [] }],
   exporting: {
     enabled: true,
     buttons: {
@@ -78,28 +98,28 @@ const baseChartOptions = {
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
 
-  // Lista de proyectos
-  const [proyectos, setProyectos]     = useState([]);
-  const [loadingList, setLoadingList] = useState(true);
-  const [errorList, setErrorList]     = useState(null);
+  // Estado de lista de proyectos
+  const [proyectos, setProyectos]         = useState([]);
+  const [loadingList, setLoadingList]     = useState(true);
+  const [errorList, setErrorList]         = useState(null);
 
-  // Gráfica
-  const [inputId, setInputId]           = useState('');
-  const [chartOptions, setChartOptions] = useState(baseChartOptions);
-  const [loadingCurve, setLoadingCurve] = useState(false);
-  const [errorCurve, setErrorCurve]     = useState(null);
+  // Estado de la curva
+  const [inputId, setInputId]             = useState('');
+  const [chartOptions, setChartOptions]   = useState(baseChartOptions);
+  const [loadingCurve, setLoadingCurve]   = useState(false);
+  const [errorCurve, setErrorCurve]       = useState(null);
 
-  // Filtrado / selección
-  const [filterText, setFilterText]     = useState('');
-  const [selectedRows, setSelectedRows] = useState([]);
+  // Filtrado y selección en la tabla
+  const [filterText, setFilterText]       = useState('');
+  const [selectedRows, setSelectedRows]   = useState([]);
 
-  // 1) Fetch lista de proyectos
+  // 1) Cargar lista de proyectos al montar
   useEffect(() => {
     async function fetchList() {
       setLoadingList(true);
       setErrorList(null);
       try {
-        const res = await fetch(
+        const res  = await fetch(
           'http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s',
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
@@ -109,11 +129,12 @@ export default function ProyectoDetalle() {
           ...p,
           fpo: p.fpo ? p.fpo.split('T')[0] : '-',
           porcentaje_avance_display:
-            p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-'
+            p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
+          priorizado: p.priorizado
         }));
         setProyectos(formatted);
       } catch (err) {
-        console.error('Error al cargar proyectos:', err);
+        console.error(err);
         setErrorList('No fue posible cargar los proyectos.');
       } finally {
         setLoadingList(false);
@@ -122,25 +143,20 @@ export default function ProyectoDetalle() {
     fetchList();
   }, []);
 
-  // 2) Función para pedir curva bajo demanda
+  // 2) Función para obtener y renderizar curva S
   const fetchCurveData = async id => {
     if (!id) return;
     setLoadingCurve(true);
     setErrorCurve(null);
     try {
-      const res = await fetch(
+      const res  = await fetch(
         `http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       );
-      if (!res.ok) {
-        const txt = await res.text();
-        console.error(`HTTP ${res.status}:`, txt);
-        throw new Error(`HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const title = `Curva S – Proyecto ${id}`;
 
-      // Aquí detectamos "sin datos"
       if (!Array.isArray(data) || data.length === 0) {
         setChartOptions({
           ...baseChartOptions,
@@ -150,58 +166,81 @@ export default function ProyectoDetalle() {
         return;
       }
 
-      // Datos válidos: limpiamos error y construimos
-      setErrorCurve(null);
+      // Preparamos datos
       const curve = data.map(pt => ({
-        fecha: pt.fecha.split('T')[0],
-        avance: pt.avance,
+        fecha:       pt.fecha.split('T')[0],
+        avance:      pt.avance,
         hito_nombre: pt.hito_nombre
       }));
 
+      setErrorCurve(null);
       setChartOptions({
         ...baseChartOptions,
         title: { ...baseChartOptions.title, text: title },
         xAxis: {
           ...baseChartOptions.xAxis,
-          categories: curve.map(pt => pt.fecha)
+          categories:  curve.map(pt => pt.fecha),
+          tickInterval: 1,
+          labels: {
+            ...baseChartOptions.xAxis.labels,
+            rotation:    -45,
+            step:         1,
+            autoRotation: false
+          }
         },
         series: [
           {
-            name: '% Avance',
-            data: curve.map(pt => ({ y: pt.avance, hito_nombre: pt.hito_nombre }))
+            name: 'Curva de Referencia',
+            data: curve.map(pt => ({
+              y:            pt.avance,
+              hito_nombre:  pt.hito_nombre
+            }))
           }
         ]
       });
     } catch (err) {
-      console.error('Error al cargar curva S:', err);
+      console.error(err);
       setErrorCurve('No fue posible cargar la curva S.');
     } finally {
       setLoadingCurve(false);
     }
   };
 
-  // Filtrado de la tabla
+  // Filtrado de tabla
   const filteredData = proyectos.filter(
     row =>
       row.nombre_proyecto.toLowerCase().includes(filterText.toLowerCase()) ||
       row.promotor.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  // CSV
+  // Descargar CSV
   const descargarCSV = rows => {
     const header = columns.map(c => c.name).join(',');
-    const csv = rows.map(r =>
-      [r.id, r.nombre_proyecto, r.promotor, r.capacidad_instalada_mw, r.fpo, r.porcentaje_avance_display].join(',')
+    const csv    = rows.map(r =>
+      [
+        r.id,
+        r.nombre_proyecto,
+        r.tipo_proyecto,
+        r.tecnologia,
+        r.ciclo_asignacion,
+        r.promotor,
+        r.estado_proyecto,
+        r.departamento,
+        r.municipio,
+        r.capacidad_instalada_mw,
+        r.fpo,
+        r.priorizado ? 'Sí' : 'No',
+        r.porcentaje_avance_display
+      ].join(',')
     );
-    const blob = new Blob([header + '\n' + csv.join('\n')], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'proyectos_curva_s.csv';
+    const blob   = new Blob([header + '\n' + csv.join('\n')], { type: 'text/csv' });
+    const url    = URL.createObjectURL(blob);
+    const a      = document.createElement('a');
+    a.href       = url;
+    a.download   = 'proyectos_curva_s.csv';
     a.click();
   };
 
-  // — Render —
   if (loadingList) return <p className="text-gray-300">Cargando proyectos…</p>;
   if (errorList)   return <p className="text-red-500">{errorList}</p>;
 
@@ -210,7 +249,7 @@ export default function ProyectoDetalle() {
       <h2 className="text-2xl font-semibold text-white">Seguimiento Curva S</h2>
 
       <div className="bg-[#262626] p-4 rounded-lg shadow">
-        {/* Buscador y botones CSV */}
+        {/* Buscador y CSV */}
         <div className="flex justify-between mb-4">
           <div className="flex space-x-2">
             <button onClick={() => descargarCSV(proyectos)} className="btn-yellow">
@@ -247,7 +286,7 @@ export default function ProyectoDetalle() {
           theme="dark"
         />
 
-        {/* Input de ID + Botón Graficar */}
+        {/* Input ID + Botón */}
         <div className="mt-4 flex items-center space-x-2">
           <input
             type="text"
@@ -292,6 +331,8 @@ export default function ProyectoDetalle() {
     </section>
   );
 }
+
+
 
 
 

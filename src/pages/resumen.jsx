@@ -115,7 +115,7 @@ export default function Resumen() {
         </div>
 
         <button
-          onClick={() => navigate('/estrategia-6gw')}
+          onClick={() => navigate('/proyectos075')}
           className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
         >
           Ver seguimiento de proyectos
