@@ -1,5 +1,7 @@
 // src/components/ListadoProyectosCurvaS.jsx
 import React, { useEffect, useState } from 'react';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 export function ListadoProyectosCurvaS() {
   const [proyectos, setProyectos] = useState([]);
@@ -11,11 +13,13 @@ export function ListadoProyectosCurvaS() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-          // No requiere body según la descripción
-        });
+        const res = await fetch(
+          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setProyectos(data);
@@ -36,6 +40,7 @@ export function ListadoProyectosCurvaS() {
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
@@ -44,45 +49,98 @@ export function ListadoProyectosCurvaS() {
     );
   }
 
+  // Preparar opciones para la curva S
+  const chartOptions = {
+    chart: {
+      type: 'spline',
+      backgroundColor: '#262626',
+      plotBorderColor: '#444',
+      plotBorderWidth: 1
+    },
+    title: {
+      text: 'Curva S de Proyectos',
+      style: { color: '#fff', fontSize: '20px' }
+    },
+    xAxis: {
+      categories: proyectos.map(p => p.id),
+      title: { text: 'ID del Proyecto', style: { color: '#ccc' } },
+      labels: { style: { color: '#ccc' } },
+      gridLineColor: '#444'
+    },
+    yAxis: {
+      title: { text: '% de Avance', style: { color: '#ccc' } },
+      labels: { style: { color: '#ccc' } },
+      gridLineColor: '#444',
+      max: 100,
+      min: 0
+    },
+    series: [
+      {
+        name: '% Avance',
+        data: proyectos.map(p =>
+          p.porcentaje_avance != null ? p.porcentaje_avance : 0
+        ),
+        marker: { enabled: true }
+      }
+    ],
+    credits: { enabled: false },
+    legend: { itemStyle: { color: '#ccc' } }
+  };
+
   return (
-    <div className="overflow-x-auto bg-[#262626] p-4 rounded border border-gray-700 shadow mb-8">
+    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow mb-8">
       <h2 className="text-2xl font-semibold mb-4 text-white">Proyectos (Curva S)</h2>
-      <table className="min-w-full divide-y divide-gray-700 text-sm text-white font-sans">
-        <thead>
-          <tr className="bg-gray-800">
-            <th className="px-3 py-2 text-left">ID</th>
-            <th className="px-3 py-2 text-left">Nombre del Proyecto</th>
-            <th className="px-3 py-2 text-left">Departamento</th>
-            <th className="px-3 py-2 text-left">% Programado</th>
-            <th className="px-3 py-2 text-left">% Real</th>
-            <th className="px-3 py-2 text-left">FPO</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-700">
-          {proyectos.map((p, i) => (
-            <tr key={i} className="hover:bg-gray-800">
-              <td className="px-3 py-2">{p.id}</td>
-              <td className="px-3 py-2">{p.nombre_del_proyecto.trim()}</td>
-              <td className="px-3 py-2">{p.departamento}</td>
-              <td className="px-3 py-2">
-                {p.avance_porcentual_programado_porcentaje != null
-                  ? `${p.avance_porcentual_programado_porcentaje}%`
-                  : '-'}
-              </td>
-              <td className="px-3 py-2">
-                {p.avance_porcentual_real_porcentaje != null
-                  ? `${p.avance_porcentual_real_porcentaje}%`
-                  : '-'}
-              </td>
-              <td className="px-3 py-2">
-                {p.fecha_de_puesta_en_operacion_fpo
-                  ? p.fecha_de_puesta_en_operacion_fpo.split('T')[0]
-                  : '-'}
-              </td>
+
+      {/* Gráfica Curva S */}
+      <div className="mb-6">
+        <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+      </div>
+
+      {/* Tabla de Proyectos */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-700 text-sm text-white font-sans">
+          <thead>
+            <tr className="bg-gray-800">
+              <th className="px-3 py-2 text-left">ID</th>
+              <th className="px-3 py-2 text-left">Nombre</th>
+              <th className="px-3 py-2 text-left">Tipo</th>
+              <th className="px-3 py-2 text-left">Tecnología</th>
+              <th className="px-3 py-2 text-left">Ciclo</th>
+              <th className="px-3 py-2 text-left">Promotor</th>
+              <th className="px-3 py-2 text-left">Estado</th>
+              <th className="px-3 py-2 text-left">Capacidad (MW)</th>
+              <th className="px-3 py-2 text-left">Departamento</th>
+              <th className="px-3 py-2 text-left">Municipio</th>
+              <th className="px-3 py-2 text-left">FPO</th>
+              <th className="px-3 py-2 text-left">% Avance</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {proyectos.map((p, i) => (
+              <tr key={i} className="hover:bg-gray-800">
+                <td className="px-3 py-2">{p.id}</td>
+                <td className="px-3 py-2">{p.nombre_proyecto}</td>
+                <td className="px-3 py-2">{p.tipo_proyecto}</td>
+                <td className="px-3 py-2">{p.tecnologia}</td>
+                <td className="px-3 py-2">{p.ciclo_asignacion}</td>
+                <td className="px-3 py-2">{p.promotor}</td>
+                <td className="px-3 py-2">{p.estado_proyecto}</td>
+                <td className="px-3 py-2">{p.capacidad_instalada_mw}</td>
+                <td className="px-3 py-2">{p.departamento}</td>
+                <td className="px-3 py-2">{p.municipio || '-'}</td>
+                <td className="px-3 py-2">
+                  {p.fpo ? p.fpo.split('T')[0] : '-'}
+                </td>
+                <td className="px-3 py-2">
+                  {p.porcentaje_avance != null
+                    ? `${p.porcentaje_avance}%`
+                    : '-'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
