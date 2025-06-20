@@ -11,7 +11,7 @@ import { GeneracionDespacho } from '../components/GeneracionDespacho';
 
 /* Iconos SVG  */
 import { HelpCircle } from 'lucide-react'
-import GWOff from '../assets/svg-icons/6GW-off.svg'
+import GWOff from '../assets/svg-icons/6GW-banner.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
 import ProcessOn from '../assets/svg-icons/Process-On.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
@@ -161,8 +161,12 @@ export default function Resumen() {
         <CapacidadInstalada />
       </div>
       <ResumenCharts />
-      <MapaCreg075 />
-      <MapaCreg174 />
+      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
+        <MapaCreg075 />
+      </div>
+      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
+        <MapaCreg174 />
+      </div>
       <GeneracionDespacho />
       <GeneracionHoraria />
     </div>

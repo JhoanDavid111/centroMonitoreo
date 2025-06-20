@@ -87,7 +87,7 @@ export function MapaCreg174() {
   };
 
   return (
-    <div className="mt-24 relative text-white font-sans">
+    <div className="relative text-white font-sans">
       {/* Título */}
       <h2
         className="text-2xl font-semibold mb-4 text-center"
