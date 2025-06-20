@@ -49,7 +49,7 @@ export function Sidebar({ open, toggle }) {
       activeIcon: DashboardOn,
     },
     {
-      title: 'ESTRATEGIA 6GW',
+      title: 'ESTRATEGIA 6GW+',
       items: [
         {
           title: 'Resumen',
@@ -70,7 +70,7 @@ export function Sidebar({ open, toggle }) {
           activeIcon: AutogeneracionOn
         },
         {
-          title: 'Proyectos075',
+          title: 'Proyectos 075',
           path: '/proyectos075',
           icon: Proyecto075Off,
           activeIcon: Proyecto075On
@@ -145,7 +145,7 @@ export function Sidebar({ open, toggle }) {
 
   return (
     <aside
-      className={`bg-[#262626] font-sans text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300 ${
+      className={`bg-[#262626] font-sans mt-3 sticky top-24 text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300 ${
         open ? 'w-1/6 p-4' : 'w-16 p-2'
       }`}
     >

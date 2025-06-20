@@ -57,12 +57,6 @@ export function Header() {
           className="text-white cursor-pointer hover:text-gray-300"
           title="Ayuda"
         />
-        <Moon
-          size={28}
-          className="text-white cursor-pointer hover:text-gray-300"
-          title="Modo oscuro"
-        />
-
         {/* Menú de usuario con sesión */}
         <div className="relative">
           <button

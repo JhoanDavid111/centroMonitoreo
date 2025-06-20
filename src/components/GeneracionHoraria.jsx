@@ -152,10 +152,10 @@ export function GeneracionHoraria() {
         itemHiddenStyle: { color: '#666' }
       },
       series: [
-      { name: 'TÉRMICA',      data: termicaData,     color: '#F44336' },
-      { name: 'COGENERADOR',  data: cogeneradorData, color: '#808080' },
-      { name: 'HIDRÁULICA',   data: hidraulicaData,  color: '#2196F3' },
-      { name: 'SOLAR',       data: solarData,       color: '#FFC107' }    // último Térmica
+      { name: 'TÉRMICA',      data: termicaData,     color: '#F97316' },
+      { name: 'COGENERADOR',  data: cogeneradorData, color: '#D1D1D0' },
+      { name: 'HIDRÁULICA',   data: hidraulicaData,  color: '#3B82F6' },
+      { name: 'SOLAR',       data: solarData,       color: '#FFC800' }    // último Térmica
       ],
       exporting: {
         enabled: true,
@@ -188,11 +188,11 @@ export function GeneracionHoraria() {
         )
       })) */
      series: [
-      { name: 'TÉRMICA',      data: termicaData2,     color: '#F44336' },
-      { name: 'COGENERADOR',  data: cogeneradorData2, color: '#808080' },
-      { name: 'HIDRÁULICA',   data: hidraulicaData2,  color: '#2196F3' },
-      { name: 'EÓLICA',      data: eolicaData2,      color: '#4CAF50' },
-      { name: 'SOLAR',       data: solarData2,       color: '#FFC107' }    // último Térmica
+      { name: 'TÉRMICA',      data: termicaData2,     color: '#F97316' },
+      { name: 'COGENERADOR',  data: cogeneradorData2, color: '#D1D1D0' },
+      { name: 'HIDRÁULICA',   data: hidraulicaData2,  color: '#3B82F6' },
+      { name: 'EÓLICA',      data: eolicaData2,      color: '#5DFF97' },
+      { name: 'SOLAR',       data: solarData2,       color: '#FFC800' }    // último Térmica
       ]
     };
 

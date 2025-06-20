@@ -67,9 +67,9 @@ export function ResumenCharts() {
       )).json();
 
       const techColor = {
-        BIOMASA: '#D3DF1E',
-        EOLICA: '#2CA02C',
-        PCH: '#1F77B4',
+        BIOMASA: '#B39FFF',
+        EOLICA: '#5DFF97',
+        PCH: '#3B82F6',
         SOLAR: '#FFC800'
       };
 
@@ -81,16 +81,16 @@ export function ResumenCharts() {
       };
 
       const matColor = {
-        BIOMASA: '#05D80A',
-        HIDRÁULICA: '#4169E1',
-        'RAD SOLAR': '#9C9C9C',
-        TÉRMICA: '#A52A2A'
+        BIOMASA: '#B39FFF',
+        HIDRÁULICA: '#3B82F6',
+        'RAD SOLAR': '#FFC800',
+        TÉRMICA: '#F97316'
       };
 
       const colorEntrada = {
-        'BIOMASA Y RESIDUOS': '#9467BD',
-        'EÓLICA': '#2CA02C',
-        'PCH': '#1F77B4',
+        'BIOMASA Y RESIDUOS': '#B39FFF',
+        'EÓLICA': '#5DFF97',
+        'PCH': '#3B82F6',
         'SOLAR FV': '#FFC800'
       };
 

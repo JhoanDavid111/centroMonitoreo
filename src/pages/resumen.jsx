@@ -11,7 +11,7 @@ import { GeneracionDespacho } from '../components/GeneracionDespacho';
 
 /* Iconos SVG  */
 import { HelpCircle } from 'lucide-react'
-import GWOff from '../assets/svg-icons/6GW-off.svg'
+import GWOff from '../assets/svg-icons/6GW-banner.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
 import ProcessOn from '../assets/svg-icons/Process-On.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
@@ -29,43 +29,43 @@ export default function Resumen() {
     {
       icon: <img src={DemandaOn} alt='Capacidad instalada en operación' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Capacidad instalada en operación',
-      value: '1363,70 MW',
+      value: '1646,656572 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={ProcessOn} alt='Capacidad instalada en pruebas' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Capacidad instalada en pruebas',
-      value: '716,41 MW',
+      value: '772,7239 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={Proyecto075On} alt='MW por entrar en 6 meses por 075' className="w-6 h-6 flex-shrink-0"/>,
       label: 'MW por entrar en 6 meses por 075',
-      value: '547 MW',
+      value: '4177,51 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={EolicaOn} alt='FNCER gran escala' className="w-6 h-6 flex-shrink-0"/>,
       label: 'FNCER gran escala',
-      value: '225,40 MW',
+      value: '1909,446 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={HidrologiaOn} alt='Autogeneración a gran escala (AGGE)' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Autogeneración a gran escala (AGGE)',
-      value: '177,38 MW',
+      value: '194,5721 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={AutogeneracionOn} alt='Generación distribuida (GD)' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Generación distribuida (GD)',
-      value: '716,41 MW',
+      value: '18,874755 MW',
       updated: '8/5/2025'
     },
     {
       icon: <img src={CasaOn} alt='Autogeneración a pequeña escala (AGPE)' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Autogeneración a pequeña escala (AGPE)',
-      value: '547 MW',
+      value: '296,4877171 MW',
       updated: '8/5/2025'
     },
     {
@@ -161,8 +161,12 @@ export default function Resumen() {
         <CapacidadInstalada />
       </div>
       <ResumenCharts />
-      <MapaCreg075 />
-      <MapaCreg174 />
+      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
+        <MapaCreg075 />
+      </div>
+      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
+        <MapaCreg174 />
+      </div>
       <GeneracionDespacho />
       <GeneracionHoraria />
     </div>
