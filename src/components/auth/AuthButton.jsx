@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { auth, googleProvider } from '../../firebase/config';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logosEnergiaUPME.svg';
+import logo from '../../assets/logosEnergiaUpme.svg';
 import {ALLOWED_DOMAINS} from '../../config/allowedDomains';
 
 

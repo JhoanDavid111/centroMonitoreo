@@ -1,4 +1,4 @@
-// src/components/ResumenCharts.jsx
+
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -7,7 +7,7 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
-// Carga de módulos
+
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
@@ -46,113 +46,172 @@ export function ResumenCharts() {
 
   useEffect(() => {
     async function fetchData() {
-      // 1) Distribución por tecnología
       const techJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
-      // 2) Distribución por categoría
       const catJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
-      // 3) Histórico anual matriz completa
+      const entradaJson = await (await fetch(
+        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_entrar_075',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      )).json();
+
       const matJson = await (await fetch(
         'http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual',
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
-      // Colores
       const techColor = {
-      BIOMASA: '#05D80A',     // verde
-      EOLICA:  '#1E90FF',     // azul
-      PCH:     '#FFC800',     // amarillo
-      SOLAR:   '#9C9C9C'      // gris claro
-    };
+        BIOMASA: '#B39FFF',
+        EOLICA: '#5DFF97',
+        PCH: '#3B82F6',
+        SOLAR: '#FFC800'
+      };
+
       const catColor = {
-      AGGE: 'orange',
-      AGPE: '#17BECF',                         // celeste
-      'Generacion Centralizada': '#9467BD',   // púrpura
-      'Generacion Distribuida': '#FF7F0E'      // naranja fuerte
-    };
-      const matColor  = { BIOMASA: '#05d80a', HIDRÁULICA: '#4169E1', 'RAD SOLAR': '#9C9C9C', TÉRMICA: '#A52A2A' };
+        AGGE: '#D3DF1E',
+        AGPE: '#2CA02C',
+        'Generacion Centralizada': '#1F77B4',
+        'Generacion Distribuida': '#FFC800'
+      };
+
+      const matColor = {
+        BIOMASA: '#B39FFF',
+        HIDRÁULICA: '#3B82F6',
+        'RAD SOLAR': '#FFC800',
+        TÉRMICA: '#F97316'
+      };
+
+      const colorEntrada = {
+        'BIOMASA Y RESIDUOS': '#B39FFF',
+        'EÓLICA': '#5DFF97',
+        'PCH': '#3B82F6',
+        'SOLAR FV': '#FFC800'
+      };
 
       const opts = [];
 
-     // 1) Pie tecnología
-    opts.push({
-      chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
-      title: { text: 'Distribución actual por tecnología' },
-      subtitle: { text: 'Fuente: API 6G Proyecto' },
-      plotOptions: {
-        pie: {
-          innerSize: '60%',
-          dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-          showInLegend: true
-        }
-      },
-      series: [{
-        name: 'Tecnología',
-        colorByPoint: false,
-        data: techJson.map(d => ({
-          name: d.tipo_tecnologia,
-          y: d.capacidad_mw,
-          color: techColor[d.tipo_tecnologia] || '#666666'
-        }))
-      }],
-      tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-      exporting: { enabled: true }
-    });
+      // 1) Pie tecnología
+      opts.push({
+        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+        title: { text: 'Distribución actual por tecnología' },
+        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        plotOptions: {
+          pie: {
+            innerSize: 0,
+            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+            showInLegend: true
+          }
+        },
+        series: [{
+          name: 'Tecnología',
+          colorByPoint: false,
+          data: techJson.map(d => ({
+            name: d.tipo_tecnologia,
+            y: d.capacidad_mw,
+            color: techColor[d.tipo_tecnologia] || '#666666'
+          }))
+        }],
+        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+        exporting: { enabled: true }
+      });
 
-    // 2) Pie categoría
-    opts.push({
-      chart: { type: 'pie', height: 300, backgroundColor: '#262626' },
-      title: { text: 'Distribución actual por categoría' },
-      subtitle: { text: 'Fuente: API 6G Proyecto' },
-      plotOptions: {
-        pie: {
-          innerSize: '60%',
-          dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-          showInLegend: true
-        }
-      },
-      series: [{
-        name: 'Categoría',
-        colorByPoint: false,
-        data: catJson.map(d => ({
-          name: d.tipo_proyecto,
-          y: d.capacidad_mw,
-          color: catColor[d.tipo_proyecto] || '#666666'
-        }))
-      }],
-      tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-      exporting: { enabled: true }
-    });
+      // 2) Pie categoría
+      opts.push({
+        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+        title: { text: 'Distribución de Capacidad Instalada por Tipo de Proyecto' },
+        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        plotOptions: {
+          pie: {
+            innerSize: 0,
+            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+            showInLegend: true
+          }
+        },
+        series: [{
+          name: 'Categoría',
+          colorByPoint: false,
+          data: catJson.map(d => ({
+            name: d.tipo_proyecto,
+            y: d.capacidad_mw,
+            color: catColor[d.tipo_proyecto] || '#666666'
+          }))
+        }],
+        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+        exporting: { enabled: true }
+      });
 
-      // 3) Column proyectos próximos 6 meses
+      // 3) Capacidad Entrante por mes
+      const meses = entradaJson.map(item => item.mes);
+      const tecnologias = Object.keys(entradaJson[0]).filter(k => k !== 'mes');
+
+      const seriesData = tecnologias.map(tec => ({
+        name: tec,
+        data: entradaJson.map(mes => mes[tec] || 0),
+        color: colorEntrada[tec] || '#666666'
+      }));
+
+      const totalPorMes = entradaJson.map((item, idx) => {
+        const total = tecnologias.reduce((sum, tec) => sum + (item[tec] || 0), 0);
+        return {
+          x: idx,
+          y: total,
+          dataLabels: {
+            enabled: true,
+            format: '{y:.1f}',
+            style: { color: '#fff', textOutline: 'none', fontWeight: 'bold' },
+            verticalAlign: 'bottom'
+          },
+          color: 'transparent' // No visible
+        };
+      });
+
       opts.push({
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-        title: { text: 'Número de proyectos próximos 6 meses' },
-        subtitle: { text: 'Fuente: XM. 2020-2024' },
+        title: { text: 'Capacidad Entrante por mes' },
+        subtitle: { text: 'Fuente: API 6G Proyecto' },
         xAxis: {
-          categories: ['Junio','Julio','Agosto','Septiembre','Octubre','Noviembre'],
-          tickInterval: 1,
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
-          title: { text: 'Mes', style: { color: '#ccc' } },
+          categories: meses,           
+          tickInterval: 1,             
+          title: {
+            text: 'Mes',
+            style: { color: '#ccc' }
+          },
+          labels: {
+            style: { color: '#ccc', fontSize: '10px' },
+            step: 1,                  
+            rotation: -45,             
+            autoRotation: false       
+          },
           gridLineColor: '#333'
         },
         yAxis: {
-          title: { text: 'Número de proyectos', style: { color: '#ccc' } },
+          title: { text: 'Capacidad (MW)', style: { color: '#ccc' } },
           labels: { style: { color: '#ccc', fontSize: '10px' } },
           tickAmount: 5,
           gridLineColor: '#333'
         },
-        plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
+        plotOptions: {
+          column: {
+            stacking: 'normal',
+            borderWidth: 0,
+            dataLabels: { enabled: false }
+          }
+        },
         series: [
-          { name: 'Eólica', data: [0,1,0,6,6,4], color: '#FFC800' },
-          { name: 'Solar',  data: [1,9,15,21,22,14], color: '#FF9900' }
+          ...seriesData,
+          {
+            name: 'Total',
+            type: 'scatter',
+            marker: { enabled: false },
+            data: totalPorMes,
+            enableMouseTracking: false
+          }
         ],
         exporting: { enabled: true }
       });
@@ -246,4 +305,7 @@ export function ResumenCharts() {
 }
 
 export default ResumenCharts;
+
+
+
 

@@ -1,3 +1,4 @@
+// src/components/HitosBarras.jsx
 import React, { useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -7,12 +8,13 @@ import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 
 
+// ——— Carga de módulos ———
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-
+// ——— Tema oscuro global con Nunito Sans ———
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',
@@ -20,8 +22,8 @@ Highcharts.setOptions({
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent'
   },
-  title:   { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
-  subtitle:{ style: { color: '#aaa', fontSize: '12px' } },
+  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
+  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
     title:  { style: { color: '#ccc' } },
@@ -39,23 +41,32 @@ Highcharts.setOptions({
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' }
+    style:           { color: '#fff', fontSize: '12px' }
   }
 });
 
 export function HitosBarras() {
   const chartRefs = useRef([]);
 
+  // Configuración base de los gráficos
   const rawOptions = [
     {
-      title: { text: 'Número de hitos por cumplir' },
+      title:    { text: 'Número de hitos por cumplir' },
       subtitle: { text: 'Fuente: XM. 2020-2024' },
-      chart: { type: 'column', height: 350 },
+      chart:    { type: 'column', height: 350 },
       xAxis: {
         categories: ['May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25'],
-        title: { text: null }
+        title:      { text: null },
+        tickInterval: 1,         // un tick por cada categoría
+        labels: {
+          style:         { color: '#ccc', fontSize: '10px' },
+          rotation:      -45,     // rotar para que quepan todas
+          step:           1,      // forzar cada etiqueta
+          autoRotation:   false   // desactivar rotación automática
+        },
+        gridLineColor: '#333'
       },
-      yAxis: { title: { text: 'Número de hitos' } },
+      yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } } },
       series: [
         {
           name: 'Hitos por cumplir',
@@ -65,14 +76,22 @@ export function HitosBarras() {
       ]
     },
     {
-      title: { text: 'Número de hitos con incumplimientos' },
+      title:    { text: 'Número de hitos con incumplimientos' },
       subtitle: { text: 'Fuente: XM. 2020-2024' },
-      chart: { type: 'column', height: 350 },
+      chart:    { type: 'column', height: 350 },
       xAxis: {
         categories: ['Sep-25','Oct-24','Nov-24','Dic-24','Ene-25','Feb-25','Mar-25','Abr-25'],
-        title: { text: null }
+        title:      { text: null },
+        tickInterval: 1,
+        labels: {
+          style:         { color: '#ccc', fontSize: '10px' },
+          rotation:      -45,
+          step:           1,
+          autoRotation:   false
+        },
+        gridLineColor: '#333'
       },
-      yAxis: { title: { text: 'Número de hitos' } },
+      yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } } },
       series: [
         {
           name: 'Hitos con incumplimientos',
@@ -83,7 +102,7 @@ export function HitosBarras() {
     }
   ];
 
- 
+  // Añade los botones de exportación a cada set de opciones
   const chartOptions = rawOptions.map(opt => ({
     ...opt,
     exporting: {

@@ -88,11 +88,11 @@ export function GeneracionDespacho() {
         // Series por tecnología
         const techs = ['TERMICA','COGENERADOR','HIDRAULICA','SOLAR','EOLICA']
         const colorMap = {
-          EOLICA: '#87CEEB',
-          SOLAR: '#FFD700',
-          HIDRAULICA: '#4169E1',
-          COGENERADOR: '#808080',
-          TERMICA: '#A52A2A'
+          EOLICA: '#5DFF97',
+          SOLAR: '#FFC800',
+          HIDRAULICA: '#3B82F6',
+          COGENERADOR: '#D1D1D0',
+          TERMICA: '#F97316'
         }
         const series = techs.map((tech, idx) => ({
         name: tech,

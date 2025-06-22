@@ -21,26 +21,26 @@ Highcharts.setOptions({
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent'
   },
-  title: { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
+  title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
   subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333'
+    labels:         { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    gridLineColor:  '#333'
   },
   yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333'
+    labels:         { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    gridLineColor:  '#333'
   },
   legend: {
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle: { color: '#fff' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+    itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: {
     backgroundColor: '#262626',
-    style: { color: '#fff', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' }
+    style:           { color: '#fff', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' }
   }
 });
 
@@ -48,31 +48,35 @@ export function CombustiblesLiquidos() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
   const chartRefs = useRef([]);
-const colores = [
-  '#FFC800', // dorado brillante
-  '#FF6F00', // naranja vivo
-  '#4CAF50', // verde energía
-  '#2196F3', // azul clásico
-  '#9C27B0', // morado elegante
-  '#00BFA6', // verde agua
-  '#FF9800', // ámbar suave
-  '#FF4081'  // rosa/magenta vibrante
-  
-];
+
+  const colores = [
+    '#FFC800', '#FF6F00', '#4CAF50', '#2196F3',
+    '#9C27B0', '#00BFA6', '#FF9800', '#FF4081'
+  ];
 
   useEffect(() => {
     const baseOptions = [
+      // 1) Evolución del Volumen Útil por Región
       {
-        chart: { type: 'area', zoomType: '', height: 350 },
-        title: { text: 'Evolución del Volumen Útil por Región' },
+        chart:    { type: 'area', zoomType: '', height: 350 },
+        title:    { text: 'Evolución del Volumen Útil por Región' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
-        colors: colores,
-        yAxis: { title: { text: 'Volumen útil (Millones de m³)' } },
+        colors:   colores,
+        yAxis:    { title: { text: 'Volumen útil (Millones de m³)' } },
         xAxis: {
           categories: [
             'ene-20','jul-20','ene-21','jul-21',
             'ene-22','jul-22','ene-23','jul-23','ene-24'
-          ]
+          ],
+          title:         { text: null },
+          tickInterval:  1,
+          labels: {
+            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            rotation:      -45,
+            step:           1,
+            autoRotation:   false
+          },
+          gridLineColor: '#333'
         },
         plotOptions: { area: { stacking: 'normal' } },
         series: [
@@ -84,17 +88,27 @@ const colores = [
           { name: 'Caldas',    data: [600,620,640,660,680,700,720,740,760] }
         ]
       },
+      // 2) Capacidad Instalada Despachada Centralmente por Tecnología
       {
-        chart: { type: 'column', zoomType: '', height: 350 },
-        title: { text: 'Capacidad Instalada Despachada Centralmente por Tecnología' },
+        chart:    { type: 'column', zoomType: '', height: 350 },
+        title:    { text: 'Capacidad Instalada Despachada Centralmente por Tecnología' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
-        colors: colores,
-        yAxis: { title: { text: 'Capacidad Instalada (GW)' } },
+        colors:   colores,
+        yAxis:    { title: { text: 'Capacidad Instalada (GW)' } },
         xAxis: {
           categories: [
             '2014','2015','2016','2017','2018',
             '2019','2020','2021','2022','2023','2024'
-          ]
+          ],
+          title:         { text: null },
+          tickInterval:  1,
+          labels: {
+            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            rotation:      -45,
+            step:           1,
+            autoRotation:   false
+          },
+          gridLineColor: '#333'
         },
         series: [
           { name: 'ACPM',        data: [5,5.5,5.8,6,6.2,6.5,6.8,7,7.3,7.6,8] },
@@ -107,13 +121,25 @@ const colores = [
           { name: 'RAD SOLAR',   data: [0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2] }
         ]
       },
+      // 3) Comparativo Volumen vs. Capacidad
       {
-        chart: { type: 'area', zoomType: '', height: 350 },
-        title: { text: 'Comparativo Volumen vs. Capacidad' },
+        chart:    { type: 'area', zoomType: '', height: 350 },
+        title:    { text: 'Comparativo Volumen vs. Capacidad' },
         subtitle: { text: 'Gráfico de ejemplo adicional' },
-        colors: colores,
-        yAxis: { title: { text: 'Índice Relativo' } },
-        xAxis: { categories: ['Q1','Q2','Q3','Q4'] },
+        colors:   colores,
+        yAxis:    { title: { text: 'Índice Relativo' } },
+        xAxis: {
+          categories: ['Q1','Q2','Q3','Q4'],
+          title:         { text: null },
+          tickInterval:  1,
+          labels: {
+            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            rotation:      -45,
+            step:           1,
+            autoRotation:   false
+          },
+          gridLineColor: '#333'
+        },
         series: [
           { name: 'Volumen útil',       data: [2.5,2.7,2.6,2.8] },
           { name: 'Capacidad instalada', data: [14,14.3,14.5,15] }
@@ -121,7 +147,7 @@ const colores = [
       }
     ];
 
-    // Inyectar fondo gris y botones de export
+    // Inyectar background y botones de exportación
     const withExport = baseOptions.map(opt => ({
       ...opt,
       chart: {
@@ -132,12 +158,7 @@ const colores = [
         enabled: true,
         buttons: {
           contextButton: {
-            menuItems: [
-              'downloadPNG',
-              'downloadJPEG',
-              'downloadPDF',
-              'downloadSVG'
-            ]
+            menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
           }
         }
       }
@@ -161,7 +182,7 @@ const colores = [
         Combustibles líquidos
       </h2>
 
-      {/* Dropdown externo */}
+      {/* Dropdown de selección */}
       <div className="mb-4">
         <select
           className="bg-[#262626] text-gray-200 p-2 rounded border border-[#666666] font-sans"
@@ -169,7 +190,7 @@ const colores = [
           onChange={e => setSelected(e.target.value)}
         >
           <option value="all">Mostrar todos</option>
-          {charts.map((c,i) => (
+          {charts.map((c, i) => (
             <option key={i} value={String(i)}>
               {c.title.text}
             </option>
@@ -177,7 +198,7 @@ const colores = [
         </select>
       </div>
 
-      {/* Grid dinámico */}
+      {/* Grid de gráficas */}
       <div className={`grid ${gridClasses} gap-4`}>
         {displayed.map(({ opt, idx }) => {
           const dynOpt = {
@@ -199,7 +220,6 @@ const colores = [
               >
                 ⛶
               </button>
-
               <HighchartsReact
                 highcharts={Highcharts}
                 options={dynOpt}
@@ -212,5 +232,8 @@ const colores = [
     </section>
   );
 }
+
+export default CombustiblesLiquidos;
+
 
 

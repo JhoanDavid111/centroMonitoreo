@@ -1,33 +1,37 @@
 import React from 'react'
-import { Zap, BarChart, Flame, Wind } from 'lucide-react'
+import { MoveUp, HelpCircle } from 'lucide-react'
+import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
+import HidroOn from '../assets/svg-icons/Hidrologia-On.svg'
+import GeneracionTermicaOn from '../assets/svg-icons/GeneracionTermica-On.svg' 
+import EolicaOn from '../assets/svg-icons/Eolica-On.svg'
 
 const indicadores = [
   {
     titulo: 'Demanda energía SIN',
     valor: '225.40 MWh',
     variacion: '+11.77%',
-    icono: <Zap className="text-[#FFC800]" size={28} />,
+    icono: <img src={DemandaOn} alt='Demanda energía SIN' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
     titulo: 'Generación hidráulica',
     valor: '177.38 MWh',
     variacion: '+11.77%',
-    icono: <BarChart className="text-[#FFC800]" size={28} />,
+    icono: <img src={HidroOn} alt='Generación hidráulica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
     titulo: 'Generación térmica',
     valor: '19.95 MWh',
     variacion: '+11.77%',
-    icono: <Flame className="text-[#FFC800]" size={28} />,
+    icono: <img src={GeneracionTermicaOn} alt='Generación térmica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
     titulo: 'Generación solar y eólica',
     valor: '9.94 MWh',
     variacion: '+11.77%',
-    icono: <Wind className="text-[#FFC800]" size={28} />,
+    icono: <img src={EolicaOn} alt='Generación solar y eólica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   }
 ]
@@ -51,15 +55,23 @@ export function IndicadoresResumen() {
               </h3>
             </div>
 
-            <div className="text-xl font-semibold text-white">
-              {i.valor}
+            <div className='flex gap-x-3 justify-items-center'>
+              <div className="text-xl font-semibold text-white">
+                {i.valor}
+              </div>
+              <div className="bg-neutral-700 text-center rounded gap-1 px-2 text-[#d1d1d0] text-[11px] font-medium flex h-6 self-center">
+                <MoveUp size={12} className='self-center'/>
+                <div className='self-center'>
+                  {i.variacion}
+                </div>
+              </div>
+              <HelpCircle
+                className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                title="Ayuda"
+              />
             </div>
 
-            <div className="bg-[262626]] px-2 py-0.5 rounded text-white text-[11px] font-medium">
-              {i.variacion}
-            </div>
-
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-[#B0B0B0]">
               {i.fecha}
             </div>
           </div>

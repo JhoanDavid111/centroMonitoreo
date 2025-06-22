@@ -1,7 +1,9 @@
 // src/components/MapaEmbalses.jsx
 import React, { useEffect, useState, useRef } from 'react';
 // Importamos el contenido HTML en crudo (Vite: ?raw, CRA: raw-loader)
+import { MoveUp, HelpCircle } from 'lucide-react'
 import defaultHtml from './default.html?raw';
+import HidroOn from '../assets/svg-icons/Hidrologia-On.svg';
 
 export function MapaEmbalses() {
   const embalses = [
@@ -120,21 +122,48 @@ export function MapaEmbalses() {
 
       {/* Estadísticas */}
       <div className="flex flex-col gap-4">
-        <div className="bg-[#262626] p-4 rounded border border-[#666666]">
-          <h3 className="text-sm text-gray-400">Total nacional</h3>
-          <p className="text-2xl font-bold text-white">30,02%</p>
-          <span className="text-xs text-gray-400">
+        { /* Nueva card */ }
+        <div className="flex flex-col gap-3 p-5 bg-[#262626] border border-[#575756] rounded-lg" >
+          <div className="flex items-start gap-3">
+            <img src={HidroOn} alt='Generación hidráulica' className="w-6 h-6 flex-shrink-0"/>
+            <h3 className="text-[18px] font-normal leading-[26px] text-[#B0B0B0] font-sans">
+              Total nacional
+            </h3>
+          </div>
+
+          <div className='flex gap-x-3 justify-items-center'>
+            <div className="text-[26px] font-semibold text-white">
+              30,02%
+            </div>
+            <div className="bg-neutral-700 text-center rounded gap-1 px-2 text-[#d1d1d0] text-[11px] font-medium flex h-6 self-center">
+              <MoveUp size={12} className='self-center'/>
+              <div className='self-center'>
+                11.77%
+              </div>
+            </div>
+            <HelpCircle
+              className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+              title="Ayuda"
+            />
+          </div>
+
+          <div className="text-xs text-[#B0B0B0]">
             Actualizado el: 8/5/2025 – Volumen útil diario %
-          </span>
+          </div>
         </div>
+
 
         {embalses.map((e, i) => (
           <div
             key={i}
-            className="bg-[#262626] p-3 rounded border border-[#666666] text-white flex justify-between items-center"
+            className="bg-[#262626] p-3 rounded border border-[#666666] text-white flex gap-3 items-center"
           >
-            <span className="text-sm">{e.region}:</span>
-            <span className="font-semibold">{e.porcentaje.toFixed(2)}%</span>
+            <span className="text-[20px] text-[#d1d1d0]">{e.region}:</span>
+            <span className="font-semibold text-[20px]">{e.porcentaje.toFixed(2)}%</span>
+            <div className="bg-neutral-700 text-center rounded gap-1 px-2 text-[#d1d1d0] text-[11px] font-medium flex h-6 self-center">
+              <MoveUp size={12} className='self-center'/>
+              <div className='self-center'>11.77%</div>
+            </div>
           </div>
         ))}
       </div>

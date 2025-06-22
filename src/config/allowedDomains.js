@@ -10,5 +10,6 @@
 */
 export const ALLOWED_DOMAINS = [
   'upme.gov.co',  // Dominio corporativo
-   // Puedes agregar más dominios aquí
+  'minenergia.gov.co',// Puedes agregar más dominios aquí
+  'outlook.com',  // Dominio Outlook
 ];

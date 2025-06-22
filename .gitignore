@@ -1,58 +1,81 @@
-# Archivo .gitignore
-# ==================
-
-## Dependencias ##
+# ======================
+# Ignorar dependencias
+# ======================
 node_modules/
+bower_components/
 .pnp
 .pnp.js
 
-## Variables de entorno ##
+# =======================
+# Variables de entorno
+# =======================
 .env
-.env.local
-.env.development
-.env.test
-.env.production
-
-## Firebase ##
-.firebase/
+.env.*
 firebase-debug.log
 firebase-export.json
 
-## Configuraciones ##
-.vscode/
+# =======================
+# Editor y configuración
+# =======================
 .idea/
+.vscode/
+.code-workspace
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.history/
+*.sublime*
 
-## Archivos de desarrollo ##
+# ======================
+# Archivos del sistema
+# ======================
 .DS_Store
+.DS_*
 Thumbs.db
+psd
+thumb
+sketch
 
-## Build ##
-dist/
+# ======================
+# Build y compilación
+# ======================
 build/
+dist/
 .out/
 .next/
+.cache/
+.vite/
+.eslintcache
 
-## Testing ##
+# ======================
+# Testing
+# ======================
 coverage/
 .nyc_output/
+jest-coverage/
+cypress/videos/
+cypress/screenshots/
 
-## Logs ##
+# ======================
+# Logs y temporales
+# ======================
+*.log
+logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-## Firebase SDK Config (sensible) ##
-/src/firebase/config.js  # Excluye el archivo con tus claves (opcional)
-!src/firebase/config.example.js  # Incluye archivo de ejemplo
-
-## Configuración específica de React ##
-.eslintcache
-
-## Misceláneos ##
-*.log
+pnpm-debug.log*
+*.tmp
+*.bak
+*.swp
+**/*.backup.*
+**/*.back.*
 *.pem
+
+# ======================
+# Archivos sensibles
+# ======================
+/src/firebase/config.js
+!src/firebase/config.example.js
