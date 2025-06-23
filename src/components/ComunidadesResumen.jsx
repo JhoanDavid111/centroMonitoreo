@@ -1,17 +1,25 @@
 import React, { useState } from 'react'
-import { Zap, Activity, Sun, Leaf } from 'lucide-react'
+/* Iconos SVG  */
+import { HelpCircle } from 'lucide-react'
+import EnergiaElectricaOn from '../assets/svg-icons/EnergiaElectrica-On.svg'
+import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg'
+import OfertaDemandaOn from '../assets/svg-icons/OfertaDemanda-On.svg'
 
 export function ComunidadesResumen() {
   const [expanded, setExpanded] = useState(false)
 
   // Datos de ejemplo para cada tarjeta
   const datosComunidades = [
-    { icon: Zap, label: 'Comunidades instaladas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
-    { icon: Activity, label: 'Comunidades proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: <img src={EnergiaElectricaOn} alt='Comunidades instaladas' className="w-6 h-6 flex-shrink-0"/>, 
+      label: 'Comunidades instaladas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: <img src={OfertaDemandaOn} alt='Comunidades proyectadas' className="w-6 h-6 flex-shrink-0"/>, 
+      label: 'Comunidades proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
   ]
   const datosSolar = [
-    { icon: Sun, label: 'Colombia Solar', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
-    { icon: Leaf, label: 'Colombia Solar', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: <img src={AutogeneracionOn} alt='Colombia Solar instalada' className="w-6 h-6 flex-shrink-0"/>, 
+      label: 'Colombia Solar instalada', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+    { icon: <img src={AutogeneracionOn} alt='Colombia Solar proyectadas' className="w-6 h-6 flex-shrink-0"/>, 
+      label: 'Colombia Solar proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
   ]
 
   return (
@@ -28,25 +36,30 @@ export function ComunidadesResumen() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sección Comunidades Energéticas */}
             <div className="bg-[#262626] p-4 rounded-lg border border-[#666666]">
-              <h3 className="text-lg font-semibold text-white mb-4">
+              <h3 className="text-2xl font-semibold text-[#B0B0B0] mb-4">
                 Comunidades Energéticas
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {datosComunidades.map((d, i) => {
-                  const Icon = d.icon
                   return (
                     <div
                       key={i}
                       className="bg-[#262626] p-4 rounded-lg border border-[#666666]"
                     >
                       <div className="flex items-center mb-2">
-                        <Icon className="text-yellow-400" size={20} />
-                        <span className="ml-2 text-sm text-gray-300">{d.label}</span>
+                        {d.icon}
+                        <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">{d.label}</span>
                       </div>
-                      <div className="text-white font-bold text-xl">
-                        No. {d.number} – {d.value}
+                      <div className='flex justify-between'>
+                        <div className="text-white font-bold text-xl">
+                          No. {d.number} – {d.value}
+                        </div>
+                        <HelpCircle
+                          className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                          title="Ayuda"
+                        />
                       </div>
-                      <div className="text-gray-500 text-xs mt-1">
+                      <div className="text-xs text-[#B0B0B0] mt-1">
                         Actualizado el: {d.updated}
                       </div>
                     </div>
@@ -57,25 +70,30 @@ export function ComunidadesResumen() {
 
             {/* Sección Colombia Solar */}
             <div className="bg-[#262626] p-4 rounded-lg border border-[#666666]">
-              <h3 className="text-lg font-semibold text-white mb-4">
+              <h3 className="text-2xl font-semibold text-[#B0B0B0] mb-4">
                 Colombia Solar
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {datosSolar.map((d, i) => {
-                  const Icon = d.icon
                   return (
                     <div
                       key={i}
                       className="bg-[#262626] p-4 rounded-lg border border-[#666666]"
                     >
                       <div className="flex items-center mb-2">
-                        <Icon className="text-yellow-400" size={20} />
-                        <span className="ml-2 text-sm text-gray-300">{d.label}</span>
+                        {d.icon}
+                        <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">{d.label}</span>
                       </div>
-                      <div className="text-white font-bold text-xl">
-                        No. {d.number} – {d.value}
+                      <div className='flex justify-between'>
+                        <div className="text-white font-bold text-xl">
+                          No. {d.number} – {d.value}
+                        </div>
+                        <HelpCircle
+                          className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                          title="Ayuda"
+                        />
                       </div>
-                      <div className="text-gray-500 text-xs mt-1">
+                      <div className="text-xs text-[#B0B0B0] mt-1">
                         Actualizado el: {d.updated}
                       </div>
                     </div>

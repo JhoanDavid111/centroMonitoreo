@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos por Estado - Ciclo 2</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        #ciclo2CantidadEstado {
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+        .highlight-bar {
+            fill: #005A28;
+        }
+        .highcharts-data-label-color-0 {
+            fill: #333 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="ciclo2CantidadEstado"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Highcharts.chart('ciclo2CantidadEstado', {
+                chart: {
+                    type: 'column',
+                    backgroundColor: '#f9f9f9'
+                },
+                title: {
+                    text: 'PROYECTOS POR ESTADO - CICLO 2',
+                    style: {
+                        fontSize: '22px',
+                        fontWeight: 'bold',
+                        color: '#333'
+                    }
+                },
+                subtitle: {
+                    text: 'Distribución de proyectos según su estado actual<br>Los conceptos aprobados son Autogeneración',
+                    style: {
+                        fontSize: '14px',
+                        color: '#555'
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    title: {
+                        text: 'Estado del Proyecto',
+                        style: {
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    crosshair: true
+                },
+                yAxis: {
+                    title: {
+                        text: 'Número de Proyectos',
+                        style: {
+                            fontWeight: 'bold'
+                        }
+                    },
+                    min: 0,
+                    max: 1800,
+                    tickInterval: 200,
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                plotOptions: {
+                    column: {
+                        borderRadius: 4,
+                        borderWidth: 0,
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.y}',
+                            style: {
+                                fontWeight: 'bold',
+                                color: '#333'
+                            },
+                            y: -20
+                        },
+                        pointPadding: 0.1,
+                        groupPadding: 0.1
+                    }
+                },
+                series: [{
+                    name: 'Proyectos',
+                    data: [
+                        { name: 'CONCEPTO APROBADO', y: 4, color: '#0B6623' },
+                        { name: 'DESISTIDO', y: 168, color: '#32CD32' },
+                        { name: 'EN EVALUACIÓN', y: 1458, color: '#39FF14' },
+                        { name: 'RETIRADO', y: 88, color: '#228B22' },
+                        { name: 'TOTAL', y: 1718, color: '#005A28' }  // Columna adicional
+                    ],
+                    colorByPoint: false
+                }],
+                tooltip: {
+                    headerFormat: '<b>{point.key}</b><br>',
+                    pointFormat: 'Proyectos: <b>{point.y}</b>',
+                    useHTML: true
+                },
+                credits: {
+                    enabled: false
+                }
+            });
+        });
+    </script>
+</body>
+</html>
