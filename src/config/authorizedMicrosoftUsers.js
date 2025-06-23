@@ -1,7 +1,7 @@
 // src/config/authorizedMicrosoftUsers.js
 export const AUTHORIZED_MICROSOFT_USERS = [
     {
-        email: 'usuario1@minenergia.gov.co',
+        email: 'jadominguez@minenergia.gov.co',
         temporaryKey: 'ClaveTemp123',
         expiresAt: '2025-12-31', // Fecha de expiración
         fullName: 'Juan Pérez González', // Nombre completo añadido
