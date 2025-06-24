@@ -614,16 +614,20 @@ const resumenANLAOptions = {
     }
   },
   xAxis: {
+    type: 'category',
     categories: ['2022', '2023', '2024', '2025'],
-    title: {
-      text: 'Año',
-      style: { fontWeight: 'bold', color: '#ccc' }
-    },
+    tickPositions: [0, 1, 2, 3],
     labels: {
-      style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
-    },
-    gridLineColor: '#333',
-    lineColor: '#444'
+      enabled: true,
+      step: 1,
+      autoRotation: false,
+      rotation: 0,
+      style: {
+        fontSize: '12px',
+        fontWeight: 'bold',
+        color: '#eee'
+      }
+    }
   },
   yAxis: {
     min: 0,
@@ -742,7 +746,12 @@ const tiempoPromedioANLAOptions = {
   },
   xAxis: {
     categories: datosTiempos.map(i => i.name),
+    tickPositions: [0, 1, 2, 3, 4, 5, 6, 7],
     labels: {
+      enabled: true,
+      step: 1,
+      autoRotation: false,
+      rotation: 0,
       style: {
         fontSize: '13px',
         fontWeight: 'bold',
