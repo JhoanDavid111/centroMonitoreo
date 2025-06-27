@@ -29,7 +29,7 @@ Highcharts.setOptions({
     labels: {
       style: {
         color: '#ccc',
-        fontSize: '10px',
+        fontSize: '14px',
         fontFamily: 'Nunito Sans, sans-serif'
       },
       rotation: -45,
@@ -44,7 +44,7 @@ Highcharts.setOptions({
     labels: {
       style: {
         color: '#ccc',
-        fontSize: '10px',
+        fontSize: '14px',
         fontFamily: 'Nunito Sans, sans-serif'
       }
     },
@@ -54,7 +54,7 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
@@ -108,19 +108,26 @@ export function GeneracionDespacho() {
         setOptions({
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
           title: { text: 'Generación Diaria por Tecnología' },
-          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          subtitle: { text: 'Fuente: API 6G Proyecto --- Tambien se debe borrar???' },
           xAxis: {
             categories,
             tickInterval: tickInt,
             title: {
               text: 'Fecha',
-              style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-            }
+              style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
+            },
+            labels: {
+              rotation: -45,
+              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
+            },
           },
           yAxis: {
             title: {
               text: 'Generación (MW)',
               style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
+            },
+            labels: {
+              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
             },
             min: 0,
             gridLineColor: '#333'

@@ -108,7 +108,7 @@ export function GeneracionHoraria() {
         text: 'Curva de Generación por Tecnología Primer Semestre 2022'
       },
       subtitle: {
-        text: 'Fuente: XM'
+        text: ''
       },
       xAxis: {
         categories: horas,
@@ -118,7 +118,7 @@ export function GeneracionHoraria() {
           style: { color: '#ccc' }
         },
         labels: {
-          style: { color: '#ccc', fontSize: '10px' }
+          style: { color: '#ccc', fontSize: '12px' }
         },
         gridLineColor: '#333'
       },
@@ -130,7 +130,7 @@ export function GeneracionHoraria() {
           style: { color: '#ccc' }
         },
         labels: {
-          style: { color: '#ccc', fontSize: '10px' }
+          style: { color: '#ccc', fontSize: '12px' }
         },
         gridLineColor: '#333'
       },

@@ -141,7 +141,7 @@ export default function Resumen() {
                   </span>
                 </div>
                 <div className="flex text-white text-3xl font-bold">
-                  {card.value}
+                  {Number(card.value.replace(' MW', '').replace(',','.')).toFixed(2)} MW
                   <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                     title="Ayuda"

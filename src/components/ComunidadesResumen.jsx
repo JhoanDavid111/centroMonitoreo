@@ -11,15 +11,15 @@ export function ComunidadesResumen() {
   // Datos de ejemplo para cada tarjeta
   const datosComunidades = [
     { icon: <img src={EnergiaElectricaOn} alt='Comunidades instaladas' className="w-6 h-6 flex-shrink-0"/>, 
-      label: 'Comunidades instaladas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+      label: 'Comunidades instaladas', number: '---', value: '---', updated: '8/5/2025' },
     { icon: <img src={OfertaDemandaOn} alt='Comunidades proyectadas' className="w-6 h-6 flex-shrink-0"/>, 
-      label: 'Comunidades proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+      label: 'Comunidades proyectadas', number: '---', value: '---', updated: '8/5/2025' },
   ]
   const datosSolar = [
     { icon: <img src={AutogeneracionOn} alt='Colombia Solar instalada' className="w-6 h-6 flex-shrink-0"/>, 
-      label: 'Colombia Solar instalada', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+      label: 'Colombia Solar instalada', number: '---', value: '---', updated: '8/5/2025' },
     { icon: <img src={AutogeneracionOn} alt='Colombia Solar proyectadas' className="w-6 h-6 flex-shrink-0"/>, 
-      label: 'Colombia Solar proyectadas', number: '4.500', value: '177,38 MW', updated: '8/5/2025' },
+      label: 'Colombia Solar proyectadas', number: '---', value: '---', updated: '8/5/2025' },
   ]
 
   return (

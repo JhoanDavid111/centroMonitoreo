@@ -79,9 +79,12 @@ export function CapacidadInstalada() {
             height: 450,
             marginBottom: 100
           },
-          title: { text: 'Capacidad acumulada por tipo de proyecto' },
+          title: { 
+            text: 'Capacidad acumulada por tipo de proyecto',
+            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' },
+          },
           subtitle: {
-            text: 'Fuente: API 6G Proyecto',
+            text: '',
             style: { color: '#AAA', fontSize: '12px' }
           },
           xAxis: {
@@ -90,7 +93,7 @@ export function CapacidadInstalada() {
             labels: {
               rotation: -45,
               y: 18,
-              style: { color: '#CCC', fontSize: '10px' }
+              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
             },
             title: {
               text: 'Fecha de entrada en operación',
@@ -113,7 +116,7 @@ export function CapacidadInstalada() {
               formatter() {
                 return this.value.toLocaleString() + ' MW';
               },
-              style: { color: '#CCC', fontSize: '10px' }
+              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
             }
           },
           tooltip: {

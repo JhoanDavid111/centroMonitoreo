@@ -19,12 +19,12 @@ Highcharts.setOptions({
   title: { style: { color: '#fff' } },
   subtitle: { style: { color: '#aaa' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    labels: { style: { color: '#ccc', fontSize: '12px' } },
     title: { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
   yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    labels: { style: { color: '#ccc', fontSize: '12px' } },
     title: { style: { color: '#ccc' } },
     gridLineColor: '#333'
   },
@@ -100,11 +100,19 @@ export function ResumenCharts() {
       opts.push({
         chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
         title: { text: 'Distribución actual por tecnología' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        subtitle: { text: '' },
         plotOptions: {
           pie: {
             innerSize: 0,
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+            dataLabels: { 
+              enabled: true, 
+              format: '<b>{point.name}</b>: {point.y:.2f} MW', 
+              style: {
+                fontSize: '12px',
+                textOutline: 'none',
+                color: "#fff"
+              },
+            },
             showInLegend: true
           }
         },
@@ -114,7 +122,8 @@ export function ResumenCharts() {
           data: techJson.map(d => ({
             name: d.tipo_tecnologia,
             y: d.capacidad_mw,
-            color: techColor[d.tipo_tecnologia] || '#666666'
+            color: techColor[d.tipo_tecnologia] || '#666666',
+            textOutline: 'none'
           }))
         }],
         tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
@@ -125,11 +134,19 @@ export function ResumenCharts() {
       opts.push({
         chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
         title: { text: 'Distribución de Capacidad Instalada por Tipo de Proyecto' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        subtitle: { text: '' },
         plotOptions: {
           pie: {
             innerSize: 0,
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+            dataLabels: { 
+              enabled: true, 
+              format: '<b>{point.name}</b>: {point.y:.2f} MW',
+              style: {
+                fontSize: '12px',
+                textOutline: 'none',
+                color: "#fff"
+              },
+            },
             showInLegend: true
           }
         },
@@ -139,7 +156,11 @@ export function ResumenCharts() {
           data: catJson.map(d => ({
             name: d.tipo_proyecto,
             y: d.capacidad_mw,
-            color: catColor[d.tipo_proyecto] || '#666666'
+            color: catColor[d.tipo_proyecto] || '#666666',
+            style: {
+                fontSize: '12px',
+                fontFamily: 'Nunito Sans, sans-serif',
+              },
           }))
         }],
         tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
@@ -174,7 +195,7 @@ export function ResumenCharts() {
       opts.push({
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Capacidad Entrante por mes' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        subtitle: { text: '' },
         xAxis: {
           categories: meses,           
           tickInterval: 1,             
@@ -183,7 +204,7 @@ export function ResumenCharts() {
             style: { color: '#ccc' }
           },
           labels: {
-            style: { color: '#ccc', fontSize: '10px' },
+            style: { color: '#ccc', fontSize: '12px' },
             step: 1,                  
             rotation: -45,             
             autoRotation: false       
@@ -192,7 +213,7 @@ export function ResumenCharts() {
         },
         yAxis: {
           title: { text: 'Capacidad (MW)', style: { color: '#ccc' } },
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
+          labels: { style: { color: '#ccc', fontSize: '12px' } },
           tickAmount: 5,
           gridLineColor: '#333'
         },
@@ -221,17 +242,17 @@ export function ResumenCharts() {
       opts.push({
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Histórico anual matriz completa' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
+        subtitle: { text: '' },
         xAxis: {
           categories: years,
           tickInterval: 1,
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
+          labels: { style: { color: '#ccc', fontSize: '12px' } },
           title: { text: 'Año', style: { color: '#ccc' } },
           gridLineColor: '#333'
         },
         yAxis: {
           title: { text: 'Capacidad Instalada (GW)', style: { color: '#ccc' } },
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
+          labels: { style: { color: '#ccc', fontSize: '12px' } },
           tickAmount: 6,
           gridLineColor: '#333'
         },
