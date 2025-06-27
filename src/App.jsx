@@ -11,6 +11,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
+import EnConstruccion from './pages/EnConstruccion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ManualAuthProvider, useManualAuth } from './context/ManualAuthContext';
 import { AuthButton, PrivateRoute } from './components/auth';
@@ -103,6 +104,7 @@ function AppContent() {
             <Route path="/6GW+" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
             <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
+            <Route path="/en_construccion" element={<EnConstruccion />} />
             
             <Route
               path="/estrategia-6gw"

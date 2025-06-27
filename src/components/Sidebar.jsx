@@ -1,15 +1,5 @@
 import React from 'react'
-import {
-  LayoutDashboard,
-  Droplet,
-  Zap,
-  Sun,
-  Flame,
-  TrendingUp,
-  Thermometer,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
+import {ChevronLeft,ChevronRight} from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 // Estas importaciones devuelven URLs al SVG en Vite
@@ -65,7 +55,7 @@ export function Sidebar({ open, toggle }) {
         },
         {
           title: 'Autogeneración y GD',
-          path: '/autogeneracion',
+          path: '/en_construccion',
           icon: AutogeneracionOff,
           activeIcon: AutogeneracionOn
         },
@@ -77,7 +67,7 @@ export function Sidebar({ open, toggle }) {
         },
         {
           title: 'Acciones estratégicas',
-          path: '/acciones_estrategicas',
+          path: '/en_construccion',
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn
         }
@@ -88,31 +78,31 @@ export function Sidebar({ open, toggle }) {
       items: [
         {
           title: 'Hidrología',
-          path: '/hidrologia',
+          path: '/en_construccion',
           icon: HidroOff,
           activeIcon: HidroOn
         },
         {
           title: 'Suficiencia energética',
-          path: '/suficiencia',
+          path: '/en_construccion',
           icon: EnergiaOff,
           activeIcon: EnergiaOn
         },
         {
           title: 'Precios',
-          path: '/precios',
+          path: '/en_construccion',
           icon: PreciosOff,
           activeIcon: PreciosOn
         },
         {
           title: 'Generación térmica',
-          path: '/generacion',
+          path: '/en_construccion',
           icon: GeneracionTermicaOff,
           activeIcon: GeneracionTermicaOn
         },
         {
           title: 'Demanda',
-          path: '/demanda',
+          path: '/en_construccion',
           icon: DemandaOff,
           activeIcon: DemandaOn
         }
