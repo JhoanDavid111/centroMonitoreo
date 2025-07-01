@@ -47,10 +47,12 @@ Highcharts.setOptions({
 export function EnergiaElectrica() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
+  const [loading, setLoading] = useState(true); // ← Nuevo estado
   const chartRefs = useRef([]);
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true); // ← Inicia loading
       try {
         const res = await fetch('http://192.168.8.138:8002/v1/graficas/energia_electrica', {
           method: 'POST',
@@ -172,7 +174,10 @@ export function EnergiaElectrica() {
         setCharts(opts);
       } catch (err) {
         console.error('Error cargando datos API', err);
+      }  finally {
+        setLoading(false); // ← Finaliza loading
       }
+
     }
     fetchData();
   }, []);
@@ -183,6 +188,28 @@ export function EnergiaElectrica() {
   const displayed = charts
     .map((opt, idx) => ({ opt, idx }))
     .filter(item => selected === 'all' || String(item.idx) === selected);
+
+  if (loading) {
+    return (
+      <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow flex flex-col items-center justify-center h-64">
+        <div className="flex space-x-2">
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+          ></div>
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+          ></div>
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+          ></div>
+        </div>
+        <p className="text-gray-300 mt-4">Cargando energía eléctrica...</p>
+      </div>
+    );
+  }
 
   return (
     <section className="mt-8">

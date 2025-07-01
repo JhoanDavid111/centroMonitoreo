@@ -30,7 +30,7 @@ export function Header() {
             }
             
             setIsDropdownOpen(false);
-            window.location.href = '/'; // Redirigir al home con recarga
+            window.location.href = '/CentroMonitoreo'; // Redirigir al home con recarga
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
         }

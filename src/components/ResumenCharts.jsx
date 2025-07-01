@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -42,212 +41,219 @@ Highcharts.setOptions({
 export function ResumenCharts() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
+  const [loading, setLoading] = useState(true); // ← Nuevo estado
   const chartRefs = useRef([]);
 
   useEffect(() => {
     async function fetchData() {
-      const techJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia',
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      )).json();
+      setLoading(true); // ← Inicia loading
+      try {
+        const techJson = await (await fetch(
+          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia',
+          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        )).json();
 
-      const catJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria',
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      )).json();
+        const catJson = await (await fetch(
+          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria',
+          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        )).json();
 
-      const entradaJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_entrar_075',
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      )).json();
+        const entradaJson = await (await fetch(
+          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_entrar_075',
+          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        )).json();
 
-      const matJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual',
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      )).json();
+        const matJson = await (await fetch(
+          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual',
+          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        )).json();
 
-      const techColor = {
-        BIOMASA: '#B39FFF',
-        EOLICA: '#5DFF97',
-        PCH: '#3B82F6',
-        SOLAR: '#FFC800'
-      };
-
-      const catColor = {
-        AGGE: '#D3DF1E',
-        AGPE: '#2CA02C',
-        'Generacion Centralizada': '#1F77B4',
-        'Generacion Distribuida': '#FFC800'
-      };
-
-      const matColor = {
-        BIOMASA: '#B39FFF',
-        HIDRÁULICA: '#3B82F6',
-        'RAD SOLAR': '#FFC800',
-        TÉRMICA: '#F97316'
-      };
-
-      const colorEntrada = {
-        'BIOMASA Y RESIDUOS': '#B39FFF',
-        'EÓLICA': '#5DFF97',
-        'PCH': '#3B82F6',
-        'SOLAR FV': '#FFC800'
-      };
-
-      const opts = [];
-
-      // 1) Pie tecnología
-      opts.push({
-        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
-        title: { text: 'Distribución actual por tecnología' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        plotOptions: {
-          pie: {
-            innerSize: 0,
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-            showInLegend: true
-          }
-        },
-        series: [{
-          name: 'Tecnología',
-          colorByPoint: false,
-          data: techJson.map(d => ({
-            name: d.tipo_tecnologia,
-            y: d.capacidad_mw,
-            color: techColor[d.tipo_tecnologia] || '#666666'
-          }))
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true }
-      });
-
-      // 2) Pie categoría
-      opts.push({
-        chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
-        title: { text: 'Distribución de Capacidad Instalada por Tipo de Proyecto' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        plotOptions: {
-          pie: {
-            innerSize: 0,
-            dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
-            showInLegend: true
-          }
-        },
-        series: [{
-          name: 'Categoría',
-          colorByPoint: false,
-          data: catJson.map(d => ({
-            name: d.tipo_proyecto,
-            y: d.capacidad_mw,
-            color: catColor[d.tipo_proyecto] || '#666666'
-          }))
-        }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
-        exporting: { enabled: true }
-      });
-
-      // 3) Capacidad Entrante por mes
-      const meses = entradaJson.map(item => item.mes);
-      const tecnologias = Object.keys(entradaJson[0]).filter(k => k !== 'mes');
-
-      const seriesData = tecnologias.map(tec => ({
-        name: tec,
-        data: entradaJson.map(mes => mes[tec] || 0),
-        color: colorEntrada[tec] || '#666666'
-      }));
-
-      const totalPorMes = entradaJson.map((item, idx) => {
-        const total = tecnologias.reduce((sum, tec) => sum + (item[tec] || 0), 0);
-        return {
-          x: idx,
-          y: total,
-          dataLabels: {
-            enabled: true,
-            format: '{y:.1f}',
-            style: { color: '#fff', textOutline: 'none', fontWeight: 'bold' },
-            verticalAlign: 'bottom'
-          },
-          color: 'transparent' // No visible
+        const techColor = {
+          BIOMASA: '#B39FFF',
+          EOLICA: '#5DFF97',
+          PCH: '#3B82F6',
+          SOLAR: '#FFC800'
         };
-      });
 
-      opts.push({
-        chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-        title: { text: 'Capacidad Entrante por mes' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        xAxis: {
-          categories: meses,           
-          tickInterval: 1,             
-          title: {
-            text: 'Mes',
-            style: { color: '#ccc' }
+        const catColor = {
+          AGGE: '#D3DF1E',
+          AGPE: '#2CA02C',
+          'Generacion Centralizada': '#1F77B4',
+          'Generacion Distribuida': '#FFC800'
+        };
+
+        const matColor = {
+          BIOMASA: '#B39FFF',
+          HIDRÁULICA: '#3B82F6',
+          'RAD SOLAR': '#FFC800',
+          TÉRMICA: '#F97316'
+        };
+
+        const colorEntrada = {
+          'BIOMASA Y RESIDUOS': '#B39FFF',
+          'EÓLICA': '#5DFF97',
+          'PCH': '#3B82F6',
+          'SOLAR FV': '#FFC800'
+        };
+
+        const opts = [];
+
+        // 1) Pie tecnología
+        opts.push({
+          chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+          title: { text: 'Distribución actual por tecnología' },
+          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          plotOptions: {
+            pie: {
+              innerSize: 0,
+              dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+              showInLegend: true
+            }
           },
-          labels: {
-            style: { color: '#ccc', fontSize: '10px' },
-            step: 1,                  
-            rotation: -45,             
-            autoRotation: false       
+          series: [{
+            name: 'Tecnología',
+            colorByPoint: false,
+            data: techJson.map(d => ({
+              name: d.tipo_tecnologia,
+              y: d.capacidad_mw,
+              color: techColor[d.tipo_tecnologia] || '#666666'
+            }))
+          }],
+          tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+          exporting: { enabled: true }
+        });
+
+        // 2) Pie categoría
+        opts.push({
+          chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+          title: { text: 'Distribución de Capacidad Instalada por Tipo de Proyecto' },
+          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          plotOptions: {
+            pie: {
+              innerSize: 0,
+              dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.y:.2f} MW' },
+              showInLegend: true
+            }
           },
-          gridLineColor: '#333'
-        },
-        yAxis: {
-          title: { text: 'Capacidad (MW)', style: { color: '#ccc' } },
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
-          tickAmount: 5,
-          gridLineColor: '#333'
-        },
-        plotOptions: {
-          column: {
-            stacking: 'normal',
-            borderWidth: 0,
-            dataLabels: { enabled: false }
-          }
-        },
-        series: [
-          ...seriesData,
-          {
-            name: 'Total',
-            type: 'scatter',
-            marker: { enabled: false },
-            data: totalPorMes,
-            enableMouseTracking: false
-          }
-        ],
-        exporting: { enabled: true }
-      });
+          series: [{
+            name: 'Categoría',
+            colorByPoint: false,
+            data: catJson.map(d => ({
+              name: d.tipo_proyecto,
+              y: d.capacidad_mw,
+              color: catColor[d.tipo_proyecto] || '#666666'
+            }))
+          }],
+          tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+          exporting: { enabled: true }
+        });
 
-      // 4) Column histórico anual matriz completa
-      const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
-      opts.push({
-        chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-        title: { text: 'Histórico anual matriz completa' },
-        subtitle: { text: 'Fuente: API 6G Proyecto' },
-        xAxis: {
-          categories: years,
-          tickInterval: 1,
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
-          title: { text: 'Año', style: { color: '#ccc' } },
-          gridLineColor: '#333'
-        },
-        yAxis: {
-          title: { text: 'Capacidad Instalada (GW)', style: { color: '#ccc' } },
-          labels: { style: { color: '#ccc', fontSize: '10px' } },
-          tickAmount: 6,
-          gridLineColor: '#333'
-        },
-        plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
-        series: matJson.map(row => ({
-          name: row.fuente,
-          data: years.map(y => row[y] ?? 0),
-          color: matColor[row.fuente] || '#666666'
-        })),
-        exporting: { enabled: true }
-      });
+        // 3) Capacidad Entrante por mes
+        const meses = entradaJson.map(item => item.mes);
+        const tecnologias = Object.keys(entradaJson[0]).filter(k => k !== 'mes');
 
-      setCharts(opts);
+        const seriesData = tecnologias.map(tec => ({
+          name: tec,
+          data: entradaJson.map(mes => mes[tec] || 0),
+          color: colorEntrada[tec] || '#666666'
+        }));
+
+        const totalPorMes = entradaJson.map((item, idx) => {
+          const total = tecnologias.reduce((sum, tec) => sum + (item[tec] || 0), 0);
+          return {
+            x: idx,
+            y: total,
+            dataLabels: {
+              enabled: true,
+              format: '{y:.1f}',
+              style: { color: '#fff', textOutline: 'none', fontWeight: 'bold' },
+              verticalAlign: 'bottom'
+            },
+            color: 'transparent' // No visible
+          };
+        });
+
+        opts.push({
+          chart: { type: 'column', height: 350, backgroundColor: '#262626' },
+          title: { text: 'Capacidad Entrante por mes' },
+          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          xAxis: {
+            categories: meses,           
+            tickInterval: 1,             
+            title: {
+              text: 'Mes',
+              style: { color: '#ccc' }
+            },
+            labels: {
+              style: { color: '#ccc', fontSize: '10px' },
+              step: 1,                  
+              rotation: -45,             
+              autoRotation: false       
+            },
+            gridLineColor: '#333'
+          },
+          yAxis: {
+            title: { text: 'Capacidad (MW)', style: { color: '#ccc' } },
+            labels: { style: { color: '#ccc', fontSize: '10px' } },
+            tickAmount: 5,
+            gridLineColor: '#333'
+          },
+          plotOptions: {
+            column: {
+              stacking: 'normal',
+              borderWidth: 0,
+              dataLabels: { enabled: false }
+            }
+          },
+          series: [
+            ...seriesData,
+            {
+              name: 'Total',
+              type: 'scatter',
+              marker: { enabled: false },
+              data: totalPorMes,
+              enableMouseTracking: false
+            }
+          ],
+          exporting: { enabled: true }
+        });
+
+        // 4) Column histórico anual matriz completa
+        const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
+        opts.push({
+          chart: { type: 'column', height: 350, backgroundColor: '#262626' },
+          title: { text: 'Histórico anual matriz completa' },
+          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          xAxis: {
+            categories: years,
+            tickInterval: 1,
+            labels: { style: { color: '#ccc', fontSize: '10px' } },
+            title: { text: 'Año', style: { color: '#ccc' } },
+            gridLineColor: '#333'
+          },
+          yAxis: {
+            title: { text: 'Capacidad Instalada (GW)', style: { color: '#ccc' } },
+            labels: { style: { color: '#ccc', fontSize: '10px' } },
+            tickAmount: 6,
+            gridLineColor: '#333'
+          },
+          plotOptions: { column: { stacking: 'normal', borderWidth: 0 } },
+          series: matJson.map(row => ({
+            name: row.fuente,
+            data: years.map(y => row[y] ?? 0),
+            color: matColor[row.fuente] || '#666666'
+          })),
+          exporting: { enabled: true }
+        });
+
+        setCharts(opts);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false); // ← Finaliza loading
+      }
     }
-
-    fetchData().catch(console.error);
+    fetchData();
   }, []);
 
   const isFiltered = selected !== 'all';
@@ -257,6 +263,28 @@ export function ResumenCharts() {
   const displayed = charts
     .map((opt, idx) => ({ opt, idx }))
     .filter(item => selected === 'all' || String(item.idx) === selected);
+
+  if (loading) {
+    return (
+      <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow flex flex-col items-center justify-center h-64">
+      <div className="flex space-x-2">
+        <div
+          className="w-3 h-3 rounded-full animate-bounce"
+          style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+        ></div>
+        <div
+          className="w-3 h-3 rounded-full animate-bounce"
+          style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+        ></div>
+        <div
+          className="w-3 h-3 rounded-full animate-bounce"
+          style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+        ></div>
+      </div>
+      <span className="mt-2 text-gray-300">Cargando gráficos...</span>
+    </div>
+    );
+  }
 
   return (
     <section className="mt-8">
@@ -285,13 +313,41 @@ export function ResumenCharts() {
             key={idx}
             className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
           >
+            {/* Botón de ayuda */}
             <button
+              className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+              style={{ width: 30, height: 30 }}
+              title="Ayuda"
+              onClick={() => alert('Aquí puedes mostrar ayuda contextual o abrir un modal.')}
+              type="button"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                className="rounded-full"
+              >
+                <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                <text
+                  x="12"
+                  y="16"
+                  textAnchor="middle"
+                  fontSize="16"
+                  fill="#fff"
+                  fontWeight="bold"
+                  fontFamily="Nunito Sans, sans-serif"
+                  pointerEvents="none"
+                >?</text>
+              </svg>
+            </button>
+            {/* Botón de maximizar */}
+            {/* <button
               className="absolute top-2 right-2 text-gray-300 hover:text-white"
               onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
               title="Maximizar gráfico"
             >
               ⛶
-            </button>
+            </button> */}
             <HighchartsReact
               highcharts={Highcharts}
               options={opt}
