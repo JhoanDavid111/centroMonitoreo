@@ -29,7 +29,7 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: '#ccc' },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
@@ -101,6 +101,9 @@ export function ResumenCharts() {
         chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
         title: { text: 'Distribución actual por tecnología' },
         subtitle: { text: '' },
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
         plotOptions: {
           pie: {
             innerSize: 0,
@@ -150,6 +153,9 @@ export function ResumenCharts() {
             showInLegend: true
           }
         },
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
         series: [{
           name: 'Categoría',
           colorByPoint: false,
@@ -196,6 +202,9 @@ export function ResumenCharts() {
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Capacidad Entrante por mes' },
         subtitle: { text: '' },
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
         xAxis: {
           categories: meses,           
           tickInterval: 1,             
@@ -243,6 +252,9 @@ export function ResumenCharts() {
         chart: { type: 'column', height: 350, backgroundColor: '#262626' },
         title: { text: 'Histórico anual matriz completa' },
         subtitle: { text: '' },
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
         xAxis: {
           categories: years,
           tickInterval: 1,

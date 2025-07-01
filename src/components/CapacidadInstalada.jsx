@@ -69,7 +69,7 @@ export function CapacidadInstalada() {
             y: 25,
             itemStyle: {
               color: '#ccc',
-              fontSize: '12px'
+              fontSize: '12px',fontFamily: 'Nunito Sans, sans-serif'
             },
             itemHoverStyle: {
               color: '#fff'
