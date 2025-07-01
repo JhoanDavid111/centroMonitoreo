@@ -1,3 +1,4 @@
+// src/components/Header.jsx
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useManualAuth } from '../context/ManualAuthContext';
