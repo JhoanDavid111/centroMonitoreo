@@ -12,19 +12,14 @@ import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ManualAuthProvider, useManualAuth } from './context/ManualAuthContext';
-import { AuthButton, PrivateRoute } from './components/auth';
+import { AuthButton } from './components/auth';
+import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
 
 function AppContent() {
-  const { currentUser, loading: authLoading } = useAuth();
-  const { manualAuth, loading: manualAuthLoading } = useManualAuth();
+  const { currentUser, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
 
-  const loading = authLoading || manualAuthLoading;
-  const isAuthenticated = currentUser || manualAuth.isAuthenticated;
-
-  // Pantalla de carga mejorada
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1d1d1d]">
@@ -36,9 +31,7 @@ function AppContent() {
     );
   }
 
-  // Mostrar pantalla de login si no está autenticado
-  if (!isAuthenticated) {
-    // Si estamos en una ruta protegida, mostrar solo el AuthButton centrado
+  if (!currentUser) {
     const isProtectedRoute = !['/', '/login'].includes(location.pathname);
     
     return (
@@ -55,28 +48,25 @@ function AppContent() {
     );
   }
 
-  // Verificación adicional del email (segunda capa de protección)
-  const isGoogleAuthorized = currentUser && (
-    currentUser.email?.endsWith('@upme.gov.co') || 
-    currentUser.email?.endsWith('@minenergia.gov.co')
+  // Validación usando ALLOWED_DOMAINS importado
+  const emailDomain = currentUser.email?.split('@')[1];
+  const isAuthorized = ALLOWED_DOMAINS.some(domain => 
+    emailDomain === domain || emailDomain?.endsWith(`.${domain}`)
   );
 
-  const isMicrosoftAuthorized = manualAuth.isAuthenticated;
-
-  if (!isGoogleAuthorized && !isMicrosoftAuthorized) {
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md">
           <AuthButton />
           <p className="mt-4 text-sm text-red-500 text-center">
-            Solo cuentas institucionales autorizadas permitidas
+            Dominios permitidos: {ALLOWED_DOMAINS.join(', ')}
           </p>
         </div>
       </div>
     );
   }
 
-  // Contenido principal cuando está autenticado y autorizado
   return (
     <div className="relative">
       <Header />
@@ -125,18 +115,16 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <ManualAuthProvider>
-        <Routes>
-          <Route path="/*" element={<AppContent />} />
-          <Route path="/login" element={
-            <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
-              <div className="w-full max-w-md">
-                <AuthButton />
-              </div>
+      <Routes>
+        <Route path="/*" element={<AppContent />} />
+        <Route path="/login" element={
+          <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-md">
+              <AuthButton />
             </div>
-          } />
-        </Routes>
-      </ManualAuthProvider>
+          </div>
+        } />
+      </Routes>
     </AuthProvider>
   );
 }
