@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBjnWwEiSz-nA_Ja5B-rRXHFXdbkWWWu18",
+  apiKey: "AIzaSyBjnMWeLSz-nA_Ja5B-rRXHFXdbkWWWu18",
   authDomain: "upme-aut.firebaseapp.com",
   projectId: "upme-aut",
   storageBucket: "upme-aut.appspot.com",
