@@ -109,7 +109,7 @@ export function GeneracionDespacho() {
         setOptions({
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
           title: { text: 'Generación Diaria por Tecnología' },
-          subtitle: { text: 'Fuente: API 6G Proyecto --- Tambien se debe borrar???' },
+          subtitle: { text: 'Fuente: API 6G Proyecto' },
           xAxis: {
             categories,
             tickInterval: tickInt,
