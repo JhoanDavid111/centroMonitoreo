@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { API } from '../config/api';
 
 export function GraficaCapacidadPorcentajeAvanceCurvaS() {
   const [options, setOptions] = useState(null);
@@ -14,7 +15,7 @@ export function GraficaCapacidadPorcentajeAvanceCurvaS() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_capacidad_porcentaje_avance_curva_s', {
+        const res = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_capacidad_porcentaje_avance_curva_s`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
           // No requiere body, según tu descripción

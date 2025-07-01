@@ -6,7 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
-
+import { API } from '../config/api';
 
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
@@ -47,22 +47,22 @@ export function ResumenCharts() {
   useEffect(() => {
     async function fetchData() {
       const techJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia',
+        `${API}/v1/graficas/6g_proyecto/capacidad_por_tecnologia`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
       const catJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria',
+        `${API}/v1/graficas/6g_proyecto/capacidad_por_categoria`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
       const entradaJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_entrar_075',
+        `${API}/v1/graficas/6g_proyecto/capacidad_por_entrar_075`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 
       const matJson = await (await fetch(
-        'http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual',
+        `${API}/v1/graficas/6g_proyecto/grafica_matriz_completa_anual`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       )).json();
 

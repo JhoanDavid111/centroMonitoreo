@@ -1,5 +1,6 @@
 // src/components/IndicadoresEnergia.jsx
 import React, { useEffect, useState } from 'react';
+import { API } from '../config/api';
 
 export function IndicadoresEnergia({ fechaInicio = '2025-05-01', fechaFin = '2025-05-03' }) {
   const [indicadores, setIndicadores] = useState(null);
@@ -11,7 +12,7 @@ export function IndicadoresEnergia({ fechaInicio = '2025-05-01', fechaFin = '202
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://192.168.8.138:8002/v1/indicadores/energia_electrica', {
+        const res = await fetch(`${API}/v1/indicadores/energia_electrica`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

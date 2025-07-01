@@ -6,6 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import { API } from '../config/api';
 
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
@@ -19,7 +20,7 @@ export function CapacidadInstalada() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos', {
+    fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })

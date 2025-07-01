@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { API } from '../config/api';
 
 export function GraficaRelacionDemanda({ fechaInicio = '2025-05-01', fechaFin = '2025-05-03' }) {
   const [options, setOptions] = useState(null);
@@ -14,7 +15,7 @@ export function GraficaRelacionDemanda({ fechaInicio = '2025-05-01', fechaFin = 
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_relacion_demanda', {
+        const res = await fetch(`${API}/v1/graficas/energia_electrica/grafica_relacion_demanda`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fecha_inicio: fechaInicio, fecha_fin: fechaFin })

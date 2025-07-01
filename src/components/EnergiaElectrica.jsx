@@ -6,6 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import { API } from '../config/api';
 
 // Cargar módulos
 Exporting(Highcharts);
@@ -54,7 +55,7 @@ export function EnergiaElectrica() {
     async function fetchData() {
       setLoading(true); // ← Inicia loading
       try {
-        const res = await fetch('http://192.168.8.138:8002/v1/graficas/energia_electrica', {
+        const res = await fetch(`${API}/v1/graficas/energia_electrica`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({ fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' })

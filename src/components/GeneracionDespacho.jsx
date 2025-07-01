@@ -6,6 +6,7 @@ import OfflineExporting from 'highcharts/modules/offline-exporting'
 import ExportData from 'highcharts/modules/export-data'
 import FullScreen from 'highcharts/modules/full-screen'
 import HighchartsReact from 'highcharts-react-official'
+import { API } from '../config/api';
 
 // Carga de módulos de Highcharts
 Exporting(Highcharts)
@@ -70,7 +71,7 @@ export function GeneracionDespacho() {
   const [options, setOptions] = useState(null)
 
   useEffect(() => {
-    fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_generacion_diaria', {
+    fetch(`${API}/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { API } from '../config/api';
 
 export function ListadoProyectosCurvaS() {
   const [proyectos, setProyectos] = useState([]);
@@ -14,7 +15,7 @@ export function ListadoProyectosCurvaS() {
       setError(null);
       try {
         const res = await fetch(
-          'http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s',
+          `${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
