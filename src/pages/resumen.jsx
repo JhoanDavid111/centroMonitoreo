@@ -39,8 +39,8 @@ export default function Resumen() {
       updated: '8/5/2025'
     },
     {
-      icon: <img src={Proyecto075On} alt='MW por entrar en 6 meses por 075' className="w-6 h-6 flex-shrink-0"/>,
-      label: 'MW por entrar en 6 meses por 075',
+      icon: <img src={Proyecto075On} alt='MW por entrar a Julio de 2026' className="w-6 h-6 flex-shrink-0"/>,
+      label: 'MW por entrar a Julio de 2026',
       value: '4177,51 MW',
       updated: '8/5/2025'
     },
