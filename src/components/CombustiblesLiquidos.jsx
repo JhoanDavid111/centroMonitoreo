@@ -24,12 +24,12 @@ Highcharts.setOptions({
   title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
   subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
   xAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
     title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor:  '#333'
   },
   yAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' } },
+    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
     title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor:  '#333'
   },
@@ -71,7 +71,7 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
             rotation:      -45,
             step:           1,
             autoRotation:   false
@@ -103,7 +103,7 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
             rotation:      -45,
             step:           1,
             autoRotation:   false
@@ -133,7 +133,7 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '8px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
             rotation:      -45,
             step:           1,
             autoRotation:   false
