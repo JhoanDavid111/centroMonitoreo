@@ -118,14 +118,33 @@ export function CurvaS({ projectName = 'Proyecto 01' }) {
   return (
     <section className="mt-8">
       <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow relative">
-        {/* botón fullscreen */}
-        <button
-          className="absolute top-2 right-2 text-gray-300 hover:text-white"
-          onClick={() => chartRef.current.chart.fullscreen.toggle()}
-          title="Maximizar gráfico"
-        >
-          ⛶
-        </button>
+          {/* Botón de ayuda */}
+          <button
+            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+            style={{ width: 30, height: 30 }}
+            title="Ayuda"
+            onClick={() => alert('Ok Aquí puedes mostrar ayuda contextual o abrir un modal.')}
+            type="button"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              className="rounded-full"
+            >
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text
+                x="12"
+                y="16"
+                textAnchor="middle"
+                fontSize="16"
+                fill="#fff"
+                fontWeight="bold"
+                fontFamily="Nunito Sans, sans-serif"
+                pointerEvents="none"
+              >?</text>
+            </svg>
+          </button>
         <HighchartsReact
           highcharts={Highcharts}
           options={options}

@@ -313,11 +313,11 @@ export default function ProyectoDetalle() {
             <p className="text-red-500">{errorCurve}</p>
           ) : chartOptions.series[0].data.length > 0 ? (
             <>
-              <button
+             {/*  <button
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"
                 onClick={() => chartRef.current.chart.fullscreen.toggle()}
                 title="Maximizar gráfico"
-              >⛶</button>
+              >⛶</button> */}
               <HighchartsReact
                 highcharts={Highcharts}
                 options={chartOptions}
