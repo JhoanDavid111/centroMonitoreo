@@ -33,7 +33,7 @@ export default function AuthButton() {
         return;
       }
 
-      navigate('/dashboard');
+      navigate('/6GW+');
     } catch (err) {
       console.error("Error de autenticación:", err);
       setError(err.message.includes('popup-closed')

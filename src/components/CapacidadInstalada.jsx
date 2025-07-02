@@ -213,7 +213,7 @@ export function CapacidadInstalada() {
           <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
           <text
             x="12"
-            y="16"
+            y="18"
             textAnchor="middle"
             fontSize="16"
             fill="#fff"

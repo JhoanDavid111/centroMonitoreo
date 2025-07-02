@@ -213,13 +213,13 @@ export function CombustiblesLiquidos() {
               key={idx}
               className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
-              <button
+            {/*   <button
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"
                 onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
                 title="Maximizar gráfico"
               >
                 ⛶
-              </button>
+              </button> */}
               <HighchartsReact
                 highcharts={Highcharts}
                 options={dynOpt}

@@ -127,13 +127,13 @@ export function HitosBarras() {
             className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
           >
             {/* Botón fullscreen */}
-            <button
+           {/*  <button
               className="absolute top-2 right-2 text-gray-300 hover:text-white"
               title="Maximizar gráfico"
               onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
             >
               ⛶
-            </button>
+            </button> */}
             <HighchartsReact
               highcharts={Highcharts}
               options={opt}
