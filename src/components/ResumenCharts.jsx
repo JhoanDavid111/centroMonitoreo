@@ -124,12 +124,12 @@ export function ResumenCharts() {
           colorByPoint: false,
           data: techJson.map(d => ({
             name: d.tipo_tecnologia,
-            y: d.capacidad_mw,
+            y: d.porcentaje,
             color: techColor[d.tipo_tecnologia] || '#666666',
             textOutline: 'none'
           }))
         }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} %</b>' },
         exporting: { enabled: true }
       });
 
@@ -161,7 +161,7 @@ export function ResumenCharts() {
           colorByPoint: false,
           data: catJson.map(d => ({
             name: d.tipo_proyecto,
-            y: d.capacidad_mw,
+            y: d.porcentaje,
             color: catColor[d.tipo_proyecto] || '#666666',
             style: {
                 fontSize: '12px',
@@ -169,7 +169,7 @@ export function ResumenCharts() {
               },
           }))
         }],
-        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} MW</b>' },
+        tooltip: { pointFormat: '{series.name}: <b>{point.y:.2f} %</b>' },
         exporting: { enabled: true }
       });
 
