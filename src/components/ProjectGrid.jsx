@@ -1,4 +1,4 @@
-// src/components/ProyectoDetalle.jsx
+// src/components/ProjectGrid.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -9,6 +9,7 @@ import HighchartsReact from 'highcharts-react-official';
 import DataTable from 'react-data-table-component';
 import { Download, Search } from 'lucide-react';
 import { API } from '../config/api';
+import GraficaANLA from './GraficaANLA'; // Nuevo import
 
 // ——— Inicializar módulos de Highcharts ———
 Exporting(Highcharts);
@@ -20,7 +21,9 @@ FullScreen(Highcharts);
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' }
+    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    plotBorderWidth: 0,
+    plotBackgroundColor: 'transparent'
   },
   title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
   subtitle: { style: { color: '#aaa', fontSize: '12px' } },
@@ -35,11 +38,14 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle:       { color: '#ccc' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
     itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
-  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' } }
+  tooltip: {
+    backgroundColor: '#1f2937',
+    style:           { color: '#fff', fontSize: '12px' }
+  }
 });
 
 // ——— Columnas DataTable ———
@@ -254,7 +260,7 @@ export default function ProyectoDetalle() {
 
       {activeTab === 'Proyectos ANLA' && (
         <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
-          <p>Contenido de Proyectos ANLA próximamente...</p>
+           <GraficaANLA />
         </div>
       )}
     </section>
