@@ -1,4 +1,3 @@
-// src/components/ProjectGrid.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -7,9 +6,9 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 import DataTable from 'react-data-table-component';
-import { Download, Search } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { API } from '../config/api';
-import GraficaANLA from './GraficaANLA'; // Nuevo import
+import GraficaANLA from './GraficaANLA';
 
 
 // ——— Inicializar módulos de Highcharts ———
@@ -24,29 +23,29 @@ Highcharts.setOptions({
     backgroundColor: '#262626',
     style: { fontFamily: 'Nunito Sans, sans-serif' },
     plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
+    plotBackgroundColor: 'transparent',
   },
   title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
   subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
     title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
+    gridLineColor: '#333',
   },
   yAxis: {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
     title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
+    gridLineColor: '#333',
   },
   legend: {
     itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
     itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHiddenStyle: { color: '#666' },
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style:           { color: '#fff', fontSize: '12px' }
-  }
+    style:           { color: '#fff', fontSize: '12px' },
+  },
 });
 
 // Componente de Loading reutilizable
@@ -85,6 +84,41 @@ const columns = [
   { name: 'FPO',             selector: row => row.fpo,                  sortable: true },
   { name: 'Priorizado',      selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
   { name: 'Avance (%)',      selector: row => row.porcentaje_avance_display, sortable: true }
+// ——— Función para exportar a CSV ———
+function exportToCSV(data) {
+  if (!data.length) return;
+  const csvRows = [
+    Object.keys(data[0]).join(','),
+    ...data.map(row =>
+      Object.values(row)
+        .map(val => `"${String(val).replace(/"/g, '""')}"`)
+        .join(',')
+    ),
+  ];
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'proyectos_filtrados.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ——— Columnas base para DataTable ———
+const baseColumns = [
+  { name: 'ID', selector: row => row.id, sortable: true },
+  { name: 'Nombre', selector: row => row.nombre_proyecto, sortable: true },
+  { name: 'Tipo', selector: row => row.tipo_proyecto, sortable: true },
+  { name: 'Tecnología', selector: row => row.tecnologia, sortable: true },
+  { name: 'Ciclo', selector: row => row.ciclo_asignacion, sortable: true },
+  { name: 'Promotor', selector: row => row.promotor, sortable: true },
+  { name: 'Estado', selector: row => row.estado_proyecto, sortable: true },
+  { name: 'Departamento', selector: row => row.departamento, sortable: true },
+  { name: 'Municipio', selector: row => row.municipio, sortable: true },
+  { name: 'Capacidad (MW)', selector: row => row.capacidad_instalada_mw, sortable: true },
+  { name: 'FPO', selector: row => row.fpo, sortable: true },
+  { name: 'Priorizado', selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
+  { name: 'Avance (%)', selector: row => row.porcentaje_avance_display, sortable: true },
 ];
 
 // ——— Opciones base del gráfico ———
@@ -95,31 +129,31 @@ const baseChartOptions = {
     categories: [],
     title:      { text: 'Fecha', style: { color: '#ccc' } },
     labels:     { style: { color: '#ccc', fontSize: '10px' } },
-    gridLineColor: '#333'
+    gridLineColor: '#333',
   },
   yAxis:    {
     title: { text: 'Curva de Referencia', style: { color: '#ccc' } },
-    min: 0, max: 100
+    min: 0, max: 100,
   },
   tooltip:  {
     backgroundColor: '#1f2937',
     style:           { color: '#fff', fontSize: '12px' },
     formatter() {
       return `<b>${this.x}</b><br/>Avance: ${this.y}%<br/>Hito: ${this.point.hito_nombre}`;
-    }
+    },
   },
   plotOptions: {
-    spline: { marker: { enabled: true } }
+    spline: { marker: { enabled: true } },
   },
   series: [{ name: 'Curva de Referencia', data: [] }],
   exporting: {
     enabled: true,
     buttons: {
       contextButton: {
-        menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
-      }
-    }
-  }
+        menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'],
+      },
+    },
+  },
 };
 
 // Componente de botón de ayuda reutilizable
@@ -157,16 +191,22 @@ export default function ProyectoDetalle() {
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
-  // Estados
+  // Estados de datos y UI
   const [proyectos, setProyectos]       = useState([]);
   const [loadingList, setLoadingList]   = useState(true);
   const [errorList, setErrorList]       = useState(null);
   const [chartOptions, setChartOptions] = useState(baseChartOptions);
   const [loadingCurve, setLoadingCurve] = useState(false);
   const [errorCurve, setErrorCurve]     = useState(null);
-  const [filterText, setFilterText]     = useState('');
 
-  // Carga inicial de proyectos
+  // Estados de filtros: quitar filtro general de búsqueda
+  const [tipoFilter, setTipoFilter]     = useState('');
+  const [tecFilter, setTecFilter]       = useState('');
+  const [deptoFilter, setDeptoFilter]   = useState('');
+  const [cicloFilter, setCicloFilter]   = useState('');
+  const [estadoFilter, setEstadoFilter] = useState('');
+
+  // Carga inicial
   useEffect(() => {
     async function fetchList() {
       setLoadingList(true);
@@ -179,7 +219,7 @@ export default function ProyectoDetalle() {
           ...p,
           fpo: p.fpo ? p.fpo.split('T')[0] : '-',
           porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
-          priorizado: p.priorizado
+          priorizado: p.priorizado,
         }));
         setProyectos(formatted);
       } catch (err) {
@@ -192,8 +232,8 @@ export default function ProyectoDetalle() {
     fetchList();
   }, []);
 
-  // Obtiene curva S automáticamente al seleccionar fila
-  const handleRowClick = async row => {
+  // Manejar clic en botón
+  const handleViewCurve = async row => {
     const id = row.id;
     setLoadingCurve(true);
     setErrorCurve(null);
@@ -212,7 +252,7 @@ export default function ProyectoDetalle() {
           ...baseChartOptions,
           title: { ...baseChartOptions.title, text: title },
           xAxis: { ...baseChartOptions.xAxis, categories: curve.map(pt => pt.fecha), tickInterval: 1, labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false } },
-          series: [{ name: 'Curva de Referencia', data: curve.map(pt => ({ y: pt.avance, hito_nombre: pt.hito_nombre })) }]
+          series: [{ name: 'Curva de Referencia', data: curve.map(pt => ({ y: pt.avance, hito_nombre: pt.hito_nombre })) }],
         });
       }
     } catch (err) {
@@ -223,11 +263,15 @@ export default function ProyectoDetalle() {
     }
   };
 
-  // Filtrado
-  const filteredAll = proyectos.filter(
-    row => row.nombre_proyecto.toLowerCase().includes(filterText.toLowerCase()) || row.promotor.toLowerCase().includes(filterText.toLowerCase())
-  );
-  const filteredNumeric = filteredAll.filter(row => /^[0-9]+$/.test(row.id));
+  // Aplicar filtros sin búsqueda general
+  const filteredData = proyectos
+    .filter(row => (tipoFilter   ? row.tipo_proyecto    === tipoFilter   : true))
+    .filter(row => (tecFilter    ? row.tecnologia       === tecFilter    : true))
+    .filter(row => (deptoFilter  ? row.departamento     === deptoFilter  : true))
+    .filter(row => (cicloFilter  ? row.ciclo_asignacion === cicloFilter  : true))
+    .filter(row => (estadoFilter ? row.estado_proyecto === estadoFilter : true));
+
+  const filteredNumericData = filteredData.filter(row => /^[0-9]+$/.test(row.id));
 
   if (loadingList) return <LoadingSpinner message="Cargando lista de proyectos..." />;
    if (errorList) return (
@@ -257,91 +301,108 @@ export default function ProyectoDetalle() {
       {/* Pestañas */}
       <div className="flex space-x-4 border-b border-gray-700 mb-4">
         {tabs.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 font-medium ${activeTab === tab ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400'}`}
-          >{tab}</button>
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-2 font-medium ${activeTab === tab ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400'}`}>{tab}</button>
         ))}
       </div>
 
-      {/* Contenido de pestañas */}
+      {/* Seguimiento Curva S */}
       {activeTab === 'Seguimiento Curva S' && (
-        <>
-          <div className="bg-[#262626] p-4 rounded-lg shadow">
-            <div className="flex justify-between mb-4">
-              <div className="relative">
-                <Search className="absolute left-2 top-2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar…"
-                  value={filterText}
-                  onChange={e => setFilterText(e.target.value)}
-                  className="pl-8 bg-[#1f1f1f] text-white rounded"
-                />
-              </div>
+        <div className="bg-[#262626] p-4 rounded-lg shadow">
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+            <div className="flex gap-2 flex-wrap items-center">
+              <select onChange={e => setTipoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los tipos</option>
+                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+              </select>
+              <select onChange={e => setTecFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todas las tecnologías</option>
+                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => <option key={tec} value={tec}>{tec}</option>)}
+              </select>
+              <select onChange={e => setDeptoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los departamentos</option>
+                {[...new Set(proyectos.map(p => p.departamento))].map(dep => <option key={dep} value={dep}>{dep}</option>)}
+              </select>
+              <select onChange={e => setCicloFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los ciclos</option>
+                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => <option key={ciclo} value={ciclo}>{ciclo}</option>)}
+              </select>
+              <select onChange={e => setEstadoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los estados</option>
+                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => <option key={est} value={est}>{est}</option>)}
+              </select>
             </div>
-            <DataTable
-              columns={columns}
-              data={filteredNumeric}
-              pagination
-              highlightOnHover
-              pointerOnHover
-              onRowClicked={handleRowClick}
-              theme="dark"
-            />
-
-            {/* Gráfico de curva S */}
-            <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow relative">
-                <HelpButton 
-              onClick={() => alert('Esta gráfica muestra el avance del proyecto seleccionado a lo largo del tiempo.')}
-              className="absolute top-2 right-2"
-            />
-              {loadingCurve ? (
-                <p className="text-gray-300">Cargando curva S…</p>
-              ) : errorCurve ? (
-                <p className="text-red-500">{errorCurve}</p>
-              ) : (
-                <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />
-              )}
-            </div>
+            <button className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500" onClick={() => exportToCSV(filteredNumericData)}>
+              <Download size={16} /> Exportar CSV
+            </button>
           </div>
-        </>
+
+          <DataTable
+            columns={[{ name: 'Acciones', cell: row => (
+              <button onClick={() => handleViewCurve(row)} className="bg-yellow-400 text-gray-800 px-2 py-1 rounded text-sm font-semibold hover:bg-yellow-500">Ver curva S</button>
+            ), width: '120px' }, ...baseColumns]}
+            data={filteredNumericData}
+            pagination highlightOnHover pointerOnHover theme="dark"
+          />
+
+          <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow relative">
+            {loadingCurve ? (<p className="text-gray-300">Cargando curva S…</p>) : errorCurve ? (<p className="text-red-500">{errorCurve}</p>) : (<HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />)}
+          </div>
+        </div>
       )}
 
+      {/* Todos los proyectos */}
       {activeTab === 'Todos los proyectos' && (
-        <div className="bg-[#262626] p-4 rounded-lg shadow relative">
-           
-          <div className="flex justify-between mb-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar…"
-                value={filterText}
-                onChange={e => setFilterText(e.target.value)}
-                className="pl-8 bg-[#1f1f1f] text-white rounded"
-              />
+        <div className="bg-[#262626] p-4 rounded-lg shadow">
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+            <div className="flex gap-2 flex-wrap items-center">
+              <select onChange={e => setTipoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los tipos</option>
+                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+              </select>
+              <select onChange={e => setTecFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todas las tecnologías</option>
+                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => <option key={tec} value={tec}>{tec}</option>)}
+              </select>
+              <select onChange={e => setDeptoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los departamentos</option>
+                {[...new Set(proyectos.map(p => p.departamento))].map(dep => <option key={dep} value={dep}>{dep}</option>)}
+              </select>
+              <select onChange={e => setCicloFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los ciclos</option>
+                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => <option key={ciclo} value={ciclo}>{ciclo}</option>)}
+              </select>
+              <select onChange={e => setEstadoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
+                <option value="">Todos los estados</option>
+                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => <option key={est} value={est}>{est}</option>)}
+              </select>
             </div>
+            <button className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500" onClick={() => exportToCSV(filteredData)}>
+              <Download size={16} /> Exportar CSV
+            </button>
           </div>
+
           <DataTable
-            columns={columns}
-            data={filteredAll}
-            pagination
-            theme="dark"
+            columns={[{ name: 'Acciones', cell: row => (
+              <button onClick={() => handleViewCurve(row)} className="bg-yellow-400 text-gray-800 px-2 py-1 rounded text-sm font-semibold hover:bg-yellow-500">Ver curva S</button>
+            ), width: '120px' }, ...baseColumns]}
+            data={filteredData}
+            pagination highlightOnHover pointerOnHover theme="dark"
           />
         </div>
       )}
 
+      {/* Proyectos ANLA */}
       {activeTab === 'Proyectos ANLA' && (
         <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
-         
-           <GraficaANLA />
+          <GraficaANLA />
         </div>
       )}
     </section>
   );
 }
+
+
+
 
 
 

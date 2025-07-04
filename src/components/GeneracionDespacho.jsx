@@ -119,7 +119,10 @@ export function GeneracionDespacho() {
         setOptions({
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
           title: { text: 'Generación Diaria por Tecnología' },
-          subtitle: { text: 'Fuente: API 6G Proyecto' },
+          subtitle: { text: '' },
+          legend: {
+            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+          },
           xAxis: {
             categories,
             tickInterval: tickInt,
