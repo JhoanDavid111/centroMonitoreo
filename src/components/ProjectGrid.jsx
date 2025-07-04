@@ -1,3 +1,4 @@
+// src/components/ProjectGrid.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -5,10 +6,44 @@ import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
-import DataTable from 'react-data-table-component';
+//import DataTable from 'react-data-table-component';
 import { Download } from 'lucide-react';
-import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
+import DataTable, { createTheme } from 'react-data-table-component';
+
+createTheme(
+  'customDark',
+  {
+    background: {
+      default: '#262626',
+    },
+    rows: {
+      style: {
+        backgroundColor: '#262626',
+      },
+    },
+    divider: {
+      default: '#1d1d1d',
+    },
+  },
+  'dark'
+);
+
+
+const customStyles = {
+  rows: {
+    // fondo alternado
+    style: (_row, index) => ({
+      backgroundColor: index % 2 === 0 ? '#262626' : '#1d1d1d'
+    }),
+
+    highlightOnHoverStyle: {
+      backgroundColor: '#1d1d1d',
+      transition: '0.1s'
+    }
+  }
+};
+
 
 
 // ——— Inicializar módulos de Highcharts ———
@@ -200,14 +235,15 @@ export default function ProyectoDetalle() {
   const [loadingCurve, setLoadingCurve] = useState(false);
   const [errorCurve, setErrorCurve]     = useState(null);
 
-  // Estados de filtros: quitar filtro general de búsqueda
+  // Estados de filtros
+  const [globalFilter, setGlobalFilter] = useState('');
   const [tipoFilter, setTipoFilter]     = useState('');
   const [tecFilter, setTecFilter]       = useState('');
   const [deptoFilter, setDeptoFilter]   = useState('');
   const [cicloFilter, setCicloFilter]   = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
 
-  // Carga inicial
+  // Carga inicial de proyectos
   useEffect(() => {
     async function fetchList() {
       setLoadingList(true);
@@ -233,7 +269,7 @@ export default function ProyectoDetalle() {
     fetchList();
   }, []);
 
-  // Manejar clic en botón
+  // Cargar curva S al hacer clic
   const handleViewCurve = async row => {
     const id = row.id;
     setLoadingCurve(true);
@@ -252,7 +288,12 @@ export default function ProyectoDetalle() {
         setChartOptions({
           ...baseChartOptions,
           title: { ...baseChartOptions.title, text: title },
-          xAxis: { ...baseChartOptions.xAxis, categories: curve.map(pt => pt.fecha), tickInterval: 1, labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false } },
+          xAxis: {
+            ...baseChartOptions.xAxis,
+            categories: curve.map(pt => pt.fecha),
+            tickInterval: 1,
+            labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false },
+          },
           series: [{ name: 'Curva de Referencia', data: curve.map(pt => ({ y: pt.avance, hito_nombre: pt.hito_nombre })) }],
         });
       }
@@ -264,15 +305,54 @@ export default function ProyectoDetalle() {
     }
   };
 
-  // Aplicar filtros sin búsqueda general
-  const filteredData = proyectos
+  // Filtro por dropdowns
+  const filteredByDropdowns = proyectos
     .filter(row => (tipoFilter   ? row.tipo_proyecto    === tipoFilter   : true))
     .filter(row => (tecFilter    ? row.tecnologia       === tecFilter    : true))
     .filter(row => (deptoFilter  ? row.departamento     === deptoFilter  : true))
     .filter(row => (cicloFilter  ? row.ciclo_asignacion === cicloFilter  : true))
     .filter(row => (estadoFilter ? row.estado_proyecto === estadoFilter : true));
 
-  const filteredNumericData = filteredData.filter(row => /^[0-9]+$/.test(row.id));
+  // Filtro global
+  const filteredGlobal = filteredByDropdowns.filter(row =>
+    Object.values(row).some(val =>
+      String(val).toLowerCase().includes(globalFilter.toLowerCase())
+    )
+  );
+
+  // Solo IDs numéricos para la primera pestaña
+  const filteredNumeric = filteredGlobal.filter(row => /^[0-9]+$/.test(row.id));
+
+  // Columnas específicas para "Seguimiento Curva S"
+  const columnsSeguimiento = [
+    { name: 'ID', selector: row => row.id, sortable: true },
+    {
+      name: 'Curva S',
+      cell: row => (
+        <button
+          onClick={() => handleViewCurve(row)}
+          className="text-yellow-400 hover:text-yellow-500 text-sm font-semibold"
+        >
+          Ver gráfica
+        </button>
+      ),
+      sortable: false,
+      width: '120px',
+    },
+    ...baseColumns.filter(col => col.name !== 'ID'),
+  ];
+
+  // Estilos de filas alternadas
+  const conditionalRowStyles = [
+    {
+      when: (_row, index) => index % 2 === 0,      // filas pares: índice 0,2,4...
+      style: { backgroundColor: '#262626' },
+    },
+    {
+      when: (_row, index) => index % 2 === 1,      // filas impares: índice 1,3,5...
+      style: { backgroundColor: '#1d1d1d' },
+    },
+  ];
 
   if (loadingList) return <LoadingSpinner message="Cargando lista de proyectos..." />;
    if (errorList) return (
@@ -302,51 +382,86 @@ export default function ProyectoDetalle() {
       {/* Pestañas */}
       <div className="flex space-x-4 border-b border-gray-700 mb-4">
         {tabs.map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-2 font-medium ${activeTab === tab ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400'}`}>{tab}</button>
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 font-medium ${
+              activeTab === tab ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400'
+            }`}
+          >
+            {tab}
+          </button>
         ))}
       </div>
 
       {/* Seguimiento Curva S */}
       {activeTab === 'Seguimiento Curva S' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 text-sm md:w-1/4"
+            />
             <div className="flex gap-2 flex-wrap items-center">
               <select onChange={e => setTipoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los tipos</option>
-                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
               </select>
               <select onChange={e => setTecFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todas las tecnologías</option>
-                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => <option key={tec} value={tec}>{tec}</option>)}
+                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => (
+                  <option key={tec} value={tec}>{tec}</option>
+                ))}
               </select>
               <select onChange={e => setDeptoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los departamentos</option>
-                {[...new Set(proyectos.map(p => p.departamento))].map(dep => <option key={dep} value={dep}>{dep}</option>)}
+                {[...new Set(proyectos.map(p => p.departamento))].map(dep => (
+                  <option key={dep} value={dep}>{dep}</option>
+                ))}
               </select>
               <select onChange={e => setCicloFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los ciclos</option>
-                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => <option key={ciclo} value={ciclo}>{ciclo}</option>)}
+                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => (
+                  <option key={ciclo} value={ciclo}>{ciclo}</option>
+                ))}
               </select>
               <select onChange={e => setEstadoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los estados</option>
-                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => <option key={est} value={est}>{est}</option>)}
+                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => (
+                  <option key={est} value={est}>{est}</option>
+                ))}
               </select>
             </div>
-            <button className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500" onClick={() => exportToCSV(filteredNumericData)}>
+            <button
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              onClick={() => exportToCSV(filteredNumeric)}
+            >
               <Download size={16} /> Exportar CSV
             </button>
           </div>
 
           <DataTable
-            columns={[{ name: 'Acciones', cell: row => (
-              <button onClick={() => handleViewCurve(row)} className="bg-yellow-400 text-gray-800 px-2 py-1 rounded text-sm font-semibold hover:bg-yellow-500">Ver curva S</button>
-            ), width: '120px' }, ...baseColumns]}
-            data={filteredNumericData}
-            pagination highlightOnHover pointerOnHover theme="dark"
+            columns={columnsSeguimiento}
+            data={filteredNumeric}
+            pagination
+            highlightOnHover
+            pointerOnHover
+            conditionalRowStyles={conditionalRowStyles}
+            theme="customDark"
           />
 
-          <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow relative">
-            {loadingCurve ? (<p className="text-gray-300">Cargando curva S…</p>) : errorCurve ? (<p className="text-red-500">{errorCurve}</p>) : (<HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />)}
+          <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow">
+            {loadingCurve
+              ? <p className="text-gray-300">Cargando curva S…</p>
+              : errorCurve
+                ? <p className="text-red-500">{errorCurve}</p>
+                : <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />
+            }
           </div>
         </div>
       )}
@@ -354,40 +469,62 @@ export default function ProyectoDetalle() {
       {/* Todos los proyectos */}
       {activeTab === 'Todos los proyectos' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 text-sm md:w-1/4"
+            />
             <div className="flex gap-2 flex-wrap items-center">
               <select onChange={e => setTipoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los tipos</option>
-                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
               </select>
               <select onChange={e => setTecFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todas las tecnologías</option>
-                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => <option key={tec} value={tec}>{tec}</option>)}
+                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => (
+                  <option key={tec} value={tec}>{tec}</option>
+                ))}
               </select>
               <select onChange={e => setDeptoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los departamentos</option>
-                {[...new Set(proyectos.map(p => p.departamento))].map(dep => <option key={dep} value={dep}>{dep}</option>)}
+                {[...new Set(proyectos.map(p => p.departamento))].map(dep => (
+                  <option key={dep} value={dep}>{dep}</option>
+                ))}
               </select>
               <select onChange={e => setCicloFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los ciclos</option>
-                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => <option key={ciclo} value={ciclo}>{ciclo}</option>)}
+                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => (
+                  <option key={ciclo} value={ciclo}>{ciclo}</option>
+                ))}
               </select>
               <select onChange={e => setEstadoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
                 <option value="">Todos los estados</option>
-                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => <option key={est} value={est}>{est}</option>)}
+                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => (
+                  <option key={est} value={est}>{est}</option>
+                ))}
               </select>
             </div>
-            <button className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500" onClick={() => exportToCSV(filteredData)}>
+            <button
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              onClick={() => exportToCSV(filteredGlobal)}
+            >
               <Download size={16} /> Exportar CSV
             </button>
           </div>
 
           <DataTable
-            columns={[{ name: 'Acciones', cell: row => (
-              <button onClick={() => handleViewCurve(row)} className="bg-yellow-400 text-gray-800 px-2 py-1 rounded text-sm font-semibold hover:bg-yellow-500">Ver curva S</button>
-            ), width: '120px' }, ...baseColumns]}
-            data={filteredData}
-            pagination highlightOnHover pointerOnHover theme="dark"
+            columns={baseColumns}
+            data={filteredGlobal}
+            pagination
+            highlightOnHover
+            pointerOnHover
+            theme="customDark"
+            conditionalRowStyles={conditionalRowStyles}
           />
         </div>
       )}
@@ -401,6 +538,7 @@ export default function ProyectoDetalle() {
     </section>
   );
 }
+
 
 
 
