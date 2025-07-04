@@ -249,7 +249,7 @@ export default function ProyectoDetalle() {
       setLoadingList(true);
       setErrorList(null);
       try {
-        const res  = await fetch(`${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const formatted = data.map(p => ({
@@ -275,7 +275,7 @@ export default function ProyectoDetalle() {
     setLoadingCurve(true);
     setErrorCurve(null);
     try {
-      const res  = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const title = `Curva S – Proyecto ${id}`;
