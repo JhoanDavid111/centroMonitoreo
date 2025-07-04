@@ -11,6 +11,7 @@ import { Download, Search } from 'lucide-react';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA'; // Nuevo import
 
+
 // ——— Inicializar módulos de Highcharts ———
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
@@ -47,6 +48,27 @@ Highcharts.setOptions({
     style:           { color: '#fff', fontSize: '12px' }
   }
 });
+
+// Componente de Loading reutilizable
+const LoadingSpinner = ({ message = "Cargando datos..." }) => (
+  <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+    <div className="flex space-x-2">
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+      ></div>
+    </div>
+    <p className="text-gray-300 mt-4">{message}</p>
+  </div>
+);
 
 // ——— Columnas DataTable ———
 const columns = [
@@ -100,6 +122,36 @@ const baseChartOptions = {
   }
 };
 
+// Componente de botón de ayuda reutilizable
+const HelpButton = ({ onClick, className = "" }) => (
+  <button
+    className={`absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors ${className}`}
+    style={{ width: 30, height: 30 }}
+    title="Ayuda"
+    onClick={onClick}
+    type="button"
+  >
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      className="rounded-full"
+    >
+      <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+      <text
+        x="12"
+        y="18"
+        textAnchor="middle"
+        fontSize="16"
+        fill="#fff"
+        fontWeight="bold"
+        fontFamily="Nunito Sans, sans-serif"
+        pointerEvents="none"
+      >?</text>
+    </svg>
+  </button>
+);
+
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
@@ -120,7 +172,7 @@ export default function ProyectoDetalle() {
       setLoadingList(true);
       setErrorList(null);
       try {
-        const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const res  = await fetch(`${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const formatted = data.map(p => ({
@@ -146,7 +198,7 @@ export default function ProyectoDetalle() {
     setLoadingCurve(true);
     setErrorCurve(null);
     try {
-      const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const res  = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const title = `Curva S – Proyecto ${id}`;
@@ -177,8 +229,26 @@ export default function ProyectoDetalle() {
   );
   const filteredNumeric = filteredAll.filter(row => /^[0-9]+$/.test(row.id));
 
-  if (loadingList) return <p className="text-gray-300">Cargando proyectos…</p>;
-  if (errorList)   return <p className="text-red-500">{errorList}</p>;
+  if (loadingList) return <LoadingSpinner message="Cargando lista de proyectos..." />;
+   if (errorList) return (
+    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-12 w-12 text-red-500 mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <p className="text-red-500 text-center max-w-md">{errorList}</p>
+    </div>
+  );
 
   return (
     <section className="space-y-6">
@@ -221,8 +291,12 @@ export default function ProyectoDetalle() {
               theme="dark"
             />
 
-            {/* Gráfico */}
+            {/* Gráfico de curva S */}
             <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow relative">
+                <HelpButton 
+              onClick={() => alert('Esta gráfica muestra el avance del proyecto seleccionado a lo largo del tiempo.')}
+              className="absolute top-2 right-2"
+            />
               {loadingCurve ? (
                 <p className="text-gray-300">Cargando curva S…</p>
               ) : errorCurve ? (
@@ -236,7 +310,8 @@ export default function ProyectoDetalle() {
       )}
 
       {activeTab === 'Todos los proyectos' && (
-        <div className="bg-[#262626] p-4 rounded-lg shadow">
+        <div className="bg-[#262626] p-4 rounded-lg shadow relative">
+           
           <div className="flex justify-between mb-4">
             <div className="relative">
               <Search className="absolute left-2 top-2 text-gray-400" />
@@ -260,6 +335,7 @@ export default function ProyectoDetalle() {
 
       {activeTab === 'Proyectos ANLA' && (
         <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
+         
            <GraficaANLA />
         </div>
       )}
