@@ -348,7 +348,7 @@ export default function GraficaANLA() {
             <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
             <text
               x="12"
-              y="16"
+              y="18"
               textAnchor="middle"
               fontSize="16"
               fill="#fff"
@@ -368,14 +368,56 @@ export default function GraficaANLA() {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {seriesData.map((serie, index) => (
-          <div key={index} className="bg-[#262626] border border-[#666666] h-[420px] p-1">
+          <div key={index} className="bg-[#262626] border border-[#666666] h-[420px] p-1  relative h-[420px]">
+            <button
+          className="absolute top-[13px] right-[48px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          style={{ width: 30, height: 30 }}
+          title="Ayuda"
+          onClick={() => alert(`Gráfica de ${serie.name}: Muestra la capacidad instalada licenciada en MW por año.`)}
+          type="button"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+            <text
+              x="12"
+              y="18"
+              textAnchor="middle"
+              fontSize="16"
+              fill="#fff"
+              fontWeight="bold"
+              fontFamily="Nunito Sans, sans-serif"
+              pointerEvents="none"
+            >?</text>
+          </svg>
+        </button>
             <HighchartsReact highcharts={Highcharts} options={getChartOptions(serie, index)} />
           </div>
         ))}
       </div>
       
       {/* Gráfico de tiempos promedio */}
-      <div className="bg-[#262626] border border-[#666666]">
+      <div className="bg-[#262626] border border-[#666666] relative">
+        <button
+          className="absolute top-[10px] right-[42px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          style={{ width: 30, height: 30 }}
+          title="Ayuda"
+          onClick={() => alert('Muestra el tiempo promedio en días que tarda la aprobación de licencias por departamento.')}
+          type="button"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+            <text
+              x="12"
+              y="18"
+              textAnchor="middle"
+              fontSize="16"
+              fill="#fff"
+              fontWeight="bold"
+              fontFamily="Nunito Sans, sans-serif"
+              pointerEvents="none"
+            >?</text>
+          </svg>
+        </button>
         <HighchartsReact highcharts={Highcharts} options={tiempoPromedioANLAOptions} />
       </div>
     </div>

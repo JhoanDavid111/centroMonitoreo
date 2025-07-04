@@ -20,7 +20,7 @@ export function CapacidadInstalada() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
+    fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
@@ -207,6 +207,7 @@ export function CapacidadInstalada() {
 }
 
 export default CapacidadInstalada;
+
 
 
 

@@ -115,7 +115,7 @@ export function GeneracionHoraria() {
         tickInterval: 1,
         title: {
           text: 'Hora del día',
-          style: { color: '#ccc' }
+          style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
         },
         labels: {
           style: { color: '#ccc', fontSize: '12px' }
@@ -127,10 +127,10 @@ export function GeneracionHoraria() {
         max:160000 , 
         title: {
           text: 'Generación (kWh)',
-          style: { color: '#ccc' }
+          style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
         },
         labels: {
-          style: { color: '#ccc', fontSize: '12px' }
+          style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
         },
         gridLineColor: '#333'
       },
@@ -147,7 +147,7 @@ export function GeneracionHoraria() {
         }
       },
       legend: {
-        itemStyle: { color: '#ccc' },
+        itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
         itemHoverStyle: { color: '#fff' },
         itemHiddenStyle: { color: '#666' }
       },
