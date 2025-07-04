@@ -1,4 +1,3 @@
-// src/components/CapacidadInstalada.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -8,6 +7,7 @@ import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
 
+// Inicializar módulos de Highcharts
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
@@ -20,21 +20,18 @@ export function CapacidadInstalada() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
+    fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
       .then(r => r.json())
       .then(data => {
+        // Ordenar por fecha
         const sorted = [...data].sort(
           (a, b) => new Date(a.fecha_entrada_operacion) - new Date(b.fecha_entrada_operacion)
         );
 
-        const categories = sorted.map(item =>
-          item.fecha_entrada_operacion.slice(0, 10)
-        );
-
-        // Detectar las fuentes de energía dinámicamente
+        // Detección dinámica de fuentes de energía
         const allFuentes = Object.keys(sorted[0]).filter(k => k !== 'fecha_entrada_operacion');
 
         const colorMap = {
@@ -46,15 +43,16 @@ export function CapacidadInstalada() {
           'RAD SOLAR': '#FFC800'
         };
 
+        // Crear series con datos [timestamp, valor]
         const series = allFuentes.map(fuente => {
           let lastValue = 0;
           const dataPoints = sorted.map(item => {
+            const time = new Date(item.fecha_entrada_operacion).getTime();
             if (item[fuente] !== undefined) {
               lastValue = item[fuente];
             }
-            return { y: lastValue, proyecto: '' };
+            return [time, lastValue];
           });
-
           return {
             name: fuente,
             data: dataPoints,
@@ -62,46 +60,36 @@ export function CapacidadInstalada() {
           };
         });
 
+        // Configuración de opciones de Highcharts
         setOptions({
-          legend: {
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            y: 25,
-            itemStyle: {
-              color: '#ccc',
-              fontSize: '12px'
-            },
-            itemHoverStyle: {
-              color: '#fff'
-            }
-          },
           chart: {
             type: 'area',
             backgroundColor: '#262626',
             height: 450,
             marginBottom: 100
           },
-          title: { 
+          title: {
             text: 'Capacidad acumulada por tipo de proyecto',
-            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' },
+            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' }
           },
-          subtitle: {
-            text: '',
-            style: { color: '#AAA', fontSize: '12px' }
-          },
+          subtitle: { text: '', style: { color: '#AAA', fontSize: '12px' } },
           xAxis: {
-            categories,
-            tickInterval: Math.ceil(categories.length / 10),
+            type: 'datetime',
+            dateTimeLabelFormats: {
+              day: '%e %b %Y',
+              month: '%b \'%y',
+              year: '%Y'
+            },
             labels: {
               rotation: -45,
               y: 18,
-              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
+              style: {
+                color: '#CCC',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontSize: '12px'
+              }
             },
-            title: {
-              text: 'Fecha de entrada en operación',
-              style: { color: '#FFF' }
-            },
+            title: { text: 'Fecha de entrada en operación', style: { color: '#FFF' } },
             lineColor: '#555',
             tickColor: '#888',
             tickLength: 5
@@ -119,7 +107,11 @@ export function CapacidadInstalada() {
               formatter() {
                 return this.value.toLocaleString() + ' MW';
               },
-              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
+              style: {
+                color: '#CCC',
+                fontFamily: 'Nunito Sans, sans-serif',
+                fontSize: '12px'
+              }
             }
           },
           tooltip: {
@@ -127,9 +119,9 @@ export function CapacidadInstalada() {
             style: { color: '#FFF', fontSize: '12px' },
             shared: true,
             formatter() {
-              let s = `<b>Fecha: ${this.x}</b>`;
+              let s = `<b>Fecha: ${Highcharts.dateFormat('%e %b %Y', this.x)}</b>`;
               this.points.forEach(pt => {
-                s += `<br/><span style="color:${pt.color}">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString()} MW</b>`;
+                s += `<br/><span style=\"color:${pt.color}\">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString()} MW</b>`;
               });
               return s;
             }
@@ -142,6 +134,14 @@ export function CapacidadInstalada() {
             }
           },
           series,
+          legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'bottom',
+            y: 25,
+            itemStyle: { color: '#ccc', fontSize: '12px' },
+            itemHoverStyle: { color: '#fff' }
+          },
           exporting: {
             enabled: true,
             buttons: {
@@ -152,6 +152,7 @@ export function CapacidadInstalada() {
           }
         });
 
+        // Forzar redraw tras carga
         setTimeout(() => chartRef.current?.chart?.redraw(), 200);
       })
       .catch(err => console.error('Error al cargar datos:', err))
@@ -162,18 +163,9 @@ export function CapacidadInstalada() {
     return (
       <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
-          ></div>
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
-          ></div>
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
-          ></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }} />
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }} />
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }} />
         </div>
         <p className="text-gray-300 mt-4">Cargando capacidad instalada...</p>
       </div>
@@ -181,61 +173,41 @@ export function CapacidadInstalada() {
   }
 
   if (!options) return null;
-  /*
+
   return (
     <section className="mt-8">
       <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative">
+        {/* Botón de ayuda superpuesto */}
         <button
-          className="absolute top-2 right-2 text-gray-300 hover:text-white"
-          onClick={() => chartRef.current.chart.fullscreen.toggle()}
-          title="Maximizar gráfico"
+          className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          style={{ width: 30, height: 30 }}
+          title="Ayuda"
+          onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+          type="button"
         >
-          ⛶
+          <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+            <text
+              x="12"
+              y="18"
+              textAnchor="middle"
+              fontSize="16"
+              fill="#fff"
+              fontWeight="bold"
+              fontFamily="Nunito Sans, sans-serif"
+              pointerEvents="none"
+            >?</text>
+          </svg>
         </button>
+        {/* Gráfica */}
         <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
     </section>
   );
-  */
-  return (
-   <section className="mt-8">
-    <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative">
-      {/* Botón de ayuda superpuesto */}
-      <button
-        className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-        style={{ width: 30, height: 30 }}
-        title="Ayuda"
-        onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
-        type="button"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          className="rounded-full"
-        >
-          <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-          <text
-            x="12"
-            y="18"
-            textAnchor="middle"
-            fontSize="16"
-            fill="#fff"
-            fontWeight="bold"
-            fontFamily="Nunito Sans, sans-serif"
-            pointerEvents="none"
-          >?</text>
-        </svg>
-      </button>
-      {/* Gráfica */}
-      <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
-    </div>
-  </section>
-);
-
 }
 
 export default CapacidadInstalada;
+
 
 
 
