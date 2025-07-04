@@ -84,6 +84,7 @@ const columns = [
   { name: 'FPO',             selector: row => row.fpo,                  sortable: true },
   { name: 'Priorizado',      selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
   { name: 'Avance (%)',      selector: row => row.porcentaje_avance_display, sortable: true }
+]
 // ——— Función para exportar a CSV ———
 function exportToCSV(data) {
   if (!data.length) return;
