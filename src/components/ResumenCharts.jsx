@@ -42,10 +42,16 @@ Highcharts.setOptions({
 export function ResumenCharts() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const chartRefs = useRef([]);
 
   useEffect(() => {
     async function fetchData() {
+      try{
+        setLoading(true);
+        setError(null);
+      
       const techJson = await (await fetch(
         `${API}/v1/graficas/6g_proyecto/capacidad_por_tecnologia`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
@@ -278,10 +284,59 @@ export function ResumenCharts() {
       });
 
       setCharts(opts);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message || 'Error al cargar los datos');
+    } finally {
+      setLoading(false);
     }
+  }
 
-    fetchData().catch(console.error);
+    fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+        <div className="flex space-x-2">
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+          ></div>
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+          ></div>
+          <div
+            className="w-3 h-3 rounded-full animate-bounce"
+            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+          ></div>
+        </div>
+        <p className="text-gray-300 mt-4">Cargando gráficas resumen...</p>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12 text-red-500 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p className="text-red-500 text-center max-w-md">{error}</p>
+      </div>
+    );
+  }
 
   const isFiltered = selected !== 'all';
   const gridClasses = isFiltered
@@ -319,12 +374,33 @@ export function ResumenCharts() {
             className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
           >
             <button
-              className="absolute top-2 right-2 text-gray-300 hover:text-white"
-              onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
-              title="Maximizar gráfico"
-            >
-              ⛶
-            </button>
+              className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+              style={{ width: 30, height: 30 }}
+              title="Ayuda"
+              onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+              type="button"
+              >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                className="rounded-full"
+              >
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text
+                x="12"
+                y="18"
+                textAnchor="middle"
+                fontSize="16"
+                fill="#fff"
+                fontWeight="bold"
+                fontFamily="Nunito Sans, sans-serif"
+                pointerEvents="none"
+              >?</text>
+        </svg>
+      </button>
+      {/* Gráfica */}
+           
             <HighchartsReact
               highcharts={Highcharts}
               options={opt}

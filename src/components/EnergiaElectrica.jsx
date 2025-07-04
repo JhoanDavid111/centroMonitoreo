@@ -49,9 +49,18 @@ export function EnergiaElectrica() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
   const [loading, setLoading] = useState(true); // ← Nuevo estado
+  const [error, setError] = useState(null);
   const chartRefs = useRef([]);
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+    if (loading) {
+      setError('Error al cargar la imagen: Energía Eléctrica, El servidor está tardando demasiado en responder.Por favor, inténtelo más tarde.');
+      setLoading(false);
+    }
+  }, 20000); // 10 segundos
+
+  return () => clearTimeout(timeoutId);
     async function fetchData() {
       setLoading(true); // ← Inicia loading
       try {
@@ -60,6 +69,10 @@ export function EnergiaElectrica() {
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({ fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' })
         });
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+      }
+
         const data = await res.json();
 
         // --- Procesar datos como antes...
@@ -181,7 +194,7 @@ export function EnergiaElectrica() {
 
     }
     fetchData();
-  }, []);
+  }, [loading]);
 
   const isFiltered = selected !== 'all';
   const gridClasses = isFiltered ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
@@ -208,6 +221,27 @@ export function EnergiaElectrica() {
           ></div>
         </div>
         <p className="text-gray-300 mt-4">Cargando energía eléctrica...</p>
+      </div>
+    );
+  }
+    if (error) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12 text-red-500 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p className="text-red-500 text-center max-w-md">{error}</p>
       </div>
     );
   }

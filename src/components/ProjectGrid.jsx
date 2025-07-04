@@ -10,6 +10,7 @@ import { Download } from 'lucide-react';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
 
+
 // ——— Inicializar módulos de Highcharts ———
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
@@ -47,6 +48,42 @@ Highcharts.setOptions({
   },
 });
 
+// Componente de Loading reutilizable
+const LoadingSpinner = ({ message = "Cargando datos..." }) => (
+  <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+    <div className="flex space-x-2">
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+      ></div>
+    </div>
+    <p className="text-gray-300 mt-4">{message}</p>
+  </div>
+);
+
+// ——— Columnas DataTable ———
+const columns = [
+  { name: 'ID',              selector: row => row.id,                   sortable: true },
+  { name: 'Nombre',          selector: row => row.nombre_proyecto,      sortable: true },
+  { name: 'Tipo',            selector: row => row.tipo_proyecto,        sortable: true },
+  { name: 'Tecnología',      selector: row => row.tecnologia,           sortable: true },
+  { name: 'Ciclo',           selector: row => row.ciclo_asignacion,     sortable: true },
+  { name: 'Promotor',        selector: row => row.promotor,             sortable: true },
+  { name: 'Estado',          selector: row => row.estado_proyecto,      sortable: true },
+  { name: 'Departamento',    selector: row => row.departamento,         sortable: true },
+  { name: 'Municipio',       selector: row => row.municipio,            sortable: true },
+  { name: 'Capacidad (MW)',  selector: row => row.capacidad_instalada_mw,sortable: true },
+  { name: 'FPO',             selector: row => row.fpo,                  sortable: true },
+  { name: 'Priorizado',      selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
+  { name: 'Avance (%)',      selector: row => row.porcentaje_avance_display, sortable: true }
 // ——— Función para exportar a CSV ———
 function exportToCSV(data) {
   if (!data.length) return;
@@ -119,7 +156,37 @@ const baseChartOptions = {
   },
 };
 
-export default function ProjectGrid() {
+// Componente de botón de ayuda reutilizable
+const HelpButton = ({ onClick, className = "" }) => (
+  <button
+    className={`absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors ${className}`}
+    style={{ width: 30, height: 30 }}
+    title="Ayuda"
+    onClick={onClick}
+    type="button"
+  >
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      className="rounded-full"
+    >
+      <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+      <text
+        x="12"
+        y="18"
+        textAnchor="middle"
+        fontSize="16"
+        fill="#fff"
+        fontWeight="bold"
+        fontFamily="Nunito Sans, sans-serif"
+        pointerEvents="none"
+      >?</text>
+    </svg>
+  </button>
+);
+
+export default function ProyectoDetalle() {
   const chartRef = useRef(null);
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -145,9 +212,7 @@ export default function ProjectGrid() {
       setLoadingList(true);
       setErrorList(null);
       try {
-        const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-        });
+        const res  = await fetch(`${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const formatted = data.map(p => ({
@@ -173,9 +238,7 @@ export default function ProjectGrid() {
     setLoadingCurve(true);
     setErrorCurve(null);
     try {
-      const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-      });
+      const res  = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const title = `Curva S – Proyecto ${id}`;
@@ -210,8 +273,26 @@ export default function ProjectGrid() {
 
   const filteredNumericData = filteredData.filter(row => /^[0-9]+$/.test(row.id));
 
-  if (loadingList) return <p className="text-gray-300">Cargando proyectos…</p>;
-  if (errorList)   return <p className="text-red-500">{errorList}</p>;
+  if (loadingList) return <LoadingSpinner message="Cargando lista de proyectos..." />;
+   if (errorList) return (
+    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-12 w-12 text-red-500 mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <p className="text-red-500 text-center max-w-md">{errorList}</p>
+    </div>
+  );
 
   return (
     <section className="space-y-6">
