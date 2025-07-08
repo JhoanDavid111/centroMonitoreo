@@ -35,7 +35,7 @@ export default function Proyectos075() {
                         Seguimiento de ciclos de asignación
                     </button>
                 </div>
-
+                {/* Botón deshabilitado para búsqueda
                 <div className="relative">
                     <Search size={20} className="absolute left-2 top-2 text-gray-400" />
                     <input
@@ -44,6 +44,7 @@ export default function Proyectos075() {
                         className="pl-8 pr-3 py-1 rounded bg-[#1f1f1f] text-white font-sans focus:outline-none"
                     />
                 </div>
+                */}        
             </div>
 
             {!showCiclos ? (
