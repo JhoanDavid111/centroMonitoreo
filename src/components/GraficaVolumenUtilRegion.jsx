@@ -3,6 +3,74 @@ import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
+import { CACHE_CONFIG } from '../config/cacheConfig'; 
+
+// Configuración de caché
+const CACHE_PREFIX = 'chart-cache-';
+const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
+
+// Caché en memoria para la sesión actual
+const memoryCache = new Map();
+
+// Helper para obtener datos del caché
+const getFromCache = (key) => {
+  // Primero verificar caché en memoria
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key);
+  }
+
+  // Si no está en memoria, verificar localStorage
+  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+  if (!cachedItem) return null;
+
+  try {
+    const { data, timestamp } = JSON.parse(cachedItem);
+    
+    // Verificar si el caché ha expirado
+    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
+      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+      return null;
+    }
+
+    // Almacenar en memoria para acceso más rápido
+    memoryCache.set(key, data);
+    return data;
+  } catch (e) {
+    console.error('Error parsing cache', e);
+    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+    return null;
+  }
+};
+
+// Helper para guardar datos en el caché
+const setToCache = (key, data) => {
+  const timestamp = Date.now();
+  const cacheItem = JSON.stringify({ data, timestamp });
+  
+  // Almacenar en ambos niveles de caché
+  memoryCache.set(key, data);
+  
+  try {
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  } catch (e) {
+    console.error('LocalStorage is full, clearing oldest items...');
+    // Limpieza de caché si está lleno (mantener solo los 50 más recientes)
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith(CACHE_PREFIX))
+      .map(k => ({
+        key: k,
+        timestamp: JSON.parse(localStorage.getItem(k)).timestamp
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    keys.slice(50).forEach(item => {
+      localStorage.removeItem(item.key);
+    });
+    
+    // Intentar nuevamente
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  }
+};
 
 export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin = '2025-05-03' }) {
   const [options, setOptions] = useState(null);
@@ -11,7 +79,21 @@ export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin 
   const chartRef = useRef(null);
 
   useEffect(() => {
+    
     async function fetchData() {
+      // Generar una clave única para el caché basada en los parámetros
+      const cacheKey = `volumen_util_region_${fechaInicio}_${fechaFin}`;
+
+        // Verificar caché primero
+      const cachedData = getFromCache(cacheKey);  
+
+      // Verificar si los datos están en caché
+      if (cachedData) {
+        setOptions(cachedData);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
@@ -30,10 +112,10 @@ export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin 
           return d[key];
         });
 
-        setOptions({
+       const chartOptions = {
           chart: { type: 'column', height: 350 },
-          title: { text: 'Volumen útil por región (mes)' },
-          subtitle: { text: `Fuente: API. ${fechaInicio} → ${fechaFin}` },
+          title: { text: 'Volumen útil por región (mes)', align: 'left' },
+          subtitle: { text: `Fuente: API. ${fechaInicio} → ${fechaFin}`, align: 'left' },
           xAxis: { categories, title: { text: 'Región' } },
           yAxis: { title: { text: 'Volumen (m³)' } },
           series: [
@@ -47,7 +129,10 @@ export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin 
               }
             }
           }
-        });
+        };
+           // Almacenar en caché los datos y opciones
+        setOptions(chartOptions);
+        setToCache(cacheKey, chartOptions); // Almacenar en caché
       } catch (err) {
         console.error(err);
         setError('No fue posible cargar la gráfica de volumen por región.');
