@@ -5,9 +5,10 @@ import { CapacidadHistorica } from '../components/CapacidadHistorica'
 import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
 import { GeneracionHoraria } from '../components/GeneracionHoraria';
-import { MapaCreg075 } from '../components/MapaCreg075';
-import { MapaCreg174 } from '../components/MapaCreg174';
+import MapaCreg075 from '../components/MapaCreg075';
+import MapaCreg174 from '../components/MapaCreg174';
 import { GeneracionDespacho } from '../components/GeneracionDespacho';
+import MapasCreg from '../components/MapasCreg'
 
 /* Iconos SVG  */
 import { HelpCircle } from 'lucide-react'
@@ -161,12 +162,7 @@ export default function Resumen() {
         <CapacidadInstalada />
       </div>
       <ResumenCharts />
-      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
-        <MapaCreg075 />
-      </div>
-      <div className='bg-[#262626]  p-[32px] rounded-md border border-[#666666] shadow-white-400'>
-        <MapaCreg174 />
-      </div>
+      <MapasCreg/>
       <GeneracionDespacho />
       <GeneracionHoraria />
     </div>
