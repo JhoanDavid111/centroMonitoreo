@@ -9,6 +9,7 @@ import HighchartsReact from 'highcharts-react-official';
 import { MRT_Table, useMaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Tooltip, Typography, TextField } from '@mui/material';
 import { Download } from 'lucide-react';
+import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
