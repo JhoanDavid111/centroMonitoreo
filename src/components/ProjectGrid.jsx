@@ -28,7 +28,7 @@ export default function ProyectoDetalle() {
   const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
-    fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, {
+    fetch(`${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -51,7 +51,7 @@ export default function ProyectoDetalle() {
   const handleViewCurve = async (row) => {
     const id = row.id;
     try {
-      const res = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, {
+      const res = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
