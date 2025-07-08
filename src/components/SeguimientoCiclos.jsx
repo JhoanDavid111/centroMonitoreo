@@ -599,110 +599,6 @@ const capacidadDeptoC2Options = {
   }]
 };
 
-const resumenANLAOptions = {
-  chart: {
-    type: 'column',
-    backgroundColor: '#262626',
-    spacing: [10, 10, 30, 10]
-  },
-  title: {
-    text: 'Licencias FNCER otorgadas desde 07/08/2022 hasta la fecha',
-    style: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      color: '#fff'
-    }
-  },
-  xAxis: {
-    type: 'category',
-    categories: ['2022', '2023', '2024', '2025'],
-    tickPositions: [0, 1, 2, 3],
-    labels: {
-      enabled: true,
-      step: 1,
-      autoRotation: false,
-      rotation: 0,
-      style: {
-        fontSize: '12px',
-        fontWeight: 'bold',
-        color: '#eee'
-      }
-    }
-  },
-  yAxis: {
-    min: 0,
-    title: {
-      text: 'Cantidad de Licencias FNCER otorgadas',
-      style: { fontWeight: 'bold', color: '#ccc' }
-    },
-    labels: {
-      style: { fontSize: '12px', color: '#ddd' }
-    },
-    stackLabels: {
-      enabled: true,
-      style: {
-        fontWeight: 'bold',
-        color: '#fff',
-        textOutline: 'none'
-      }
-    },
-    gridLineColor: '#333'
-  },
-  legend: {
-    align: 'right',
-    verticalAlign: 'top',
-    x: -30,
-    y: 25,
-    floating: true,
-    backgroundColor: '#1f1f1f',
-    borderColor: '#555',
-    borderWidth: 1,
-    itemStyle: {
-      color: '#ccc',
-      fontWeight: 'bold'
-    }
-  },
-  tooltip: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-    style: { color: '#fff' },
-    headerFormat: '<b>{category}</b><br/>',
-    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
-    useHTML: true
-  },
-  plotOptions: {
-    column: {
-      stacking: 'normal',
-      borderWidth: 0,
-      dataLabels: {
-        enabled: true,
-        style: {
-          color: '#fff',
-          fontWeight: 'bold',
-          textOutline: 'none'
-        }
-      }
-    }
-  },
-  series: [
-    {
-      name: 'Eólico',
-      data: [1, 1, 0, 0],
-      color: '#39FF14'
-    },
-    {
-      name: 'Fotovoltaico',
-      data: [4, 3, 4, 5],
-      color: '#7FFF00'
-    },
-    {
-      name: 'LT',
-      data: [2, 6, 4, 3],
-      color: '#228B22'
-    }
-  ],
-  credits: { enabled: false }
-};
 
 const datosTiempos = [
   { name: 'Cundinamarca', dias: 199 },
@@ -720,102 +616,6 @@ const viridisPalette = [
   '#1fa187', '#4ac16d', '#a0da39', '#fde725'
 ];
 
-const tiempoPromedioANLAOptions = {
-  chart: {
-    type: 'bar',
-    backgroundColor: '#262626',
-    style: {
-      fontFamily: 'Nunito Sans, Segoe UI, sans-serif'
-    },
-    spacing: [10, 10, 30, 10]
-  },
-  title: {
-    text: 'Tiempo Promedio de Aprobación de Licencias por Departamento',
-    style: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      color: '#fff'
-    }
-  },
-  subtitle: {
-    text: 'Desde la fecha de inicio hasta la fecha de la licencia',
-    style: {
-      fontSize: '14px',
-      color: '#ccc'
-    }
-  },
-  xAxis: {
-    categories: datosTiempos.map(i => i.name),
-    tickPositions: [0, 1, 2, 3, 4, 5, 6, 7],
-    labels: {
-      enabled: true,
-      step: 1,
-      autoRotation: false,
-      rotation: 0,
-      style: {
-        fontSize: '13px',
-        fontWeight: 'bold',
-        color: '#eee'
-      }
-    },
-    gridLineColor: '#333',
-    lineColor: '#444'
-  },
-  yAxis: {
-    title: {
-      text: null
-    },
-    labels: {
-      style: {
-        color: '#ccc',
-        fontSize: '12px'
-      }
-    },
-    gridLineColor: '#333'
-  },
-  tooltip: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#333',
-    style: { color: '#fff' },
-    valueSuffix: ' días',
-    pointFormat: 'Promedio de aprobación: <b>{point.y} días</b>',
-    useHTML: true
-  },
-  plotOptions: {
-    bar: {
-      borderRadius: 4,
-      dataLabels: {
-        enabled: true,
-        format: '{point.y} días',
-        color: '#fff',
-        inside: true,
-        align: 'right',
-        style: {
-          fontWeight: 'bold',
-          fontSize: '12px',
-          textOutline: 'none'
-        }
-      }
-    }
-  },
-  series: [{
-    name: 'Tiempo Promedio de Aprobación (Días)',
-    data: datosTiempos.map((item, index) => ({
-      name: item.name,
-      y: item.dias,
-      color: viridisPalette[index]
-    }))
-  }],
-  credits: {
-    enabled: true,
-    text: 'Fuente: ANLA - Datos procesados por la UPME',
-    style: {
-      fontSize: '10px',
-      color: '#999'
-    }
-  },
-  legend: { enabled: false }
-};
 
 const seriesData = [
   {
@@ -977,34 +777,7 @@ export function GraficaCiclo2() {
   );
 }
 
-export function GraficaANLA() {
-  return (
-      <div className="flex flex-col gap-4">
-        {/* Bloque 1 */}
-        <div className="bg-[#262626] border border-[#666666]">
-          <HighchartsReact highcharts={Highcharts} options={resumenANLAOptions} />
-        </div>
 
-        <h2 className="text-xl font-semibold mb-4 text-white">Evolución de la capacidad instalada Licienciada por Departamento</h2>
-
-        {/* Bloque 2 expandido: subgrilla 3x3 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {seriesData.map((serie, index) => (
-              <div key={index} className="bg-[#262626] border border-[#666666] h-[420px] p-1">
-                <HighchartsReact highcharts={Highcharts} options={getChartOptions(serie, index)} />
-              </div>
-          ))}
-
-        </div>
-
-        {/* Bloque 3 */}
-        <div className="bg-[#262626] border border-[#666666]">
-          <HighchartsReact highcharts={Highcharts} options={tiempoPromedioANLAOptions} />
-        </div>
-
-      </div>
-  );
-}
 
 export default function SeguimientoCiclos() {
   const [ciclo, setCiclo] = useState(1);
@@ -1033,22 +806,13 @@ export default function SeguimientoCiclos() {
         >
           Ciclo 2
         </button>
-        <button
-            className={`pb-1 border-b-2 transition ${
-                ciclo === 3
-                    ? 'border-[#FFC800] text-[#FFC800]'
-                    : 'border-transparent text-gray-300'
-            }`}
-            onClick={() => setCiclo(3)}
-        >
-          ANLA
-        </button>
+
       </div>
 
       <div className="mt-4">
         {ciclo === 1 && <GraficaCiclo1 />}
         {ciclo === 2 && <GraficaCiclo2 />}
-        {ciclo === 3 && <GraficaANLA />}
+
       </div>
     </div>
   );

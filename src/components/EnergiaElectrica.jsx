@@ -49,9 +49,18 @@ export function EnergiaElectrica() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
   const [loading, setLoading] = useState(true); // ← Nuevo estado
+  const [error, setError] = useState(null);
   const chartRefs = useRef([]);
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+    if (loading) {
+      setError('Error al cargar la imagen: Energía Eléctrica, El servidor está tardando demasiado en responder.Por favor, inténtelo más tarde.');
+      setLoading(false);
+    }
+  }, 20000); // 10 segundos
+
+  return () => clearTimeout(timeoutId);
     async function fetchData() {
       setLoading(true); // ← Inicia loading
       try {
@@ -60,6 +69,10 @@ export function EnergiaElectrica() {
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({ fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' })
         });
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+      }
+
         const data = await res.json();
 
         // --- Procesar datos como antes...
@@ -181,7 +194,7 @@ export function EnergiaElectrica() {
 
     }
     fetchData();
-  }, []);
+  }, [loading]);
 
   const isFiltered = selected !== 'all';
   const gridClasses = isFiltered ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
@@ -208,6 +221,27 @@ export function EnergiaElectrica() {
           ></div>
         </div>
         <p className="text-gray-300 mt-4">Cargando energía eléctrica...</p>
+      </div>
+    );
+  }
+    if (error) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12 text-red-500 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p className="text-red-500 text-center max-w-md">{error}</p>
       </div>
     );
   }
@@ -244,11 +278,39 @@ export function EnergiaElectrica() {
               key={idx}
               className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
-              <button
+            {/*   <button
                 className="absolute top-2 right-2 text-gray-300 hover:text-white"
                 onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
                 title="Maximizar gráfico"
-              >⛶</button>
+              >⛶</button> */}
+
+              {/* Botón de ayuda */}
+              <button
+                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+                style={{ width: 30, height: 30 }}
+                title="Ayuda"
+                onClick={() => alert('Ok Aquí puedes mostrar ayuda contextual o abrir un modal.')}
+                type="button"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  className="rounded-full"
+                >
+                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                  <text
+                    x="12"
+                    y="18"
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#fff"
+                    fontWeight="bold"
+                    fontFamily="Nunito Sans, sans-serif"
+                    pointerEvents="none"
+                  >?</text>
+                </svg>
+              </button>
 
               <HighchartsReact
                 highcharts={Highcharts}

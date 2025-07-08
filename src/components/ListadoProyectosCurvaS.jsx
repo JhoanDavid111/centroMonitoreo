@@ -3,6 +3,74 @@ import React, { useEffect, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
+import { CACHE_CONFIG } from '../config/cacheConfig'; 
+
+// Configuración de caché
+const CACHE_PREFIX = 'chart-cache-';
+const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS; 
+
+// Caché en memoria para la sesión actual
+const memoryCache = new Map();
+
+// Helper para obtener datos del caché
+const getFromCache = (key) => {
+  // Primero verificar caché en memoria
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key);
+  }
+
+  // Si no está en memoria, verificar localStorage
+  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+  if (!cachedItem) return null;
+
+  try {
+    const { data, timestamp } = JSON.parse(cachedItem);
+    
+    // Verificar si el caché ha expirado
+    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
+      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+      return null;
+    }
+
+    // Almacenar en memoria para acceso más rápido
+    memoryCache.set(key, data);
+    return data;
+  } catch (e) {
+    console.error('Error parsing cache', e);
+    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+    return null;
+  }
+};
+
+// Helper para guardar datos en el caché
+const setToCache = (key, data) => {
+  const timestamp = Date.now();
+  const cacheItem = JSON.stringify({ data, timestamp });
+  
+  // Almacenar en ambos niveles de caché
+  memoryCache.set(key, data);
+  
+  try {
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  } catch (e) {
+    console.error('LocalStorage is full, clearing oldest items...');
+    // Limpieza de caché si está lleno (mantener solo los 50 más recientes)
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith(CACHE_PREFIX))
+      .map(k => ({
+        key: k,
+        timestamp: JSON.parse(localStorage.getItem(k)).timestamp
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    keys.slice(50).forEach(item => {
+      localStorage.removeItem(item.key);
+    });
+    
+    // Intentar nuevamente
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  }
+};
 
 export function ListadoProyectosCurvaS() {
   const [proyectos, setProyectos] = useState([]);
@@ -11,6 +79,17 @@ export function ListadoProyectosCurvaS() {
 
   useEffect(() => {
     async function fetchProyectos() {
+      //crear clave de caché
+      
+      // Recomendado (si puede variar por usuario/filtros)
+      const cacheKey = 'listado_proyectos_curva_s';
+      const cachedData = getFromCache(cacheKey);
+      if (cachedData) {
+        setProyectos(cachedData);
+        setLoading(false);
+        return;   
+      }
+
       setLoading(true);
       setError(null);
       try {
@@ -24,6 +103,10 @@ export function ListadoProyectosCurvaS() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setProyectos(data);
+
+          
+        setToCache(cacheKey, data); // Almacenar en caché
+
       } catch (err) {
         console.error(err);
         setError('No fue posible cargar el listado de proyectos para curva S.');
@@ -101,6 +184,8 @@ export function ListadoProyectosCurvaS() {
     credits: { enabled: false },
     legend: { itemStyle: { color: '#ccc' } }
   };
+
+   
 
   return (
     <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow mb-8">

@@ -3,6 +3,75 @@ import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
+import { CACHE_CONFIG } from '../config/cacheConfig'; 
+
+
+// Configuración de caché
+const CACHE_PREFIX = 'chart-cache-';
+const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS
+
+// Caché en memoria para la sesión actual
+const memoryCache = new Map();
+
+// Helper para obtener datos del caché
+const getFromCache = (key) => {
+  // Primero verificar caché en memoria
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key);
+  }
+
+  // Si no está en memoria, verificar localStorage
+  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+  if (!cachedItem) return null;
+
+  try {
+    const { data, timestamp } = JSON.parse(cachedItem);
+    
+    // Verificar si el caché ha expirado
+    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
+      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+      return null;
+    }
+
+    // Almacenar en memoria para acceso más rápido
+    memoryCache.set(key, data);
+    return data;
+  } catch (e) {
+    console.error('Error parsing cache', e);
+    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+    return null;
+  }
+};
+
+// Helper para guardar datos en el caché
+const setToCache = (key, data) => {
+  const timestamp = Date.now();
+  const cacheItem = JSON.stringify({ data, timestamp });
+  
+  // Almacenar en ambos niveles de caché
+  memoryCache.set(key, data);
+  
+  try {
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  } catch (e) {
+    console.error('LocalStorage is full, clearing oldest items...');
+    // Limpieza de caché si está lleno (mantener solo los 50 más recientes)
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith(CACHE_PREFIX))
+      .map(k => ({
+        key: k,
+        timestamp: JSON.parse(localStorage.getItem(k)).timestamp
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    keys.slice(50).forEach(item => {
+      localStorage.removeItem(item.key);
+    });
+    
+    // Intentar nuevamente
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+  }
+};
 
 export function GraficaCapacidadPorcentajeAvanceCurvaS() {
   const [options, setOptions] = useState(null);
@@ -12,6 +81,17 @@ export function GraficaCapacidadPorcentajeAvanceCurvaS() {
 
   useEffect(() => {
     async function fetchData() {
+      //crear un key único para la caché
+      const cacheKey = 'grafica_capacidad_porcentaje_avance_curva_s';
+
+      // Verificar si ya tenemos datos en caché
+      const cachedData = getFromCache(cacheKey);
+      if (cachedData) {
+        setOptions(cachedData);
+        setLoading(false);
+        return;
+      }   
+
       setLoading(true);
       setError(null);
       try {
@@ -27,10 +107,10 @@ export function GraficaCapacidadPorcentajeAvanceCurvaS() {
         const dataCapacidad = data.map((d) => d.suma_capacidad);
         const dataProyectos = data.map((d) => d.numero_proyectos);
 
-        setOptions({
+        const chartOptions = {
           chart: { type: 'column', height: 350 },
-          title: { text: 'Capacidad instalada vs % de avance' },
-          subtitle: { text: 'Fuente: XM. 2020-2024' },
+          title: { text: 'Capacidad instalada vs % de avance', align: 'left' },
+          subtitle: { text: 'Fuente: XM. 2020-2024', align: 'left' },
           xAxis: {
             categories,
             title: { text: 'Porcentaje de avance' }
@@ -72,7 +152,12 @@ export function GraficaCapacidadPorcentajeAvanceCurvaS() {
               }
             }
           }
-        });
+        };
+
+        setOptions(chartOptions);
+        setToCache(cacheKey, chartOptions); // Almacenar en caché
+
+
       } catch (err) {
         console.error(err);
         setError('No fue posible cargar la gráfica de curva S (capacidad vs porcentaje).');

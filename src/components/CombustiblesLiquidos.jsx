@@ -34,7 +34,7 @@ Highcharts.setOptions({
     gridLineColor:  '#333'
   },
   legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize:'12px' },
     itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
@@ -85,8 +85,11 @@ export function CombustiblesLiquidos() {
           { name: 'Centro',    data: [1800,1850,1900,1950,2000,2100,2200,2300,2400] },
           { name: 'Oriente',   data: [1200,1250,1300,1280,1320,1340,1360,1380,1400] },
           { name: 'Valle',     data: [1100,1120,1140,1160,1180,1200,1220,1240,1260] },
-          { name: 'Caldas',    data: [600,620,640,660,680,700,720,740,760] }
-        ]
+          { name: 'Caldas',    data: [600,620,640,660,680,700,720,740,760] },
+        ],
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
       },
       // 2) Capacidad Instalada Despachada Centralmente por Tecnología
       {
@@ -119,7 +122,10 @@ export function CombustiblesLiquidos() {
           { name: 'JET-A1',      data: [0.6,0.65,0.7,0.75,0.8,0.85,0.9,1,1.1,1.2,1.3] },
           { name: 'COMBUSTOLEO', data: [0.4,0.45,0.5,0.6,0.65,0.7,0.75,0.8,0.85,0.9,1] },
           { name: 'RAD SOLAR',   data: [0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2] }
-        ]
+        ],
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
       },
       // 3) Comparativo Volumen vs. Capacidad
       {
@@ -143,7 +149,10 @@ export function CombustiblesLiquidos() {
         series: [
           { name: 'Volumen útil',       data: [2.5,2.7,2.6,2.8] },
           { name: 'Capacidad instalada', data: [14,14.3,14.5,15] }
-        ]
+        ],
+        legend: {
+          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+        },
       }
     ];
 
@@ -213,12 +222,32 @@ export function CombustiblesLiquidos() {
               key={idx}
               className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
             >
+             {/* Botón de ayuda */}
               <button
-                className="absolute top-2 right-2 text-gray-300 hover:text-white"
-                onClick={() => chartRefs.current[idx].chart.fullscreen.toggle()}
-                title="Maximizar gráfico"
+                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+                style={{ width: 30, height: 30 }}
+                title="Ayuda"
+                onClick={() => alert('Ok Aquí puedes mostrar ayuda contextual o abrir un modal.')}
+                type="button"
               >
-                ⛶
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  className="rounded-full"
+                >
+                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                  <text
+                    x="12"
+                    y="18"
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#fff"
+                    fontWeight="bold"
+                    fontFamily="Nunito Sans, sans-serif"
+                    pointerEvents="none"
+                  >?</text>
+                </svg>
               </button>
               <HighchartsReact
                 highcharts={Highcharts}
