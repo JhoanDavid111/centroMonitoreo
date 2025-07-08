@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { IndicadoresResumen } from './components/IndicadoresResumen';
 import { EnergiaElectrica } from './components/EnergiaElectrica';
+import { CapacidadInstalada } from './components/CapacidadInstalada';
 import { MapaEmbalses } from './components/MapaEmbalses';
 import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
@@ -84,7 +85,7 @@ function AppContent() {
               <>
                 <Banner6GW />
                 <IndicadoresResumen />
-                <EnergiaElectrica />
+                <CapacidadInstalada />
                 <MapaEmbalses />
                 <CombustiblesLiquidos />
                 <TablaProyectosEnergia />
