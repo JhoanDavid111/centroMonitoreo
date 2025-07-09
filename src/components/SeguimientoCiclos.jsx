@@ -16,31 +16,31 @@ FullScreen(Highcharts);
 Accessibility(Highcharts);
 
 const capacidadDeptoC2Data = [
-  { name: 'CORDOBA', y: 13664.6,  color: '#39FF14' },
-  { name: 'SANTANDER', y: 10271.27, color: '#0B6623' },
-  { name: 'LA GUAJIRA', y: 9290.7,  color: '#7FFF00' },
-  { name: 'CESAR', y: 9010.83,      color: '#228B22' },
-  { name: 'ANTIOQUIA', y: 6065.53,  color: '#39FF14' },
-  { name: 'BOLIVAR', y: 5896.42,    color: '#0B6623' },
-  { name: 'CAUCA', y: 5088.6,       color: '#7FFF00' },
-  { name: 'VALLE DEL CAUCA', y: 5066.1, color: '#228B22' },
-  { name: 'TOLIMA', y: 4342.0,      color: '#39FF14' },
-  { name: 'NORTE DE SANTANDER', y: 3831.68, color: '#0B6623' },
-  { name: 'SUCRE', y: 3706.2,       color: '#7FFF00' },
-  { name: 'ATLANTICO', y: 3400.4,   color: '#228B22' },
-  { name: 'CUNDINAMARCA', y: 3348.4, color: '#39FF14' },
-  { name: 'CALDAS', y: 3213.08,     color: '#0B6623' },
-  { name: 'HUILA', y: 3082.79,      color: '#7FFF00' },
-  { name: 'MAGDALENA', y: 2181.66,  color: '#228B22' },
-  { name: 'RISARALDA', y: 2146.8,   color: '#39FF14' },
-  { name: 'BOYACA', y: 1646.7,      color: '#0B6623' },
-  { name: 'META', y: 1514.99,       color: '#7FFF00' },
-  { name: 'ARAUCA', y: 641.6,       color: '#228B22' },
-  { name: 'CASANARE', y: 556.1,     color: '#39FF14' },
-  { name: 'NARINO', y: 366.9,       color: '#0B6623' },
-  { name: 'QUINDIO', y: 229.3,      color: '#7FFF00' },
-  { name: 'BOGOTA', y: 173.08,      color: '#228B22' },
-  { name: 'CHOCO', y: 132.5,        color: '#39FF14' }
+  { name: 'Cordoba', y: 13664.6,  color: '#39FF14' },
+  { name: 'Santander', y: 10271.27, color: '#0B6623' },
+  { name: 'La Guajira', y: 9290.7,  color: '#7FFF00' },
+  { name: 'Cesar', y: 9010.83,      color: '#228B22' },
+  { name: 'Antioquia', y: 6065.53,  color: '#39FF14' },
+  { name: 'Bolivar', y: 5896.42,    color: '#0B6623' },
+  { name: 'Cauca', y: 5088.6,       color: '#7FFF00' },
+  { name: 'Valle Del Cauca', y: 5066.1, color: '#228B22' },
+  { name: 'Tolima', y: 4342.0,      color: '#39FF14' },
+  { name: 'Norte De Santander', y: 3831.68, color: '#0B6623' },
+  { name: 'Sucre', y: 3706.2,       color: '#7FFF00' },
+  { name: 'Atlantico', y: 3400.4,   color: '#228B22' },
+  { name: 'Cundinamarca', y: 3348.4, color: '#39FF14' },
+  { name: 'Caldas', y: 3213.08,     color: '#0B6623' },
+  { name: 'Huila', y: 3082.79,      color: '#7FFF00' },
+  { name: 'Magdalena', y: 2181.66,  color: '#228B22' },
+  { name: 'Risaralda', y: 2146.8,   color: '#39FF14' },
+  { name: 'Boyaca', y: 1646.7,      color: '#0B6623' },
+  { name: 'Meta', y: 1514.99,       color: '#7FFF00' },
+  { name: 'Arauca', y: 641.6,       color: '#228B22' },
+  { name: 'Casanare', y: 556.1,     color: '#39FF14' },
+  { name: 'Narino', y: 366.9,       color: '#0B6623' },
+  { name: 'Quindio', y: 229.3,      color: '#7FFF00' },
+  { name: 'Bogota', y: 173.08,      color: '#228B22' },
+  { name: 'Choco', y: 132.5,        color: '#39FF14' }
 ];
 const totalCapacidadC2 = capacidadDeptoC2Data.reduce((sum, pt) => sum + pt.y, 0);
 
@@ -53,8 +53,9 @@ const proyectosEstadoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'PROYECTOS POR ESTADO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Proyectos por estado - Ciclo 1',
+    align: 'left',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Distribución de proyectos según su estado actual',
@@ -110,8 +111,9 @@ const proyectosEstadoOptions = {
 const capacidadEstadoOptions = {
   chart: { type: 'column', backgroundColor: '#262626' },
   title: {
-    text: 'DISTRIBUCIÓN DE CAPACIDAD - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de capacidad - Ciclo 1',
+    align: 'left',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>39.441,4 MW</b>',
@@ -179,8 +181,8 @@ const proyectosDeptoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'DISTRIBUCIÓN DE PROYECTOS POR DEPARTAMENTO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de proyectos por departamento - Ciclo 1',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total proyectos: <b>596</b>',
@@ -251,8 +253,8 @@ const capacidadDeptoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'CAPACIDAD POR DEPARTAMENTO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Capacidad por departamento - Ciclo 1',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>39.441 MW</b>',
@@ -326,8 +328,8 @@ const proyectosEstadoC2Options = {
     plotBorderColor: '#262626'
   },
   title: {
-    text: 'PROYECTOS POR ESTADO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Proyectos por estado - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Distribución de proyectos según su estado actual<br>Los conceptos aprobados son Autogeneración',
@@ -393,8 +395,8 @@ const capacidadEstadoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'DISTRIBUCIÓN DE CAPACIDAD - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de capacidad - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>99.035,23 MW</b><br>Los conceptos aprobados son Autogeneración',
@@ -461,8 +463,8 @@ const proyectosDeptoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'DISTRIBUCIÓN DE PROYECTOS POR DEPARTAMENTO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Distribución de proyectos por departamento - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total proyectos: <b>1.718</b>',
@@ -547,8 +549,8 @@ const capacidadDeptoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'CAPACIDAD INSTALADA POR DEPARTAMENTO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Capacidad instalada por departamento - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: `Total de capacidad instalada: <b>${Highcharts.numberFormat(totalCapacidadC2, 1, ',', '.')} MW</b>`,

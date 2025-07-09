@@ -30,14 +30,14 @@ export default function MapasCreg() {
 
       {/* Proyectos - CREG 075 */}
       {activeTab === 'Proyectos - CREG 075' && (
-        <div className="bg-[#262626] p-2 rounded-lg shadow">
+        <div className="bg-[#262626] p-2 rounded-lg shadow z-0">
           <MapaCreg075 />
         </div>
       )}
 
       {/* Autogeneración y GD - CREG 174 */}
       {activeTab === 'Autogeneración y GD - CREG 174' && (
-        <div className="bg-[#262626] p-2 rounded-lg shadow">
+        <div className="bg-[#262626] p-2 rounded-lg shadow z-0">
           <MapaCreg174 />
         </div>
       )}

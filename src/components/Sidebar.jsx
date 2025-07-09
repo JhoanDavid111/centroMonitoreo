@@ -48,18 +48,6 @@ export function Sidebar({ open, toggle }) {
           activeIcon: GWOn
         },
         {
-          title: 'Comunidades energéticas',
-          path: '/comunidades_energeticas',
-          icon: ComunidadesEnergOff,
-          activeIcon: ComunidadesEnergOn
-        },
-        {
-          title: 'Autogeneración y GD',
-          path: '/en_construccion',
-          icon: AutogeneracionOff,
-          activeIcon: AutogeneracionOn
-        },
-        {
           title: 'Proyectos 075',
           path: '/proyectos075',
           icon: Proyecto075Off,
@@ -70,10 +58,30 @@ export function Sidebar({ open, toggle }) {
           path: '/en_construccion',
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn
-        }
+        },
+        {
+          title: 'Transmisión',
+          path: '/en_construccion',
+          icon: AccionesEstrategicasOff,
+          activeIcon: AccionesEstrategicasOn
+        },
+        {
+          title: 'Comunidades energéticas',
+          path: '/comunidades_energeticas',
+          icon: ComunidadesEnergOff,
+          activeIcon: ComunidadesEnergOn
+        },
+        /* 
+        {
+          title: 'Autogeneración y GD',
+          path: '/en_construccion',
+          icon: AutogeneracionOff,
+          activeIcon: AutogeneracionOn
+        },
+        */
       ]
     },
-    {
+    /*{
       title: 'ABASTECIMIENTO',
       items: [
         {
@@ -107,7 +115,7 @@ export function Sidebar({ open, toggle }) {
           activeIcon: DemandaOn
         }
       ]
-    },
+    }, */
     /*{
       title: 'TARIFAS',
       items: [

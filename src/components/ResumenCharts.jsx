@@ -84,7 +84,7 @@ FullScreen(Highcharts);
 // Tema oscuro y Nunito Sans
 Highcharts.setOptions({
   chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff' } },
+  title: { align: 'left', style: { color: '#fff' } },
   subtitle: { style: { color: '#aaa' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '12px' } },
@@ -160,29 +160,30 @@ export function ResumenCharts() {
         }
 
         const techColor = {
-          BIOMASA: '#B39FFF',
-          EOLICA: '#5DFF97',
-          PCH: '#3B82F6',
-          SOLAR: '#FFC800'
+          'BIOMASA': '#B39FFF',
+          'EOLICA': '#5DFF97',
+          'PCH': '#3B82F6',
+          'SOLAR': '#FFC800',
+          'TERMICA': '#F97316'
         };
 
         const catColor = {
-          AGGE: '#D3DF1E',
-          AGPE: '#2CA02C',
-          'Generacion Centralizada': '#1F77B4',
-          'Generacion Distribuida': '#FFC800'
+          'AGGE': '#0991B5',
+          'AGPE': '#00FBFA',
+          'Generacion Centralizada': '#B8F600',
+          'Generacion Distribuida': '#FDBA74'
         };
 
         const matColor = {
-          BIOMASA: '#B39FFF',
-          HIDRÁULICA: '#3B82F6',
+          'BIOMASA': '#B39FFF',
+          'HIDRAULICA': '#3B82F6',
           'RAD SOLAR': '#FFC800',
-          TÉRMICA: '#F97316'
+          'TERMICA': '#F97316'
         };
 
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
-          'EÓLICA': '#5DFF97',
+          'EOLICA': '#5DFF97',
           'PCH': '#3B82F6',
           'SOLAR FV': '#FFC800'
         };
@@ -233,7 +234,7 @@ export function ResumenCharts() {
         opts.push({
           chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
           title: { 
-            text: 'Distribución de Capacidad Instalada por Tipo de Proyecto',
+            text: 'Distribución de capacidad instalada por tipo de proyecto',
             align: 'left',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
@@ -300,7 +301,7 @@ export function ResumenCharts() {
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
           title: { 
-            text: 'Capacidad Entrante por mes',
+            text: 'Capacidad entrante por mes',
             align: 'left',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
