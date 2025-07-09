@@ -13,45 +13,58 @@ import DataTable, { createTheme } from 'react-data-table-component';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 
-createTheme(
-  'customDark',
-  {
-    background: {
-      default: '#262626',
-    },
-    rows: {
-      style: {
-        backgroundColor: '#262626',
-      },
-    },
-    divider: {
-      default: '#1d1d1d',
-    },
-  },
-  'dark'
-);
-
-
-const customStyles = {
-  table: {
-    style: {
-      tableLayout: 'fixed',
-    }
-  },
+createTheme('customDark', {
+  background: { default: '#262626' },
   headCells: {
     style: {
-      whiteSpace: 'normal',
+      fontSize: '16px',      // más grande
+      fontWeight: '600',     // un poco más grueso
+      color: '#ffffff'       // blanco puro o el color que quieras
     }
   },
   cells: {
     style: {
-      whiteSpace: 'normal',
-      wordBreak: 'break-word',
+      fontSize: '14px',      // un poco más pequeño que el header
+      fontWeight: '400',     // peso normal
+      color: '#cccccc'       // gris claro
     }
   },
   rows: {
-    /* tu alternado ya existente */
-  }
+    style: { backgroundColor: '#262626' },
+    highlightOnHoverStyle: {
+      backgroundColor: '#3a3a3a',  // color al hover
+      transition: '0.2s ease-in-out'
+    }
+  },
+  divider: { default: '#1d1d1d' }
+});
+
+
+const customStyles = {
+  headCells: {
+    style: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#ffffff',
+    },
+  },
+  cells: {
+    style: {
+      fontSize: '14px',
+      fontWeight: '400',
+      color: '#cccccc',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: '#262626',
+    },
+    // Éste es el bloque clave para el hover
+    highlightOnHoverStyle: {
+      backgroundColor: '#3a3a3a',
+      transition: '0.2s ease-in-out',
+    },
+  },
 };
 
 // ——— Inicializar módulos de Highcharts ———
@@ -204,7 +217,7 @@ const baseColumns = [
     style: { whiteSpace: 'normal' }
   },
   {
-    name: 'Departamento',
+    name: 'Depto',
     selector: row => row.departamento,
     sortable: true,
     wrap: true,
@@ -218,7 +231,7 @@ const baseColumns = [
     style: { whiteSpace: 'normal' }
   },
   {
-    name: 'Capacidad (MW)',
+    name: 'Capacidad',
     selector: row => row.capacidad_instalada_mw,
     sortable: true,
     wrap: true,
@@ -368,7 +381,7 @@ export default function ProyectoDetalle() {
       const res  = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const title = `Curva S – Proyecto ${id}`;
+      const title = `Curva S – Proyecto ${id} – ${row.nombre_proyecto}`;
       if (!Array.isArray(data) || data.length === 0) {
         setErrorCurve(`No existe curva S para el proyecto ${id}.`);
         setChartOptions({ ...baseChartOptions, title: { ...baseChartOptions.title, text: title } });
@@ -548,11 +561,11 @@ export default function ProyectoDetalle() {
           <DataTable
             columns={columnsSeguimiento}
             data={filteredNumeric}
-            pagination
-            highlightOnHover
+            pagination           
             pointerOnHover
             conditionalRowStyles={conditionalRowStyles}
             theme="customDark"
+            highlightOnHover
             customStyles={customStyles}
           />
 
