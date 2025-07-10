@@ -8,6 +8,7 @@ import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 //import DataTable from 'react-data-table-component';
 import { Download } from 'lucide-react';
+import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
 import DataTable, { createTheme } from 'react-data-table-component';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
