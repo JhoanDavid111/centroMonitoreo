@@ -100,7 +100,7 @@ export function DespachoTecnologia() {
       { title: { text: 'Número de proyectos' }, opposite: true }
     ],
     legend: { layout: 'horizontal', align: 'center', verticalAlign: 'top' },
-    exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } },
+    //exporting: { enabled: true, buttons: { contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] } } },
     series: [
       { name: 'Capacidad instalada', data: capacidadData, yAxis: 0, color: '#FFC800', fillOpacity: 0.5 },
       { name: 'Número de proyectos', data: proyectosData, yAxis: 1, type: 'line', color: '#FF9900' }

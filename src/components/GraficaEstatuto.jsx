@@ -154,14 +154,14 @@ export function GraficaEstatuto({ fechaInicio = '2025-05-01', fechaFin = '2025-0
               color: '#00AEEF'
             }
           ],
-          exporting: {
+       /*    exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
         
         setOptions(chartOptions);

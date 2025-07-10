@@ -218,14 +218,14 @@ export function CapacidadHistorica() {
       },
       min: 0
     },
-    exporting: {
+  /*   exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
         }
       }
-    },
+    }, */
     series: fncerData,
     responsive: {
       rules: [

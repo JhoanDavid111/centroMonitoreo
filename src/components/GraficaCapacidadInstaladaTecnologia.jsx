@@ -118,14 +118,14 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
           series: [
             { name: 'Capacidad inst.', data: valores, color: '#FFC800' }
           ],
-          exporting: {
+        /*   exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
 
         setOptions(chartOptions);

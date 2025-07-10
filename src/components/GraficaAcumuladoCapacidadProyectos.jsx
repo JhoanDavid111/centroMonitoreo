@@ -70,14 +70,14 @@ export function GraficaAcumuladoCapacidadProyectos() {
               color: '#4CAF50'
             }
           ],
-          exporting: {
+      /*     exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         });
       } catch (err) {
         console.error(err);

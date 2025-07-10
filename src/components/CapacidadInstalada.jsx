@@ -239,14 +239,14 @@ export function CapacidadInstalada() {
             itemStyle: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
             itemHoverStyle: { color: '#fff' }
           },
-          exporting: {
+        /*   exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
               }
             }
-          }
+          } */
         };
 
         if (isMounted) {
