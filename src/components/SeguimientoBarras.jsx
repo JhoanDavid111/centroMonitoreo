@@ -33,7 +33,7 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: "#ccc", fontFamily: "Nunito Sans" },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
@@ -93,6 +93,9 @@ export function SeguimientoBarras() {
         color: '#FFC800'
       }
     },
+    legend: {
+        itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+      },
     series: [{
       name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
       data: view === 'capacidad' ? capacidadData : proyectosData
@@ -110,7 +113,7 @@ export function SeguimientoBarras() {
   return (
     <section className="mt-8">
       <h2 className="text-2xl font-semibold mb-4 text-white font-sans">
-        Seguimiento de proyectos resolución 07
+        Seguimiento de proyectos resolución 075
       </h2>
       <div className="flex space-x-6 mb-4 font-sans text-sm">
         <button

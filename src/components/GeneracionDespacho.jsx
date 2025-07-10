@@ -89,6 +89,7 @@ Highcharts.setOptions({
     style: { fontFamily: 'Nunito Sans, sans-serif' }
   },
   title: {
+    align: 'left',
     style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' }
   },
   subtitle: {
@@ -208,7 +209,7 @@ export function GeneracionDespacho() {
         const chartOptions = {
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
           title: { 
-            text: 'Generación Diaria por Tecnología',
+            text: 'Generación diaria por tecnología',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
           legend: {

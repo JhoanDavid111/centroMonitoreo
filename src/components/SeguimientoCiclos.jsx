@@ -16,31 +16,31 @@ FullScreen(Highcharts);
 Accessibility(Highcharts);
 
 const capacidadDeptoC2Data = [
-  { name: 'CORDOBA', y: 13664.6,  color: '#39FF14' },
-  { name: 'SANTANDER', y: 10271.27, color: '#0B6623' },
-  { name: 'LA GUAJIRA', y: 9290.7,  color: '#7FFF00' },
-  { name: 'CESAR', y: 9010.83,      color: '#228B22' },
-  { name: 'ANTIOQUIA', y: 6065.53,  color: '#39FF14' },
-  { name: 'BOLIVAR', y: 5896.42,    color: '#0B6623' },
-  { name: 'CAUCA', y: 5088.6,       color: '#7FFF00' },
-  { name: 'VALLE DEL CAUCA', y: 5066.1, color: '#228B22' },
-  { name: 'TOLIMA', y: 4342.0,      color: '#39FF14' },
-  { name: 'NORTE DE SANTANDER', y: 3831.68, color: '#0B6623' },
-  { name: 'SUCRE', y: 3706.2,       color: '#7FFF00' },
-  { name: 'ATLANTICO', y: 3400.4,   color: '#228B22' },
-  { name: 'CUNDINAMARCA', y: 3348.4, color: '#39FF14' },
-  { name: 'CALDAS', y: 3213.08,     color: '#0B6623' },
-  { name: 'HUILA', y: 3082.79,      color: '#7FFF00' },
-  { name: 'MAGDALENA', y: 2181.66,  color: '#228B22' },
-  { name: 'RISARALDA', y: 2146.8,   color: '#39FF14' },
-  { name: 'BOYACA', y: 1646.7,      color: '#0B6623' },
-  { name: 'META', y: 1514.99,       color: '#7FFF00' },
-  { name: 'ARAUCA', y: 641.6,       color: '#228B22' },
-  { name: 'CASANARE', y: 556.1,     color: '#39FF14' },
-  { name: 'NARINO', y: 366.9,       color: '#0B6623' },
-  { name: 'QUINDIO', y: 229.3,      color: '#7FFF00' },
-  { name: 'BOGOTA', y: 173.08,      color: '#228B22' },
-  { name: 'CHOCO', y: 132.5,        color: '#39FF14' }
+  { name: 'Cordoba', y: 13664.6,  color: '#39FF14' },
+  { name: 'Santander', y: 10271.27, color: '#0B6623' },
+  { name: 'La Guajira', y: 9290.7,  color: '#7FFF00' },
+  { name: 'Cesar', y: 9010.83,      color: '#228B22' },
+  { name: 'Antioquia', y: 6065.53,  color: '#39FF14' },
+  { name: 'Bolivar', y: 5896.42,    color: '#0B6623' },
+  { name: 'Cauca', y: 5088.6,       color: '#7FFF00' },
+  { name: 'Valle Del Cauca', y: 5066.1, color: '#228B22' },
+  { name: 'Tolima', y: 4342.0,      color: '#39FF14' },
+  { name: 'Norte De Santander', y: 3831.68, color: '#0B6623' },
+  { name: 'Sucre', y: 3706.2,       color: '#7FFF00' },
+  { name: 'Atlantico', y: 3400.4,   color: '#228B22' },
+  { name: 'Cundinamarca', y: 3348.4, color: '#39FF14' },
+  { name: 'Caldas', y: 3213.08,     color: '#0B6623' },
+  { name: 'Huila', y: 3082.79,      color: '#7FFF00' },
+  { name: 'Magdalena', y: 2181.66,  color: '#228B22' },
+  { name: 'Risaralda', y: 2146.8,   color: '#39FF14' },
+  { name: 'Boyaca', y: 1646.7,      color: '#0B6623' },
+  { name: 'Meta', y: 1514.99,       color: '#7FFF00' },
+  { name: 'Arauca', y: 641.6,       color: '#228B22' },
+  { name: 'Casanare', y: 556.1,     color: '#39FF14' },
+  { name: 'Narino', y: 366.9,       color: '#0B6623' },
+  { name: 'Quindio', y: 229.3,      color: '#7FFF00' },
+  { name: 'Bogota', y: 173.08,      color: '#228B22' },
+  { name: 'Choco', y: 132.5,        color: '#39FF14' }
 ];
 const totalCapacidadC2 = capacidadDeptoC2Data.reduce((sum, pt) => sum + pt.y, 0);
 
@@ -53,8 +53,9 @@ const proyectosEstadoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'PROYECTOS POR ESTADO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Proyectos por estado - Ciclo 1',
+    align: 'left',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Distribución de proyectos según su estado actual',
@@ -110,8 +111,9 @@ const proyectosEstadoOptions = {
 const capacidadEstadoOptions = {
   chart: { type: 'column', backgroundColor: '#262626' },
   title: {
-    text: 'DISTRIBUCIÓN DE CAPACIDAD - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de capacidad - Ciclo 1',
+    align: 'left',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>39.441,4 MW</b>',
@@ -179,8 +181,8 @@ const proyectosDeptoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'DISTRIBUCIÓN DE PROYECTOS POR DEPARTAMENTO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de proyectos por departamento - Ciclo 1',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total proyectos: <b>596</b>',
@@ -225,13 +227,13 @@ const proyectosDeptoOptions = {
   series: [{
     name: 'Proyectos',
     data: [
-      ['TOLIMA', 55], ['CESAR', 47], ['BOLIVAR', 39], ['ANTIOQUIA', 37],
-      ['ATLANTICO', 35], ['SANTANDER', 29], ['HUILA', 26], ['MAGDALENA', 24],
-      ['BOYACA', 24], ['NORTE_DE_SANTANDER', 22], ['LA_GUAJIRA', 21],
-      ['RISARALDA', 19], ['CORDOBA', 19], ['VALLE_DEL_CAUCA', 17],
-      ['CASANARE', 16], ['SUCRE', 16], ['CALDAS', 14], ['META', 5],
-      ['CUNDINAMARCA', 5], ['CAUCA', 2], ['BOGOTA', 2], ['NARINO', 2],
-      ['ARAUCA', 1]
+      ['Tolima', 55], ['Cesar', 47], ['Bolivar', 39], ['Antioquia', 37],
+      ['Atlantico', 35], ['Santander', 29], ['Huila', 26], ['Magdalena', 24],
+      ['Boyaca', 24], ['Norte_De_Santander', 22], ['La_Guajira', 21],
+      ['Risaralda', 19], ['Cordoba', 19], ['Valle_Del_Cauca', 17],
+      ['Casanare', 16], ['Sucre', 16], ['Caldas', 14], ['Meta', 5],
+      ['Cundinamarca', 5], ['Cauca', 2], ['Bogota', 2], ['Nariño', 2],
+      ['Arauca', 1]
     ],
     colors: [
       '#39FF14','#0B6623','#7FFF00','#228B22','#39FF14','#0B6623',
@@ -251,8 +253,8 @@ const capacidadDeptoOptions = {
     plotBorderColor: '#262626' },
 
   title: {
-    text: 'CAPACIDAD POR DEPARTAMENTO - CICLO 1',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Capacidad por departamento - Ciclo 1',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>39.441 MW</b>',
@@ -299,13 +301,13 @@ const capacidadDeptoOptions = {
   series: [{
     name: 'Capacidad (MW)',
     data: [
-      ['LA_GUAJIRA', 4760.3], ['BOLIVAR', 4185.1], ['CESAR', 2977.86],
-      ['TOLIMA', 2735.55], ['SANTANDER', 2229.37], ['MAGDALENA', 1792.7],
-      ['CORDOBA', 1636.0], ['ATLANTICO', 1447.7], ['ANTIOQUIA', 1347.63],
-      ['RISARALDA', 1117.37], ['NORTE_DE_SANTANDER', 994.0], ['CASANARE', 897.1],
-      ['HUILA', 809.4], ['VALLE_DEL_CAUCA', 754.42], ['BOYACA', 738.32],
-      ['CALDAS', 623.69], ['SUCRE', 491.9], ['CUNDINAMARCA', 384.8],
-      ['META', 339.8], ['ARAUCA', 30.0], ['CAUCA', 27.4], ['BOGOTA', 24.88], ['NARINO', 15.6]
+      ['La_Guajira', 4760.3], ['Bolivar', 4185.1], ['Cesar', 2977.86],
+      ['Tolima', 2735.55], ['Santander', 2229.37], ['Magdalena', 1792.7],
+      ['Cordoba', 1636.0], ['Atlantico', 1447.7], ['Antioquia', 1347.63],
+      ['Risaralda', 1117.37], ['Norte_De_Santander', 994.0], ['Casanare', 897.1],
+      ['Huila', 809.4], ['Valle_Del_Cauca', 754.42], ['Boyaca', 738.32],
+      ['Caldas', 623.69], ['Sucre', 491.9], ['Cundinamarca', 384.8],
+      ['Meta', 339.8], ['Arauca', 30.0], ['Cauca', 27.4], ['Bogota', 24.88], ['Nariño', 15.6]
     ],
     colors: [
       '#39FF14','#0B6623','#7FFF00','#228B22','#39FF14','#0B6623',
@@ -326,8 +328,8 @@ const proyectosEstadoC2Options = {
     plotBorderColor: '#262626'
   },
   title: {
-    text: 'PROYECTOS POR ESTADO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Proyectos por estado - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Distribución de proyectos según su estado actual<br>Los conceptos aprobados son Autogeneración',
@@ -393,8 +395,8 @@ const capacidadEstadoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'DISTRIBUCIÓN DE CAPACIDAD - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff' }
+    text: 'Distribución de capacidad - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total capacidad: <b>99.035,23 MW</b><br>Los conceptos aprobados son Autogeneración',
@@ -461,8 +463,8 @@ const proyectosDeptoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'DISTRIBUCIÓN DE PROYECTOS POR DEPARTAMENTO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Distribución de proyectos por departamento - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: 'Total proyectos: <b>1.718</b>',
@@ -507,31 +509,31 @@ const proyectosDeptoC2Options = {
   series: [{
     name: 'Proyectos',
     data: [
-      { name: 'CESAR', y: 143, color: '#39FF14' },
-      { name: 'CORDOBA', y: 143, color: '#0B6623' },
-      { name: 'SANTANDER', y: 131, color: '#7FFF00' },
-      { name: 'VALLE_DEL_CAUCA', y: 127, color: '#228B22' },
-      { name: 'BOLIVAR', y: 123, color: '#39FF14' },
-      { name: 'ANTIOQUIA', y: 116, color: '#0B6623' },
-      { name: 'TOLIMA', y: 112, color: '#7FFF00' },
-      { name: 'ATLANTICO', y: 107, color: '#228B22' },
-      { name: 'HUILA', y: 102, color: '#39FF14' },
-      { name: 'SUCRE', y: 99, color: '#0B6623' },
-      { name: 'LA_GUAJIRA', y: 83, color: '#7FFF00' },
-      { name: 'MAGDALENA', y: 80, color: '#228B22' },
-      { name: 'NORTE_DE_SANTANDER', y: 76, color: '#39FF14' },
-      { name: 'CUNDINAMARCA', y: 57, color: '#0B6623' },
-      { name: 'CALDAS', y: 54, color: '#7FFF00' },
-      { name: 'BOYACA', y: 42, color: '#228B22' },
-      { name: 'META', y: 30, color: '#39FF14' },
-      { name: 'RISARALDA', y: 28, color: '#0B6623' },
-      { name: 'CASANARE', y: 22, color: '#7FFF00' },
-      { name: 'CAUCA', y: 13, color: '#228B22' },
-      { name: 'ARAUCA', y: 10, color: '#39FF14' },
-      { name: 'QUINDIO', y: 8, color: '#0B6623' },
-      { name: 'BOGOTA', y: 6, color: '#7FFF00' },
-      { name: 'NARINO', y: 4, color: '#228B22' },
-      { name: 'CHOCO', y: 2, color: '#39FF14' }
+      { name: 'Cesar', y: 143, color: '#39FF14' },
+      { name: 'Cordoba', y: 143, color: '#0B6623' },
+      { name: 'Santander', y: 131, color: '#7FFF00' },
+      { name: 'Valle_Del_Cauca', y: 127, color: '#228B22' },
+      { name: 'Bolivar', y: 123, color: '#39FF14' },
+      { name: 'Antioquia', y: 116, color: '#0B6623' },
+      { name: 'Tolima', y: 112, color: '#7FFF00' },
+      { name: 'Atlantico', y: 107, color: '#228B22' },
+      { name: 'Huila', y: 102, color: '#39FF14' },
+      { name: 'Sucre', y: 99, color: '#0B6623' },
+      { name: 'La_Guajira', y: 83, color: '#7FFF00' },
+      { name: 'Magdalena', y: 80, color: '#228B22' },
+      { name: 'Norte_De_Santander', y: 76, color: '#39FF14' },
+      { name: 'Cundinamarca', y: 57, color: '#0B6623' },
+      { name: 'Caldas', y: 54, color: '#7FFF00' },
+      { name: 'Boyaca', y: 42, color: '#228B22' },
+      { name: 'Meta', y: 30, color: '#39FF14' },
+      { name: 'Risaralda', y: 28, color: '#0B6623' },
+      { name: 'Casanare', y: 22, color: '#7FFF00' },
+      { name: 'Cauca', y: 13, color: '#228B22' },
+      { name: 'Arauca', y: 10, color: '#39FF14' },
+      { name: 'Quindio', y: 8, color: '#0B6623' },
+      { name: 'Bogota', y: 6, color: '#7FFF00' },
+      { name: 'Nariño', y: 4, color: '#228B22' },
+      { name: 'Choco', y: 2, color: '#39FF14' }
     ]
   }]
 };
@@ -547,8 +549,8 @@ const capacidadDeptoC2Options = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'CAPACIDAD INSTALADA POR DEPARTAMENTO - CICLO 2',
-    style: { fontSize: '22px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase' }
+    text: 'Capacidad instalada por departamento - Ciclo 2',
+    style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
   },
   subtitle: {
     text: `Total de capacidad instalada: <b>${Highcharts.numberFormat(totalCapacidadC2, 1, ',', '.')} MW</b>`,

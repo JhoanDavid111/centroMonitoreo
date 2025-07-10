@@ -19,7 +19,7 @@ Highcharts.setOptions({
     backgroundColor: '#262626',
     style: { fontFamily: 'Nunito Sans, sans-serif' }
   },
-  title: { style: { color: '#fff' } },
+  title: { align: 'left', style: { color: '#fff' } },
   subtitle: { style: { color: '#aaa' } },
   legend: {
     itemStyle: { color: '#ccc' },
@@ -105,7 +105,8 @@ export function GeneracionHoraria() {
         backgroundColor: '#262626'
       },
       title: {
-        text: 'Curva de Generación por Tecnología Primer Semestre 2022'
+        text: 'Curva de generación por tecnología primer semestre 2022',
+        align: 'left',
       },
       subtitle: {
         text: ''
@@ -180,7 +181,7 @@ export function GeneracionHoraria() {
     // Variante: modificamos ligeramente los valores
     const variantOptions = {
       ...baseOptions,
-      title: { text: 'Curva de Generación por Tecnología Ultimos 6 Meses' },
+      title: { text: 'Curva de generación por tecnología ultimos 6 meses' },
       /* series: baseOptions.series.map(s => ({
         ...s,
         data: s.data.map(v =>
@@ -205,43 +206,43 @@ export function GeneracionHoraria() {
     <section className="mt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Gráfico original */}
-        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden" style={{ height: '500px' }}> 
+        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden"> 
          {/*  <button
             className="absolute top-2 right-2 text-gray-300 hover:text-white"
             onClick={() => chartRef1.current.chart.fullscreen.toggle()}
             title="Maximizar gráfico"
           >⛶</button> */}
           <button
-        className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-        style={{ width: 30, height: 30 }}
-        title="Ayuda"
-        onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
-        type="button"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          className="rounded-full"
-        >
-          <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-          <text
-            x="12"
-            y="16"
-            textAnchor="middle"
-            fontSize="16"
-            fill="#fff"
-            fontWeight="bold"
-            fontFamily="Nunito Sans, sans-serif"
-            pointerEvents="none"
-          >?</text>
-        </svg>
-      </button>
+            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+            style={{ width: 30, height: 30 }}
+            title="Ayuda"
+            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+            type="button"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              className="rounded-full"
+            >
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text
+                x="12"
+                y="16"
+                textAnchor="middle"
+                fontSize="16"
+                fill="#fff"
+                fontWeight="bold"
+                fontFamily="Nunito Sans, sans-serif"
+                pointerEvents="none"
+              >?</text>
+            </svg>
+          </button>
           
           <HighchartsReact highcharts={Highcharts} options={{}} ref={chartRef1} />
         </div>
         {/* Gráfico variante */}
-        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden" style={{ height: '500px' }}>
+        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden">
           {/* <button
             className="absolute top-2 right-2 text-gray-300 hover:text-white"
             onClick={() => chartRef2.current.chart.fullscreen.toggle()}
@@ -249,31 +250,31 @@ export function GeneracionHoraria() {
           >⛶</button> */}
 
           <button
-        className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-        style={{ width: 30, height: 30 }}
-        title="Ayuda"
-        onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
-        type="button"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          className="rounded-full"
-        >
-          <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-          <text
-            x="12"
-            y="16"
-            textAnchor="middle"
-            fontSize="16"
-            fill="#fff"
-            fontWeight="bold"
-            fontFamily="Nunito Sans, sans-serif"
-            pointerEvents="none"
-          >?</text>
-        </svg>
-      </button>
+            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+            style={{ width: 30, height: 30 }}
+            title="Ayuda"
+            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+            type="button"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              className="rounded-full"
+            >
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text
+                x="12"
+                y="16"
+                textAnchor="middle"
+                fontSize="16"
+                fill="#fff"
+                fontWeight="bold"
+                fontFamily="Nunito Sans, sans-serif"
+                pointerEvents="none"
+              >?</text>
+            </svg>
+          </button>
           <HighchartsReact highcharts={Highcharts} options={{}} ref={chartRef2} />
         </div>
       </div>

@@ -134,7 +134,7 @@ export function CapacidadInstalada() {
           VIENTO: '#FF9900',
           PCH: '#3B82F6',
           BIOMASA: '#B39FFF',
-          'RAD SOLAR': '#FFC800'
+          TERMICA: '#F97316'
         };
 
         // Crear series con datos [timestamp, valor]
@@ -164,7 +164,8 @@ export function CapacidadInstalada() {
           },
           title: {
             text: 'Capacidad acumulada por tipo de proyecto',
-            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' }
+            align: 'left',
+            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', textAlign: 'left'}
           },
           subtitle: { 
             text: isCached ? '(Datos en caché)' : '', 
@@ -233,10 +234,9 @@ export function CapacidadInstalada() {
           series,
           legend: {
             layout: 'horizontal',
-            align: 'center',
             verticalAlign: 'bottom',
             y: 25,
-            itemStyle: { color: '#ccc', fontSize: '12px' },
+            itemStyle: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
             itemHoverStyle: { color: '#fff' }
           },
           exporting: {
