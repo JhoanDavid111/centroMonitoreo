@@ -120,14 +120,14 @@ export function GraficaDemanda({ fechaInicio = '2025-05-01', fechaFin = '2025-05
             { name: 'Energía en Firme', data: dataEnerFirm, color: '#4CAF50' },
             { name: 'Obligación Energía Firme', data: dataObligOEF, color: '#D4AF37' }
           ],
-          exporting: {
+        /*   exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
          
         setOptions(chartOptions);

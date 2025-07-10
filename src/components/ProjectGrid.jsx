@@ -183,14 +183,14 @@ const baseChartOptions = {
     spline: { marker: { enabled: true } },
   },
   series: [{ name: 'Curva de Referencia', data: [] }],
-  exporting: {
+/*   exporting: {
     enabled: true,
     buttons: {
       contextButton: {
         menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'],
       },
     },
-  },
+  }, */
 };
 
 // Componente de botón de ayuda reutilizable

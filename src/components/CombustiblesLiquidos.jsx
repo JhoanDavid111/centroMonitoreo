@@ -163,14 +163,14 @@ export function CombustiblesLiquidos() {
         ...opt.chart,
         backgroundColor: '#262626'
       },
-      exporting: {
+      /* exporting: {
         enabled: true,
         buttons: {
           contextButton: {
             menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
           }
         }
-      }
+      } */
     }));
 
     setCharts(withExport);

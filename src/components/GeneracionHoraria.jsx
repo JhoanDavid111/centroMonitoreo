@@ -105,7 +105,8 @@ export function GeneracionHoraria() {
         backgroundColor: '#262626'
       },
       title: {
-        text: 'Curva de Generación por Tecnología Primer Semestre 2022'
+        text: 'Curva de generación primer semestre 2022',
+        align: 'left'
       },
       subtitle: {
         text: ''
@@ -157,14 +158,14 @@ export function GeneracionHoraria() {
       { name: 'HIDRÁULICA',   data: hidraulicaData,  color: '#3B82F6' },
       { name: 'SOLAR',       data: solarData,       color: '#FFC800' }    // último Térmica
       ],
-      exporting: {
+     /*  exporting: {
         enabled: true,
         buttons: {
           contextButton: {
             menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
           }
         }
-      },
+      }, */
       responsive: {
         rules: [{
           condition: { maxWidth: 600 },
@@ -180,7 +181,10 @@ export function GeneracionHoraria() {
     // Variante: modificamos ligeramente los valores
     const variantOptions = {
       ...baseOptions,
-      title: { text: 'Curva de Generación por Tecnología Ultimos 6 Meses' },
+      title: { 
+        text: 'Curva de generación últimos 6 meses',
+        align: 'left'
+       },
       /* series: baseOptions.series.map(s => ({
         ...s,
         data: s.data.map(v =>
@@ -203,6 +207,9 @@ export function GeneracionHoraria() {
 
   return (
     <section className="mt-8">
+      <h2 className="text-white text-2xl font-semibold mb-4 text-left">
+      Curva de generación horaria promedio
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Gráfico original */}
         <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden" style={{ height: '500px' }}> 

@@ -244,14 +244,14 @@ export function GeneracionDespacho() {
             }
           },
           series,
-          exporting: {
+      /*     exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
               }
             }
-          }
+          } */
         };
 
         if (isMounted) {

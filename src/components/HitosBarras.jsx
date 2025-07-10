@@ -105,14 +105,14 @@ export function HitosBarras() {
   // Añade los botones de exportación a cada set de opciones
   const chartOptions = rawOptions.map(opt => ({
     ...opt,
-    exporting: {
+ /*    exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
         }
       }
-    }
+    } */
   }));
 
   return (
