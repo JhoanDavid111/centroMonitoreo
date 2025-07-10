@@ -97,14 +97,14 @@ export function SeguimientoBarras() {
       name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
       data: view === 'capacidad' ? capacidadData : proyectosData
     }],
-    exporting: {
+ /*    exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
         }
       }
-    }
+    } */
   };
 
   return (
@@ -114,7 +114,7 @@ export function SeguimientoBarras() {
       </h2>
       <div className="flex space-x-6 mb-4 font-sans text-sm">
         <button
-          className={`pb-1 border-b-2 ${
+          className={`pb-1 border-b-2 text-[18px] ${
             view === 'capacidad' ? 'border-[#FFC600] text-[#FFC600]' : 'border-transparent text-gray-300'
           }`}
           onClick={() => setView('capacidad')}
@@ -122,7 +122,7 @@ export function SeguimientoBarras() {
           Capacidad instalada
         </button>
         <button
-          className={`pb-1 border-b-2 ${
+          className={`pb-1 border-b-2 text-[18px] ${
             view === 'proyectos' ? 'border-[#FFC600] text-[#FFC600]' : 'border-transparent text-gray-300'
           }`}
           onClick={() => setView('proyectos')}

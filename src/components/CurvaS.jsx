@@ -105,14 +105,14 @@ export function CurvaS({ projectName = 'Proyecto 01' }) {
         marker: { symbol: 'circle' }
       }
     ],
-    exporting: {
+/*     exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
         }
       }
-    }
+    } */
   };
 
   return (

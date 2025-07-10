@@ -787,7 +787,7 @@ export default function SeguimientoCiclos() {
 
       <div className="flex space-x-6 mb-4 font-sans text-sm">
         <button
-            className={`pb-1 border-b-2 transition ${
+            className={`pb-1 border-b-2 transition text-[18px] ${
                 ciclo === 1
                     ? 'border-[#FFC800] text-[#FFC800]'
                     : 'border-transparent text-gray-300'
@@ -797,7 +797,7 @@ export default function SeguimientoCiclos() {
           Ciclo 1
         </button>
         <button
-            className={`pb-1 border-b-2 transition ${
+            className={`pb-1 border-b-2 transition text-[18px] ${
                 ciclo === 2
                     ? 'border-[#FFC800] text-[#FFC800]'
                     : 'border-transparent text-gray-300'

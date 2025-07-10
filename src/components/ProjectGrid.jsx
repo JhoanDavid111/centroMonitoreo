@@ -20,6 +20,176 @@ OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
+// ——— Tema oscuro global ———
+Highcharts.setOptions({
+  chart: {
+    backgroundColor: '#262626',
+    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    plotBorderWidth: 0,
+    plotBackgroundColor: 'transparent',
+  },
+  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
+  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
+  xAxis: {
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    title:  { style: { color: '#ccc' } },
+    gridLineColor: '#333',
+  },
+  yAxis: {
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    title:  { style: { color: '#ccc' } },
+    gridLineColor: '#333',
+  },
+  legend: {
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
+    itemHoverStyle:  { color: '#fff' },
+    itemHiddenStyle: { color: '#666' },
+  },
+  tooltip: {
+    backgroundColor: '#1f2937',
+    style:           { color: '#fff', fontSize: '12px' },
+  },
+});
+
+// Componente de Loading reutilizable
+const LoadingSpinner = ({ message = "Cargando datos..." }) => (
+  <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+    <div className="flex space-x-2">
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
+      ></div>
+      <div
+        className="w-3 h-3 rounded-full animate-bounce"
+        style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
+      ></div>
+    </div>
+    <p className="text-gray-300 mt-4">{message}</p>
+  </div>
+);
+
+// ——— Columnas DataTable ———
+const columns = [
+  { name: 'ID',              selector: row => row.id,                   sortable: true },
+  { name: 'Nombre',          selector: row => row.nombre_proyecto,      sortable: true },
+  { name: 'Tipo',            selector: row => row.tipo_proyecto,        sortable: true },
+  { name: 'Tecnología',      selector: row => row.tecnologia,           sortable: true },
+  { name: 'Ciclo',           selector: row => row.ciclo_asignacion,     sortable: true },
+  { name: 'Promotor',        selector: row => row.promotor,             sortable: true },
+  { name: 'Estado',          selector: row => row.estado_proyecto,      sortable: true },
+  { name: 'Departamento',    selector: row => row.departamento,         sortable: true },
+  { name: 'Municipio',       selector: row => row.municipio,            sortable: true },
+  { name: 'Capacidad (MW)',  selector: row => row.capacidad_instalada_mw,sortable: true },
+  { name: 'FPO',             selector: row => row.fpo,                  sortable: true },
+  { name: 'Priorizado',      selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
+  { name: 'Avance (%)',      selector: row => row.porcentaje_avance_display, sortable: true }
+]
+// ——— Función para exportar a CSV ———
+function exportToCSV(data) {
+  if (!data.length) return;
+  const csvRows = [
+    Object.keys(data[0]).join(','),
+    ...data.map(row =>
+      Object.values(row)
+        .map(val => `"${String(val).replace(/"/g, '""')}"`)
+        .join(',')
+    ),
+  ];
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'proyectos_filtrados.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ——— Columnas base para DataTable ———
+const baseColumns = [
+  { name: 'ID', selector: row => row.id, sortable: true },
+  { name: 'Nombre', selector: row => row.nombre_proyecto, sortable: true },
+  { name: 'Tipo', selector: row => row.tipo_proyecto, sortable: true },
+  { name: 'Tecnología', selector: row => row.tecnologia, sortable: true },
+  { name: 'Ciclo', selector: row => row.ciclo_asignacion, sortable: true },
+  { name: 'Promotor', selector: row => row.promotor, sortable: true },
+  { name: 'Estado', selector: row => row.estado_proyecto, sortable: true },
+  { name: 'Departamento', selector: row => row.departamento, sortable: true },
+  { name: 'Municipio', selector: row => row.municipio, sortable: true },
+  { name: 'Capacidad (MW)', selector: row => row.capacidad_instalada_mw, sortable: true },
+  { name: 'FPO', selector: row => row.fpo, sortable: true },
+  { name: 'Priorizado', selector: row => row.priorizado ? 'Sí' : 'No', sortable: true },
+  { name: 'Avance (%)', selector: row => row.porcentaje_avance_display, sortable: true },
+];
+
+// ——— Opciones base del gráfico ———
+const baseChartOptions = {
+  chart:    { type: 'spline', height: 300 },
+  title:    { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  xAxis:    {
+    categories: [],
+    title:      { text: 'Fecha', style: { color: '#ccc' } },
+    labels:     { style: { color: '#ccc', fontSize: '10px' } },
+    gridLineColor: '#333',
+  },
+  yAxis:    {
+    title: { text: 'Curva de Referencia', style: { color: '#ccc' } },
+    min: 0, max: 100,
+  },
+  tooltip:  {
+    backgroundColor: '#1f2937',
+    style:           { color: '#fff', fontSize: '12px' },
+    formatter() {
+      return `<b>${this.x}</b><br/>Avance: ${this.y}%<br/>Hito: ${this.point.hito_nombre}`;
+    },
+  },
+  plotOptions: {
+    spline: { marker: { enabled: true } },
+  },
+  series: [{ name: 'Curva de Referencia', data: [] }],
+/*   exporting: {
+    enabled: true,
+    buttons: {
+      contextButton: {
+        menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'],
+      },
+    },
+  }, */
+};
+
+// Componente de botón de ayuda reutilizable
+const HelpButton = ({ onClick, className = "" }) => (
+  <button
+    className={`absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors ${className}`}
+    style={{ width: 30, height: 30 }}
+    title="Ayuda"
+    onClick={onClick}
+    type="button"
+  >
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      className="rounded-full"
+    >
+      <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+      <text
+        x="12"
+        y="18"
+        textAnchor="middle"
+        fontSize="16"
+        fill="#fff"
+        fontWeight="bold"
+        fontFamily="Nunito Sans, sans-serif"
+        pointerEvents="none"
+      >?</text>
+    </svg>
+  </button>
+);
+
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
   const [proyectos, setProyectos] = useState([]);
@@ -28,7 +198,7 @@ export default function ProyectoDetalle() {
   const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
-    fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, {
+    fetch(`${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -51,7 +221,7 @@ export default function ProyectoDetalle() {
   const handleViewCurve = async (row) => {
     const id = row.id;
     try {
-      const res = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, {
+      const res = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_curva_s/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

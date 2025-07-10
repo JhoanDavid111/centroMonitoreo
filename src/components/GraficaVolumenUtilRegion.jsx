@@ -121,14 +121,14 @@ export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin 
           series: [
             { name: 'Volumen útil', data: valores, color: '#FFC800' }
           ],
-          exporting: {
+       /*    exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
            // Almacenar en caché los datos y opciones
         setOptions(chartOptions);
