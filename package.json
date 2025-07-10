@@ -11,6 +11,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.2.0",
+    "export-to-csv": "^1.4.0",
     "firebase": "^11.9.1",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.2",
