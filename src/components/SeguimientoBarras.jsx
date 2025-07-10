@@ -97,14 +97,14 @@ export function SeguimientoBarras() {
       name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
       data: view === 'capacidad' ? capacidadData : proyectosData
     }],
-    exporting: {
+ /*    exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
         }
       }
-    }
+    } */
   };
 
   return (
