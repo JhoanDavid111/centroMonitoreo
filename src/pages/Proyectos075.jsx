@@ -15,7 +15,7 @@ export default function Proyectos075() {
     return (
         <div className="text-white min-h-screen font-sans">
             <BannerSeguimiento />
-
+                
             <div className="flex flex-wrap items-center justify-between mb-4 space-y-2">
                 <div className="flex items-center space-x-2">
                     <button
@@ -49,14 +49,17 @@ export default function Proyectos075() {
 
             {!showCiclos ? (
                 <div id="proyectos-tab">
-                    <div className="p-6 bg-[#262626]">
+                    <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">
+                        Seguimiento de proyectos resolución 075
+                    </h2>
+                    <div className="p-6 bg-[#262626] rounded-lg">
                         <SeguimientoBarras />
                     </div>
                     <br />
                     <div>
                         <ProjectGrid />
                     </div>
-                    <HitosBarras />
+                        <HitosBarras />
                 </div>
             ) : (
                 <div id="ciclos-tab">

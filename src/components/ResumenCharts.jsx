@@ -162,9 +162,11 @@ export function ResumenCharts() {
         const techColor = {
           'BIOMASA': '#B39FFF',
           'EOLICA': '#5DFF97',
+          'EÓLICA': '#5DFF97',
           'PCH': '#3B82F6',
           'SOLAR': '#FFC800',
-          'TERMICA': '#F97316'
+          'TERMICA': '#F97316',
+          'TÉRMICA': '#F97316',
         };
 
         const catColor = {
@@ -178,11 +180,13 @@ export function ResumenCharts() {
           'BIOMASA': '#B39FFF',
           'HIDRAULICA': '#3B82F6',
           'RAD SOLAR': '#FFC800',
-          'TERMICA': '#F97316'
+          'TERMICA': '#F97316',
+          'TÉRMICA': '#F97316',
         };
 
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
+          'EOLICA': '#5DFF97',
           'EOLICA': '#5DFF97',
           'PCH': '#3B82F6',
           'SOLAR FV': '#FFC800'
@@ -417,7 +421,7 @@ export function ResumenCharts() {
 
   if (loading) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <div className="flex space-x-2">
           <div
             className="w-3 h-3 rounded-full animate-bounce"
@@ -439,7 +443,7 @@ export function ResumenCharts() {
 
   if (error) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-12 w-12 text-red-500 mb-4"
@@ -479,7 +483,7 @@ export function ResumenCharts() {
         {displayed.map(({ opt, idx }) => (
           <div
             key={idx}
-            className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
+            className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
           >
             <button
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

@@ -142,7 +142,7 @@ const MapaCreg075 = () => {
 
   return (
     <div className="relative text-white font-sans">
-      <div id="map" style={{ height: "85vh" }}></div>
+      <div id="map" style={{ height: "85vh", zIndex:'1' }}></div>
 
       <div className="filtros-container" style={filtroStyle}>
         <h4 style={{ margin: "0 0 8px 0" }}>Filtros</h4>
@@ -203,7 +203,7 @@ const filtroStyle = {
   position: "absolute",
   top: "410px",
   left: "10px",
-  zIndex: 1001,
+  zIndex: 2,
   background: "rgba(124, 118, 118, 0.9)",
   padding: "10px",
   borderRadius: "6px",
@@ -219,7 +219,7 @@ const legendStyle = {
   position: "absolute",
   top: "100px",
   left: "10px",
-  zIndex: 1000,
+  zIndex: 2,
   background: "rgba(124, 118, 118, 0.9)",
   padding: "10px",
   borderRadius: "5px",

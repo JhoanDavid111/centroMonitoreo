@@ -4,11 +4,11 @@ import HighchartsReact from 'highcharts-react-official';
 
 // Configuración de gráficas ANLA
 const resumenANLAOptions = {
-chart: {
-      type: 'column',
-      backgroundColor: '#262626',
-      spacing: [10, 10, 30, 10]
-    },
+    chart: {
+        type: 'column',
+        backgroundColor: '#262626',
+        spacing: [10, 10, 30, 10]
+      },
     title: {
       text: 'Licencias FNCER otorgadas desde 07/08/2022 hasta la fecha',
       style: {
@@ -98,12 +98,12 @@ chart: {
       {
         name: 'Eólico',
         data: [1, 1, 0, 0],
-        color: '#39FF14'
+        color: '#5DFF97'
       },
       {
         name: 'Fotovoltaico',
         data: [4, 3, 4, 5],
-        color: '#7FFF00'
+        color: '#FFC800'
       },
       {
         name: 'LT',
@@ -114,127 +114,127 @@ chart: {
     credits: { enabled: false }
   };
 
-  const seriesData = [
-    {
-      name: 'La Guajira',
-      data: [
-        { name: '2018', y: 240.0, color: '#0B6623' },
-        { name: '2019', y: 346.5, color: '#32CD32' },
-        { name: '2020', y: 200.0, color: '#39FF14' },
-        { name: '2021', y: 571.2, color: '#228B22' },
-        { name: '2022', y: 571.2, color: '#3CB371' },
-        { name: '2023', y: 100.0, color: '#2E8B57' }
-      ]
-    },
-    {
-      name: 'Santander',
-      data: [
-        { name: '2019', y: 100.5, color: '#0B6623' },
-        { name: '2022', y: 200.0, color: '#32CD32' },
-        { name: '2023', y: 360.0, color: '#39FF14' },
-        { name: '2024', y: 200.0, color: '#228B22' }
-      ]
-    },
-    {
-      name: 'Atlántico',
-      data: [
-        {name:'2021', y: 599.5, color:'#0B6623'},
-        {name:'2022', y: 200.0, color:'#32CD32'}
-      ]
-    },
-    {
-      name: 'Cesar',
-      data: [
-        { name: '2019', y: 250.4, color: '#0B6623' },
-        { name: '2021', y: 101.0, color: '#32CD32' },
-        { name: '2023', y: 240.0, color: '#39FF14' },
-        { name: '2025', y: 200.0, color: '#228B22' }
-      ]
-    },
-    {
-      name: 'Cundinamarca',
-      data: [
-        { name: '2022', y: 300.0, color: '#0B6623' },
-        { name: '2023', y: 100.0, color: '#32CD32' }
-      ]
-    },
-    {
-      name: 'Córdoba - Sucre',
-      data: [
-        { name: '2025', y: 350.0, color: '#0B6623' }
-      ]
-    },
-    {
-      name: 'Córdoba',
-      data: [
-        { name: '2024', y: 200.0, color: '#0B6623' },
-        { name: '2025', y: 135.0, color: '#32CD32' }
-      ]
-    },
-    {
-      name: 'Otros',
-      data: [
-        { name: '2021', y: 121.3, color: '#0B6623' },
-        { name: '2022', y: 360.0, color: '#32CD32' },
-        { name: '2024', y: 250.0, color: '#39FF14' },
-        { name: '2025', y: 400.0, color: '#228B22' }
-      ]
-    }
-  ];
+const seriesData = [
+  {
+    name: 'La Guajira',
+    data: [
+      { name: '2018', y: 240.0, color: '#0B6623' },
+      { name: '2019', y: 346.5, color: '#32CD32' },
+      { name: '2020', y: 200.0, color: '#39FF14' },
+      { name: '2021', y: 571.2, color: '#228B22' },
+      { name: '2022', y: 571.2, color: '#3CB371' },
+      { name: '2023', y: 100.0, color: '#2E8B57' }
+    ]
+  },
+  {
+    name: 'Santander',
+    data: [
+      { name: '2019', y: 100.5, color: '#0B6623' },
+      { name: '2022', y: 200.0, color: '#32CD32' },
+      { name: '2023', y: 360.0, color: '#39FF14' },
+      { name: '2024', y: 200.0, color: '#228B22' }
+    ]
+  },
+  {
+    name: 'Atlántico',
+    data: [
+      {name:'2021', y: 599.5, color:'#0B6623'},
+      {name:'2022', y: 200.0, color:'#32CD32'}
+    ]
+  },
+  {
+    name: 'Cesar',
+    data: [
+      { name: '2019', y: 250.4, color: '#0B6623' },
+      { name: '2021', y: 101.0, color: '#32CD32' },
+      { name: '2023', y: 240.0, color: '#39FF14' },
+      { name: '2025', y: 200.0, color: '#228B22' }
+    ]
+  },
+  {
+    name: 'Cundinamarca',
+    data: [
+      { name: '2022', y: 300.0, color: '#0B6623' },
+      { name: '2023', y: 100.0, color: '#32CD32' }
+    ]
+  },
+  {
+    name: 'Córdoba - Sucre',
+    data: [
+      { name: '2025', y: 350.0, color: '#0B6623' }
+    ]
+  },
+  {
+    name: 'Córdoba',
+    data: [
+      { name: '2024', y: 200.0, color: '#0B6623' },
+      { name: '2025', y: 135.0, color: '#32CD32' }
+    ]
+  },
+  {
+    name: 'Otros',
+    data: [
+      { name: '2021', y: 121.3, color: '#0B6623' },
+      { name: '2022', y: 360.0, color: '#32CD32' },
+      { name: '2024', y: 250.0, color: '#39FF14' },
+      { name: '2025', y: 400.0, color: '#228B22' }
+    ]
+  }
+];
 
-  const getChartOptions = (serie, index) => ({
-    chart: { type: 'column',
-      backgroundColor: '#262626',
-      borderWidth: 1,
-      borderColor: '#262626',
-      plotBorderWidth: 1,
-      plotBorderColor: '#262626'
+const getChartOptions = (serie, index) => ({
+  chart: { type: 'column',
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: '#262626',
+    plotBorderWidth: 1,
+    plotBorderColor: '#262626'
+  },
+  title: {
+    text: serie.name,
+    style: {
+      fontSize: '14px',
+      fontWeight: 'bold',
+      color: '#fff'
+    }
+  },
+  xAxis: {
+    type: 'category',
+    tickInterval: 1,
+    title: { text: '', style: { fontWeight: 'bold', color: '#ccc' } },
+    labels: {
+      rotation: 0,
+      step: 1,
+      style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
     },
-    title: {
-      text: serie.name,
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        color: '#fff'
-      }
-    },
-    xAxis: {
-      type: 'category',
-      tickInterval: 1,
-      title: { text: '', style: { fontWeight: 'bold', color: '#ccc' } },
-      labels: {
-        rotation: 0,
-        step: 1,
-        style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
+    crosshair: true
+  },
+  yAxis: {
+    title: { text: 'MW Licenciados', style: { fontWeight: 'bold', color: '#ccc' } },
+    min: 0,
+    gridLineWidth: 1,
+    labels: { style: { fontSize: '12px', color: '#eee' } },
+  },
+  legend: { enabled: false },
+  plotOptions: {
+    column: {
+      borderRadius: 4,
+      borderWidth: 0,
+      dataLabels: {
+        enabled: true,
+        format: '{point.y}',
+        style: { fontWeight: 'bold', color: '#fff' },
+        y: -20
       },
-      crosshair: true
-    },
-    yAxis: {
-      title: { text: 'MW Licenciados', style: { fontWeight: 'bold', color: '#ccc' } },
-      min: 0,
-      gridLineWidth: 1,
-      labels: { style: { fontSize: '12px', color: '#eee' } },
-    },
-    legend: { enabled: false },
-    plotOptions: {
-      column: {
-        borderRadius: 4,
-        borderWidth: 0,
-        dataLabels: {
-          enabled: true,
-          format: '{point.y}',
-          style: { fontWeight: 'bold', color: '#fff' },
-          y: -20
-        },
-        pointPadding: 0.1,
-        groupPadding: 0.1
-      }
-    },
-    series: [{
-      name: serie.name,
-      data: serie.data
-    }]
-  });
+      pointPadding: 0.1,
+      groupPadding: 0.1
+    }
+  },
+  series: [{
+    name: serie.name,
+    data: serie.data
+  }]
+});
 
 const datosTiempos = [
   { name: 'Cundinamarca', dias: 199 },
@@ -349,7 +349,7 @@ const tiempoPromedioANLAOptions = {
 
 export default function GraficaANLA() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-lg">
       {/* Gráfico Resumen ANLA */}
       <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
         <button
@@ -383,7 +383,7 @@ export default function GraficaANLA() {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {seriesData.map((serie, index) => (
-          <div key={index} className="bg-[#262626] border border-[#666666] h-[420px] p-1  relative h-[420px]">
+          <div key={index} className="bg-[#262626] rounded-lg border border-[#666666] h-[420px] p-1  relative h-[420px]">
             <button
           className="absolute top-[13px] right-[48px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
@@ -411,9 +411,9 @@ export default function GraficaANLA() {
       </div>
       
       {/* Gráfico de tiempos promedio */}
-      <div className="bg-[#262626] border border-[#666666] relative">
+      <div className="bg-[#262626] rounded-lg border border-[#666666] relative p-2">
         <button
-          className="absolute top-[10px] right-[42px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          className="absolute top-[4%] right-[52px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
           onClick={() => alert('Muestra el tiempo promedio en días que tarda la aprobación de licencias por departamento.')}

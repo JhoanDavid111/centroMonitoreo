@@ -54,8 +54,8 @@ export default function AuthButton() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#262626] font-sans">
-      <div className="bg-[#1d1d1d] p-8 rounded shadow-md w-full max-w-sm text-white">
+    <div className="min-h-screen flex items-center justify-center font-sans">
+      <div className="bg-[#1d1d1d] bg-opacity-70 border border-[#666666] rounded-lg p-8 shadow-md w-full max-w-sm text-white">
         <div className="flex justify-center mb-6">
           <img src={logo} alt="Logo Energia UPME" className="h-16 object-contain" />
         </div>

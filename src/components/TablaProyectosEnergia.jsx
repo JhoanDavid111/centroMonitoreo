@@ -14,7 +14,7 @@ export function TablaProyectosEnergia() {
   
     return (
       <section className="mt-8">
-        <div className="overflow-x-auto rounded border border-[#666666]">
+        <div className="overflow-x-auto rounded-lg border border-[#666666]">
           <table className="min-w-full divide-y divide-[#666666] text-sm text-white">
             <thead className="bg-[#FFC800] text-black text-left">
               <tr>

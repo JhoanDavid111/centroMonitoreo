@@ -187,7 +187,7 @@ export function CombustiblesLiquidos() {
 
   return (
     <section className="mt-8 font-sans">
-      <h2 className="text-2xl font-semibold mb-4 text-white">
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4 ">
         Combustibles líquidos
       </h2>
 
@@ -220,7 +220,7 @@ export function CombustiblesLiquidos() {
           return (
             <div
               key={idx}
-              className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
+              className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
             >
              {/* Botón de ayuda */}
               <button
