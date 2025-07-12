@@ -56,12 +56,6 @@ export function Sidebar({ open, toggle }) {
           activeIcon: Proyecto075On
         },
         {
-          title: 'Acciones estratégicas',
-          path: '/en_construccion',
-          icon: AccionesEstrategicasOff,
-          activeIcon: AccionesEstrategicasOn
-        },
-        {
           title: 'Transmisión',
           path: '/en_construccion',
           icon: TransmisionOff,
@@ -72,6 +66,12 @@ export function Sidebar({ open, toggle }) {
           path: '/comunidades_energeticas',
           icon: ComunidadesEnergOff,
           activeIcon: ComunidadesEnergOn
+        },
+        {
+          title: 'Acciones estratégicas',
+          path: '/en_construccion',
+          icon: AccionesEstrategicasOff,
+          activeIcon: AccionesEstrategicasOn
         },
         /* 
         {
