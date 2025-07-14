@@ -293,174 +293,181 @@ const filteredAll = proyectos
   .filter(applyGlobal);
 
   // ——— Columnas compartidas ———
-  const columnsSimple = [
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>ID</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
-          />
-          {openFilter==='id' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar ID"
-                value={columnFilters.id}
-                onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.id,
-      sortable: true,
-      wrap: true,
-    },
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>Nombre</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
-          />
-          {openFilter==='nombre' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar Nombre"
-                value={columnFilters.nombre}
-                onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.nombre_proyecto,
-      sortable: true,
-      wrap: true,
-      cell: row => {
-        const name = row.nombre_proyecto;
-        const disp = name.length > 20 ? `${name.slice(0,20)}...` : name;
-        return <span title={name}>{disp}</span>;
-      }
-    },
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>Capacidad</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
-          />
-          {openFilter==='capacidad' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar Capacidad"
-                value={columnFilters.capacidad}
-                onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.capacidad_instalada_mw,
-      sortable: true,
-      wrap: true,
-    },
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>FPO</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
-          />
-          {openFilter==='fpo' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar FPO"
-                value={columnFilters.fpo}
-                onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.fpo,
-      sortable: true,
-      wrap: true,
-    },
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>Avance</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
-          />
-          {openFilter==='avance' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar Avance"
-                value={columnFilters.avance}
-                onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.porcentaje_avance_display,
-      sortable: true,
-      wrap: true,
-    },
-    {
-      name: (
-        <div className="relative inline-block">
-          <span>Promotor</span>
-          <Filter
-            className="inline ml-1 cursor-pointer"
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
-          />
-          {openFilter==='promotor' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-10">
-              <input
-                type="text"
-                placeholder="Filtrar Promotor"
-                value={columnFilters.promotor}
-                onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.promotor,
-      sortable: true,
-      wrap: true,
-      cell: row => {
-        const name = row.promotor;
-        const display = name.length > 20 ? `${name.slice(0, 20)}...` : name;
-        return <span title={name}>{display}</span>;
-      }
-    },
-  ];
+const columnsSimple = [
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>ID</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
+        />
+        {openFilter==='id' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar ID"
+              value={columnFilters.id}
+              onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.id,
+    sortable: true,
+    wrap: true,
+    width: '80px',
+  },
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>Nombre</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
+        />
+        {openFilter==='nombre' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar Nombre"
+              value={columnFilters.nombre}
+              onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.nombre_proyecto,
+    sortable: true,
+    wrap: true,
+    minWidth: '200px',
+    cell: row => {
+      const name = row.nombre_proyecto;
+      const disp = name.length > 20 ? `${name.slice(0,20)}...` : name;
+      return <span title={name}>{disp}</span>;
+    }
+  },
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>Capacidad</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
+        />
+        {openFilter==='capacidad' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar Capacidad"
+              value={columnFilters.capacidad}
+              onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.capacidad_instalada_mw,
+    sortable: true,
+    wrap: true,
+    width: '80px',
+  },
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>FPO</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
+        />
+        {openFilter==='fpo' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar FPO"
+              value={columnFilters.fpo}
+              onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.fpo,
+    sortable: true,
+    wrap: true,
+    width: '100px',
+  },
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>Avance</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
+        />
+        {openFilter==='avance' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar Avance"
+              value={columnFilters.avance}
+              onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.porcentaje_avance_display,
+    sortable: true,
+    wrap: true,
+    width: '100px',
+  },
+  {
+    name: (
+      <div className="relative inline-block">
+        <span>Promotor</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
+        />
+        {openFilter==='promotor' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Filtrar Promotor"
+              value={columnFilters.promotor}
+              onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.promotor,
+    sortable: true,
+    wrap: true,
+    minWidth: '200px',
+    cell: row => {
+      const name = row.promotor;
+      const display = name.length > 20 ? `${name.slice(0, 20)}...` : name;
+      return <span title={name}>{display}</span>;
+    }
+  },
+];
+
 
   // ——— Columnas para Seguimiento Curva S ———
   const columnsSeguimiento = [
@@ -526,25 +533,21 @@ const filteredAll = proyectos
       {/* Seguimiento Curva S */}
       {activeTab==='Seguimiento Curva S' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-          {/* Buscador global */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={globalFilter}
-              onChange={e=>setGlobalFilter(e.target.value)}
-              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-full md:w-1/3"
-            />
-          </div>
-          {/* Export CSV */}
-          <div className="flex items-center justify-between mb-4 space-x-4">
-            <button
-              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-              onClick={()=>exportToCSV(filteredSeguimiento)}
-            >
-              <Download size={16} /> Exportar CSV
-            </button>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={globalFilter}
+            onChange={e => setGlobalFilter(e.target.value)}
+            className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+          />
+          <button
+            className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+            onClick={() => exportToCSV(filteredSeguimiento)}
+          >
+            <Download size={16} /> Exportar CSV
+          </button>
+        </div>
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsSeguimiento}
@@ -553,6 +556,8 @@ const filteredAll = proyectos
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
               pagination
+              wrapperClassName="overflow-visible"
+              className="overflow-visible"
               customStyles={customStyles}
             />
           </div>
@@ -570,25 +575,21 @@ const filteredAll = proyectos
       {/* Todos los proyectos */}
       {activeTab==='Todos los proyectos' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-          {/* Buscador global */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={globalFilter}
-              onChange={e=>setGlobalFilter(e.target.value)}
-              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-full md:w-1/3"
-            />
-          </div>
-          {/* Export CSV */}
-          <div className="flex items-center justify-between mb-4 space-x-4">
-            <button
-              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-              onClick={()=>exportToCSV(filteredSeguimiento)}
-            >
-              <Download size={16} /> Exportar CSV
-            </button>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={globalFilter}
+            onChange={e => setGlobalFilter(e.target.value)}
+            className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+          />
+          <button
+            className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+            onClick={() => exportToCSV(filteredSeguimiento)}
+          >
+            <Download size={16} /> Exportar CSV
+          </button>
+        </div>
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsSimple}
@@ -597,6 +598,8 @@ const filteredAll = proyectos
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
               pagination
+              wrapperClassName="overflow-visible"
+              className="overflow-visible"
               customStyles={customStyles}
             />
           </div>
