@@ -173,6 +173,7 @@ const baseChartOptions = {
 
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
+  const chartContainerRef = useRef(null);
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
   const [activeTab, setActiveTab]         = useState(tabs[0]);
   const [proyectos, setProyectos]         = useState([]);
@@ -184,7 +185,16 @@ export default function ProyectoDetalle() {
 
   // **Estados de filtros por columna**
   const [columnFilters, setColumnFilters] = useState({
-    id: '', nombre: '', capacidad: '', fpo: '', avance: '', promotor: ''
+    id: '',
+    nombre: '',
+    capacidad: '',
+    fpo: '',
+    avance: '',
+    priorizado: '',
+    ciclo: '',
+    promotor: '',
+    departamento: '',
+    municipio: ''
   });
   const [globalFilter, setGlobalFilter] = useState('');
   const [openFilter, setOpenFilter]       = useState('');
@@ -256,6 +266,11 @@ export default function ProyectoDetalle() {
       setErrorCurve('No fue posible cargar la curva S.');
     } finally {
       setLoadingCurve(false);
+      // Scroll automático al contenedor de la curva S
+      chartContainerRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+      });
     }
   };
 
@@ -275,21 +290,28 @@ export default function ProyectoDetalle() {
   // ——— Filtrado por columna ———
   const filteredSeguimiento = proyectos
   .filter(r => /^[0-9]+$/.test(String(r.id)))
-  .filter(r => String(r.id).includes(columnFilters.id))
   .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
   .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
-  .filter(r => String(r.fpo ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
+  .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
   .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
+  .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
+  .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
   .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
+  .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
+  .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
   .filter(applyGlobal);
 
 const filteredAll = proyectos
-  .filter(r => String(r.id ?? '').includes(columnFilters.id))
+  .filter(r => String(r.id   ?? '').includes(columnFilters.id))
   .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
   .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
-  .filter(r => String(r.fpo ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
+  .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
   .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
+  .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
+  .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
   .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
+  .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
+  .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
   .filter(applyGlobal);
 
   // ——— Columnas compartidas ———
@@ -348,9 +370,10 @@ const columnsSimple = [
     wrap: true,
     minWidth: '200px',
     cell: row => {
-      const name = row.nombre_proyecto;
-      const disp = name.length > 50 ? `${name.slice(0,20)}...` : name;
-      return <span title={name}>{disp}</span>;
+      const raw = row.nombre_proyecto || '';
+      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
     }
   },
   {
@@ -379,6 +402,7 @@ const columnsSimple = [
     sortable: false,
     wrap: true,
     width: '130px',
+    cell: row => (`${row.capacidad_instalada_mw} MW`),
   },
   {
     name: (
@@ -434,6 +458,68 @@ const columnsSimple = [
     wrap: true,
     width: '120px',
   },
+    // Priorizado
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Priorizado</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter === 'priorizado' ? '' : 'priorizado')}
+        />
+        {openFilter === 'priorizado' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.priorizado}
+              onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-16"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.priorizado,
+    sortable: false,
+    wrap: true,
+    width: '130px',
+  },
+  // Ciclo
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Ciclo</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter === 'ciclo' ? '' : 'ciclo')}
+        />
+        {openFilter === 'ciclo' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.ciclo}
+              onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.ciclo_asignacion,
+    sortable: false,
+    wrap: true,
+    width: '150px',
+    cell: row => {
+      const raw = row.ciclo_asignacion || '';
+      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
   {
     name: (
       <div className="relative inline-block pb-11">
@@ -461,9 +547,78 @@ const columnsSimple = [
     wrap: true,
     minWidth: '200px',
     cell: row => {
-      const name = row.promotor;
-      const display = name.length > 50 ? `${name.slice(0, 20)}...` : name;
-      return <span title={name}>{display}</span>;
+      const raw = row.promotor || '';
+      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+    // Departamento
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Departamento</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter === 'departamento' ? '' : 'departamento')}
+        />
+        {openFilter === 'departamento' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.departamento}
+              onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.departamento,
+    sortable: false,
+    wrap: true,
+    minWidth: '180px',
+    cell: row => {
+      const raw = row.departamento || '';
+      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+  // Municipio
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Municipio</span>
+        <Filter
+          className="inline ml-1 cursor-pointer"
+          size={16}
+          onClick={() => setOpenFilter(openFilter === 'municipio' ? '' : 'municipio')}
+        />
+        {openFilter === 'municipio' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.municipio}
+              onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.municipio,
+    sortable: false,
+    wrap: true,
+    minWidth: '180px',
+    cell: row => {
+      const raw = row.municipio || '';
+      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
     }
   },
 ];
@@ -566,12 +721,19 @@ const columnsSeguimiento = [
             />
           </div>
           {/* Curva Chart */}
-          <div className="mt-6 bg-[#262626] p-4 rounded-lg shadow">
+          <div
+          ref={chartContainerRef}
+          className="mt-6 bg-[#262626] p-4 rounded-lg shadow">
             {loadingCurve
               ? <p className="text-gray-300">Cargando curva S…</p>
               : errorCurve
                 ? <p className="text-red-500">{errorCurve}</p>
-                : <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />}
+                : <HighchartsReact
+                    highcharts={Highcharts}
+                    options={chartOptions}
+                    ref={chartRef}
+                  />
+            }
           </div>
         </div>
       )}
