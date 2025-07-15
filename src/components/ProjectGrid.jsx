@@ -491,16 +491,16 @@ export default function ProyectoDetalle() {
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Proyectos</h2>
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold">Proyectos</h2>
 
       {/* Pestañas */}
-      <div className="flex space-x-4 border-b border-gray-700 mb-4">
+      <div className="flex space-x-4 mb-4">
         {tabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 font-medium ${
-              activeTab === tab ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400'
+            className={`pb-1 text-[18px] ${
+              activeTab === tab ? ' border-[#FFC600] border-b-2 text-[#FFC600]' : 'text-gray-300'
             }`}
           >
             {tab}

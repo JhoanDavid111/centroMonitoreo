@@ -125,7 +125,7 @@ export default function Resumen() {
 
       {/* Índices */}
       <div className="px-2">
-        <h2 className="text-2xl font-semibold text-gray-200 mb-4">
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">
           Índices 6GW+
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

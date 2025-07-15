@@ -207,12 +207,12 @@ export function GeneracionHoraria() {
 
   return (
     <section className="mt-8">
-      <h2 className="text-white text-2xl font-semibold mb-4 text-left">
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4 mt-10 text-left">
       Curva de generación horaria promedio
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Gráfico original */}
-        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden"> 
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden"> 
          {/*  <button
             className="absolute top-2 right-2 text-gray-300 hover:text-white"
             onClick={() => chartRef1.current.chart.fullscreen.toggle()}
@@ -248,7 +248,7 @@ export function GeneracionHoraria() {
           <HighchartsReact highcharts={Highcharts} options={{}} ref={chartRef1} />
         </div>
         {/* Gráfico variante */}
-        <div className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative overflow-hidden">
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden">
           {/* <button
             className="absolute top-2 right-2 text-gray-300 hover:text-white"
             onClick={() => chartRef2.current.chart.fullscreen.toggle()}
