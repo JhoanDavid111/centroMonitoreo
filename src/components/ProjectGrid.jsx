@@ -296,7 +296,7 @@ const filteredAll = proyectos
 const columnsSimple = [
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>ID</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -307,23 +307,23 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar ID"
+              placeholder="Buscar..."
               value={columnFilters.id}
               onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
+              className="bg-[#262626] text-white p-1 text-sm w-16"
             />
           </div>
         )}
       </div>
     ),
     selector: row => row.id,
-    sortable: true,
+    sortable: false,
     wrap: true,
-    width: '80px',
+    width: '120px',
   },
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>Nombre</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -334,7 +334,7 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar Nombre"
+              placeholder="Buscar..."
               value={columnFilters.nombre}
               onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
               className="bg-[#262626] text-white p-1 text-sm w-32"
@@ -344,18 +344,18 @@ const columnsSimple = [
       </div>
     ),
     selector: row => row.nombre_proyecto,
-    sortable: true,
+    sortable: false,
     wrap: true,
     minWidth: '200px',
     cell: row => {
       const name = row.nombre_proyecto;
-      const disp = name.length > 20 ? `${name.slice(0,20)}...` : name;
+      const disp = name.length > 50 ? `${name.slice(0,20)}...` : name;
       return <span title={name}>{disp}</span>;
     }
   },
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>Capacidad</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -366,23 +366,23 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar Capacidad"
+              placeholder="Buscar..."
               value={columnFilters.capacidad}
               onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
+              className="bg-[#262626] text-white p-1 text-sm w-16"
             />
           </div>
         )}
       </div>
     ),
     selector: row => row.capacidad_instalada_mw,
-    sortable: true,
+    sortable: false,
     wrap: true,
-    width: '80px',
+    width: '130px',
   },
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>FPO</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -393,7 +393,7 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar FPO"
+              placeholder="Buscar..."
               value={columnFilters.fpo}
               onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
               className="bg-[#262626] text-white p-1 text-sm w-24"
@@ -403,13 +403,13 @@ const columnsSimple = [
       </div>
     ),
     selector: row => row.fpo,
-    sortable: true,
+    sortable: false,
     wrap: true,
-    width: '100px',
+    width: '150px',
   },
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>Avance</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -420,23 +420,23 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar Avance"
+              placeholder="Buscar..."
               value={columnFilters.avance}
               onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
+              className="bg-[#262626] text-white p-1 text-sm w-16"
             />
           </div>
         )}
       </div>
     ),
     selector: row => row.porcentaje_avance_display,
-    sortable: true,
+    sortable: false,
     wrap: true,
-    width: '100px',
+    width: '120px',
   },
   {
     name: (
-      <div className="relative inline-block">
+      <div className="relative inline-block pb-11">
         <span>Promotor</span>
         <Filter
           className="inline ml-1 cursor-pointer"
@@ -447,7 +447,7 @@ const columnsSimple = [
           <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
-              placeholder="Filtrar Promotor"
+              placeholder="Buscar..."
               value={columnFilters.promotor}
               onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
               className="bg-[#262626] text-white p-1 text-sm w-32"
@@ -457,12 +457,12 @@ const columnsSimple = [
       </div>
     ),
     selector: row => row.promotor,
-    sortable: true,
+    sortable: false,
     wrap: true,
     minWidth: '200px',
     cell: row => {
       const name = row.promotor;
-      const display = name.length > 20 ? `${name.slice(0, 20)}...` : name;
+      const display = name.length > 50 ? `${name.slice(0, 20)}...` : name;
       return <span title={name}>{display}</span>;
     }
   },
@@ -470,28 +470,32 @@ const columnsSimple = [
 
 
   // ——— Columnas para Seguimiento Curva S ———
-  const columnsSeguimiento = [
-    {
-      name: 'Acciones',
-      cell: row => (
-        <div className="flex space-x-2">
-          <img src={ojoAmarillo} alt="Ver proyecto" title="Ver proyecto" className="w-5 h-5 cursor-pointer"/>
-          <img
-            src={curvaSAmarillo}
-            alt="Ver curva S"
-            title="Ver curva S"
-            className="w-5 h-5 cursor-pointer"
-            onClick={() => handleViewCurve(row)}
-          />
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      width: '100px'
-    },
-    ...columnsSimple
-  ];
+const columnsSeguimiento = [
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        Acciones
+      </div>
+    ),
+    cell: row => (
+      <div className="flex space-x-2">
+        <img src={ojoAmarillo} alt="Ver proyecto" title="Ver proyecto" className="w-5 h-5 cursor-pointer"/>
+        <img
+          src={curvaSAmarillo}
+          alt="Ver curva S"
+          title="Ver curva S"
+          className="w-5 h-5 cursor-pointer"
+          onClick={() => handleViewCurve(row)}
+        />
+      </div>
+    ),
+    ignoreRowClick: true,
+    allowOverflow: true,
+    button: true,
+    width: '100px',
+  },
+  ...columnsSimple
+];
 
   // ——— Estilos de filas alternadas ———
   const conditionalRowStyles = [
