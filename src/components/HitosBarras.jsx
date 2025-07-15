@@ -35,13 +35,13 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle:       { color: '#ccc' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle:  { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style:           { color: '#fff', fontSize: '12px' }
+    style: { color: '#fff', fontSize: '12px' }
   }
 });
 
@@ -105,19 +105,19 @@ export function HitosBarras() {
   // Añade los botones de exportación a cada set de opciones
   const chartOptions = rawOptions.map(opt => ({
     ...opt,
-    exporting: {
+ /*    exporting: {
       enabled: true,
       buttons: {
         contextButton: {
           menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
         }
       }
-    }
+    } */
   }));
 
   return (
     <section className="mt-8 space-y-4">
-      <h2 className="text-2xl font-semibold text-white font-sans">
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold">
         Seguimiento de hitos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

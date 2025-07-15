@@ -84,7 +84,7 @@ FullScreen(Highcharts);
 // Tema oscuro y Nunito Sans
 Highcharts.setOptions({
   chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff' } },
+  title: { align: 'left', style: { color: '#fff' } },
   subtitle: { style: { color: '#aaa' } },
   xAxis: {
     labels: { style: { color: '#ccc', fontSize: '12px' } },
@@ -160,29 +160,34 @@ export function ResumenCharts() {
         }
 
         const techColor = {
-          BIOMASA: '#B39FFF',
-          EOLICA: '#5DFF97',
-          PCH: '#3B82F6',
-          SOLAR: '#FFC800'
+          'BIOMASA': '#B39FFF',
+          'EOLICA': '#5DFF97',
+          'EÓLICA': '#5DFF97',
+          'PCH': '#3B82F6',
+          'SOLAR': '#FFC800',
+          'TERMICA': '#F97316',
+          'TÉRMICA': '#F97316',
         };
 
         const catColor = {
-          AGGE: '#D3DF1E',
-          AGPE: '#2CA02C',
-          'Generacion Centralizada': '#1F77B4',
-          'Generacion Distribuida': '#FFC800'
+          'AGGE': '#0991B5',
+          'AGPE': '#00FBFA',
+          'Generacion Centralizada': '#B8F600',
+          'Generacion Distribuida': '#FDBA74'
         };
 
         const matColor = {
-          BIOMASA: '#B39FFF',
-          HIDRÁULICA: '#3B82F6',
+          'BIOMASA': '#B39FFF',
+          'HIDRAULICA': '#3B82F6',
           'RAD SOLAR': '#FFC800',
-          TÉRMICA: '#F97316'
+          'TERMICA': '#F97316',
+          'TÉRMICA': '#F97316',
         };
 
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
-          'EÓLICA': '#5DFF97',
+          'EOLICA': '#5DFF97',
+          'EOLICA': '#5DFF97',
           'PCH': '#3B82F6',
           'SOLAR FV': '#FFC800'
         };
@@ -233,7 +238,7 @@ export function ResumenCharts() {
         opts.push({
           chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
           title: { 
-            text: 'Distribución de Capacidad Instalada por Tipo de Proyecto',
+            text: 'Distribución de capacidad instalada por tipo de proyecto',
             align: 'left',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
@@ -300,7 +305,7 @@ export function ResumenCharts() {
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
           title: { 
-            text: 'Capacidad Entrante por mes',
+            text: 'Capacidad entrante por mes',
             align: 'left',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
@@ -416,7 +421,7 @@ export function ResumenCharts() {
 
   if (loading) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <div className="flex space-x-2">
           <div
             className="w-3 h-3 rounded-full animate-bounce"
@@ -438,7 +443,7 @@ export function ResumenCharts() {
 
   if (error) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-12 w-12 text-red-500 mb-4"
@@ -478,7 +483,7 @@ export function ResumenCharts() {
         {displayed.map(({ opt, idx }) => (
           <div
             key={idx}
-            className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
+            className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
           >
             <button
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

@@ -115,14 +115,14 @@ export function GraficaRelacionDemanda({ fechaInicio = '2025-05-01', fechaFin = 
             { name: 'Dem / OEF', data: dataOEF, color: '#FFC800' },
             { name: 'Dem / EFICC', data: dataEFICC, color: '#4CAF50' }
           ],
-          exporting: {
+        /*   exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
       
         setOptions(chartOptions);

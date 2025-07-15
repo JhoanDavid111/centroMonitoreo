@@ -149,14 +149,14 @@ export function GraficaPrecios({ fechaInicio = '2025-05-01', fechaFin = '2025-05
               color: '#D4AF37'
             }
           ],
-          exporting: {
+      /*     exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
               }
             }
-          }
+          } */
         };
 
         setOptions(chartOptions);

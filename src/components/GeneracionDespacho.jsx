@@ -89,6 +89,7 @@ Highcharts.setOptions({
     style: { fontFamily: 'Nunito Sans, sans-serif' }
   },
   title: {
+    align: 'left',
     style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' }
   },
   subtitle: {
@@ -208,7 +209,7 @@ export function GeneracionDespacho() {
         const chartOptions = {
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
           title: { 
-            text: 'Generación Diaria por Tecnología',
+            text: 'Generación diaria por tecnología',
             subtitle: { text: isCached ? '(Datos en caché)' : '' }
           },
           legend: {
@@ -244,14 +245,14 @@ export function GeneracionDespacho() {
             }
           },
           series,
-          exporting: {
+      /*     exporting: {
             enabled: true,
             buttons: {
               contextButton: {
                 menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
               }
             }
-          }
+          } */
         };
 
         if (isMounted) {
@@ -308,7 +309,7 @@ export function GeneracionDespacho() {
 
   if (error) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
+      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-12 w-12 text-red-500 mb-4"
@@ -336,7 +337,7 @@ export function GeneracionDespacho() {
 
   return (
     <section className="mt-8">
-      <div className="w-full bg-[#262626] p-4 rounded border border-[#666666] shadow relative">
+      <div className="w-full bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}

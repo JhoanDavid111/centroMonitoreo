@@ -8,35 +8,35 @@ import EolicaOn from "../assets/svg-icons/Eolica-On.svg";
 
 const indicadores = [
   {
-    titulo: 'Postulaciones Totales Ciclo 1',
+    titulo: 'Postulaciones totales ciclo 1',
     valor: '38.541 MW',
     variacion: '596 proyectos',
     icono: <img src={DemandaOn} alt='Demanda energía SIN' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
-    titulo: 'Postulaciones Totales Ciclo 2',
+    titulo: 'Postulaciones totales ciclo 2',
     valor: '98.868 MW',
     variacion: '1718 proyectos',
     icono: <img src={DemandaOn} alt='Generación hidráulica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
-    titulo: 'Aprobaciones Ciclo 1',
+    titulo: 'Aprobaciones ciclo 1',
     valor: '6.082 MW',
     variacion: '148 proyectos',
     icono: <img src={DemandaOn} alt='Generación térmica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
-    titulo: 'Aprobaciones Ciclo 2',
+    titulo: 'Aprobaciones ciclo 2',
     valor: '90,8 MW',
     variacion: '4 proyectos',
     icono: <img src={DemandaOn} alt='Generación solar y eólica' className="w-6 h-6 flex-shrink-0"/>,
     fecha: 'Actualizado el: 8/5/2025'
   },
   {
-    titulo: 'En Evaluación Ciclo 2',
+    titulo: 'En evaluación ciclo 2',
     valor: '81.802 MW',
     variacion: '1,458 proyectos',
     icono: <img src={DemandaOn} alt='Generación solar y eólica' className="w-6 h-6 flex-shrink-0"/>,
@@ -48,7 +48,7 @@ export default function SeguimientoIndices() {
 
   return (
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">Índices</h2>
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices</h2>
 
         {/* Grid responsiva */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">

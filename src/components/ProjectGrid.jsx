@@ -10,6 +10,7 @@ import DataTable, { createTheme } from 'react-data-table-component';
 import { Download, Filter } from 'lucide-react';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
+import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
 
 // ——— Tema oscuro para DataTable ———
@@ -196,7 +197,7 @@ export default function ProyectoDetalle() {
       setErrorList(null);
       try {
         const res  = await fetch(
-          `http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_curva_s`,
+          `${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -223,7 +224,7 @@ export default function ProyectoDetalle() {
     setErrorCurve(null);
     try {
       const res  = await fetch(
-        `http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_curva_s/${row.id}`,
+        `${API}/v1/graficas/6g_proyecto/grafica_curva_s/${row.id}`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -639,4 +640,3 @@ function exportToCSV(data) {
   link.click();
   document.body.removeChild(link);
 }
-
