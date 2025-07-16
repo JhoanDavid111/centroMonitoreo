@@ -536,67 +536,6 @@ const columnsSeguimiento = [
       </div>
 
       {/* Seguimiento Curva S */}
-<<<<<<< HEAD
-      {activeTab === 'Seguimiento Curva S' && (
-        <div className="bg-[#262626] text-[18px] p-4 rounded-lg shadow">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={globalFilter}
-              onChange={e => setGlobalFilter(e.target.value)}
-              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 text-sm md:w-1/4"
-            />
-            <div className="flex gap-2 flex-wrap items-center">
-              <select onChange={e => setTipoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
-                <option value="">Todos los tipos</option>
-                {[...new Set(proyectos.map(p => p.tipo_proyecto))].map(tipo => (
-                  <option key={tipo} value={tipo}>{tipo}</option>
-                ))}
-              </select>
-              <select onChange={e => setTecFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
-                <option value="">Todas las tecnologías</option>
-                {[...new Set(proyectos.map(p => p.tecnologia))].map(tec => (
-                  <option key={tec} value={tec}>{tec}</option>
-                ))}
-              </select>
-              <select onChange={e => setDeptoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
-                <option value="">Todos los departamentos</option>
-                {[...new Set(proyectos.map(p => p.departamento))].map(dep => (
-                  <option key={dep} value={dep}>{dep}</option>
-                ))}
-              </select>
-              <select onChange={e => setCicloFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
-                <option value="">Todos los ciclos</option>
-                {[...new Set(proyectos.map(p => p.ciclo_asignacion))].map(ciclo => (
-                  <option key={ciclo} value={ciclo}>{ciclo}</option>
-                ))}
-              </select>
-              <select onChange={e => setEstadoFilter(e.target.value)} className="bg-[#1f1f1f] text-white rounded p-1 text-sm">
-                <option value="">Todos los estados</option>
-                {[...new Set(proyectos.map(p => p.estado_proyecto))].map(est => (
-                  <option key={est} value={est}>{est}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-              onClick={() => exportToCSV(filteredNumeric)}
-            >
-              <Download size={16} /> Exportar CSV
-            </button>
-          </div>
-
-          <DataTable
-            columns={columnsSeguimiento}
-            data={filteredNumeric}
-            pagination           
-            pointerOnHover
-            conditionalRowStyles={conditionalRowStyles}
-            theme="customDark"
-            highlightOnHover
-            customStyles={customStyles}
-=======
       {activeTab==='Seguimiento Curva S' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
         <div className="flex items-center justify-between mb-4">
@@ -606,7 +545,6 @@ const columnsSeguimiento = [
             value={globalFilter}
             onChange={e => setGlobalFilter(e.target.value)}
             className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
->>>>>>> main
           />
           <button
             className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
