@@ -27,6 +27,8 @@ import GeneracionTermicaOff from '../assets/svg-icons/GeneracionTermica-Off.svg'
 import GeneracionTermicaOn from '../assets/svg-icons/GeneracionTermica-On.svg'
 import DemandaOff from '../assets/svg-icons/Demanda-Off.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
+import TransmisionOff from '../assets/svg-icons/Transmision-Off.svg'
+import TransmisionOn from '../assets/svg-icons/Transmision-On.svg'
 
 
 
@@ -56,12 +58,6 @@ export function Sidebar({ open, toggle }) {
           activeIcon: Proyecto075On
         },
         {
-          title: 'Acciones estratégicas',
-          path: '/en_construccion',
-          icon: AccionesEstrategicasOff,
-          activeIcon: AccionesEstrategicasOn
-        },
-        {
           title: 'Transmisión',
           path: '/Transmision',
           icon: ProyectosTransmisionOff,
@@ -72,6 +68,12 @@ export function Sidebar({ open, toggle }) {
           path: '/comunidades_energeticas',
           icon: ComunidadesEnergOff,
           activeIcon: ComunidadesEnergOn
+        },
+        {
+          title: 'Acciones estratégicas',
+          path: '/en_construccion',
+          icon: AccionesEstrategicasOff,
+          activeIcon: AccionesEstrategicasOn
         },
         /* 
         {

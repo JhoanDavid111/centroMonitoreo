@@ -48,7 +48,7 @@ export default function SeguimientoIndices() {
 
   return (
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">Índices</h2>
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices</h2>
 
         {/* Grid responsiva */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">

@@ -17,6 +17,7 @@ import Transmision from './pages/Transmision';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthButton } from './components/auth';
 import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
+import Login from '../src/assets/Login.png'
 
 function AppContent() {
   const { currentUser, loading } = useAuth();
@@ -38,7 +39,7 @@ function AppContent() {
     const isProtectedRoute = !['/', '/login'].includes(location.pathname);
     
     return (
-      <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
+      <div style={{ backgroundImage: `url(${Login})` }} className="h-screen bg-[#262626] flex flex-col items-center justify-center bg-cover bg-center overflow-hidden">
         <div className="w-full max-w-md">
           <AuthButton />
           {isProtectedRoute && (
