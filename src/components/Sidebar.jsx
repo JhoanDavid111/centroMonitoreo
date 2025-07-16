@@ -15,6 +15,8 @@ import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
 import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Off.svg'
 import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg'
+import ProyectosTransmisionOn from '../assets/svg-icons/ProyectosTransmision-On.png'
+import ProyectosTransmisionOff from '../assets/svg-icons/AccionesEstrategicas-On.svg'
 import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg'
 import HidroOn from '../assets/svg-icons/Hidrologia-On.svg'
 import EnergiaOff from '../assets/svg-icons/EnergiaElectrica-Off.svg'
@@ -25,6 +27,8 @@ import GeneracionTermicaOff from '../assets/svg-icons/GeneracionTermica-Off.svg'
 import GeneracionTermicaOn from '../assets/svg-icons/GeneracionTermica-On.svg'
 import DemandaOff from '../assets/svg-icons/Demanda-Off.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
+import TransmisionOff from '../assets/svg-icons/Transmision-Off.svg'
+import TransmisionOn from '../assets/svg-icons/Transmision-On.svg'
 
 
 
@@ -48,32 +52,40 @@ export function Sidebar({ open, toggle }) {
           activeIcon: GWOn
         },
         {
-          title: 'Comunidades energéticas',
-          path: '/comunidades_energeticas',
-          icon: ComunidadesEnergOff,
-          activeIcon: ComunidadesEnergOn
-        },
-        {
-          title: 'Autogeneración y GD',
-          path: '/en_construccion',
-          icon: AutogeneracionOff,
-          activeIcon: AutogeneracionOn
-        },
-        {
           title: 'Proyectos 075',
           path: '/proyectos075',
           icon: Proyecto075Off,
           activeIcon: Proyecto075On
         },
         {
+          title: 'Transmisión',
+          path: '/Transmision',
+          icon: ProyectosTransmisionOff,
+          activeIcon: ProyectosTransmisionOn
+        },
+        {
+          title: 'Comunidades energéticas',
+          path: '/comunidades_energeticas',
+          icon: ComunidadesEnergOff,
+          activeIcon: ComunidadesEnergOn
+        },
+        {
           title: 'Acciones estratégicas',
           path: '/en_construccion',
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn
-        }
+        },
+        /* 
+        {
+          title: 'Autogeneración y GD',
+          path: '/en_construccion',
+          icon: AutogeneracionOff,
+          activeIcon: AutogeneracionOn
+        },
+        */
       ]
     },
-    {
+    /*{
       title: 'ABASTECIMIENTO',
       items: [
         {
@@ -107,7 +119,7 @@ export function Sidebar({ open, toggle }) {
           activeIcon: DemandaOn
         }
       ]
-    },
+    }, */
     /*{
       title: 'TARIFAS',
       items: [

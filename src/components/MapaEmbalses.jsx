@@ -64,7 +64,7 @@ export function MapaEmbalses() {
   return (
     <section className="mt-8 grid grid-cols-1 xl:grid-cols-4 gap-6">
       {/* Mapa */}
-      <div className="map-container xl:col-span-3 bg-[#262626] rounded border border-[#666666] shadow overflow-hidden h-[650px] p-2 relative">
+      <div className="map-container xl:col-span-3 bg-[#262626] rounded-lg border border-[#666666] shadow overflow-hidden h-[650px] p-2 relative">
         {/* Controles de zoom */}
         <div className="absolute top-2 right-2 z-10 flex flex-col space-y-2">
           <button
@@ -156,7 +156,7 @@ export function MapaEmbalses() {
         {embalses.map((e, i) => (
           <div
             key={i}
-            className="bg-[#262626] p-3 rounded border border-[#666666] text-white flex gap-3 items-center"
+            className="bg-[#262626] p-3 rounded-lg border border-[#666666] text-white flex gap-3 items-center"
           >
             <span className="text-[20px] text-[#d1d1d0]">{e.region}:</span>
             <span className="font-semibold text-[20px]">{e.porcentaje.toFixed(2)}%</span>

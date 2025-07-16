@@ -33,7 +33,7 @@ Highcharts.setOptions({
     gridLineColor: '#333'
   },
   legend: {
-    itemStyle: { color: "#ccc", fontFamily: "Nunito Sans" },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
@@ -93,6 +93,9 @@ export function SeguimientoBarras() {
         color: '#FFC800'
       }
     },
+    legend: {
+        itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+      },
     series: [{
       name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
       data: view === 'capacidad' ? capacidadData : proyectosData
@@ -108,10 +111,7 @@ export function SeguimientoBarras() {
   };
 
   return (
-    <section className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4 text-white font-sans">
-        Seguimiento de proyectos resolución 07
-      </h2>
+    <section className="mt-6">
       <div className="flex space-x-6 mb-4 font-sans text-sm">
         <button
           className={`pb-1 border-b-2 text-[18px] ${
@@ -132,18 +132,18 @@ export function SeguimientoBarras() {
       </div>
       <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
           <button
-              className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-              style={{ width: 30, height: 30 }}
-              title="Ayuda"
-              onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
-              type="button"
-              >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                className="rounded-full"
-              >
+            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+            style={{ width: 30, height: 30 }}
+            title="Ayuda"
+            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+            type="button"
+            >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              className="rounded-full"
+            >
               <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
               <text
                 x="12"
@@ -155,7 +155,7 @@ export function SeguimientoBarras() {
                 fontFamily="Nunito Sans, sans-serif"
                 pointerEvents="none"
               >?</text>
-          </svg>
+            </svg>
         </button>
         {/* Gráfica */}
         <HighchartsReact

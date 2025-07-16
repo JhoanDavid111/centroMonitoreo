@@ -17,12 +17,12 @@ FullScreen(Highcharts);
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    style: { fontFamily: 'Nunito Sans, sans-serif', textAlign:'left' },
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent'
   },
-  title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' } },
-  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif' } },
+  title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif', align: 'left' } },
+  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif', textAlign: 'left' } },
   xAxis: {
     labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
     title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -59,7 +59,7 @@ export function CombustiblesLiquidos() {
       // 1) Evolución del Volumen Útil por Región
       {
         chart:    { type: 'area', zoomType: '', height: 350 },
-        title:    { text: 'Evolución del Volumen Útil por Región' },
+        title:    { text: 'Evolución del volumen útil por región',align: 'left',},
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         colors:   colores,
         yAxis:    { title: { text: 'Volumen útil (Millones de m³)' } },
@@ -94,7 +94,7 @@ export function CombustiblesLiquidos() {
       // 2) Capacidad Instalada Despachada Centralmente por Tecnología
       {
         chart:    { type: 'column', zoomType: '', height: 350 },
-        title:    { text: 'Capacidad Instalada Despachada Centralmente por Tecnología' },
+        title:    { text: 'Capacidad instalada despachada centralmente por tecnología', align: 'left', },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         colors:   colores,
         yAxis:    { title: { text: 'Capacidad Instalada (GW)' } },
@@ -130,8 +130,8 @@ export function CombustiblesLiquidos() {
       // 3) Comparativo Volumen vs. Capacidad
       {
         chart:    { type: 'area', zoomType: '', height: 350 },
-        title:    { text: 'Comparativo Volumen vs. Capacidad' },
-        subtitle: { text: 'Gráfico de ejemplo adicional' },
+        title:    { text: 'Comparativo volumen vs. capacidad', align: 'left', },
+        subtitle: { text: '' },
         colors:   colores,
         yAxis:    { title: { text: 'Índice Relativo' } },
         xAxis: {
@@ -187,7 +187,7 @@ export function CombustiblesLiquidos() {
 
   return (
     <section className="mt-8 font-sans">
-      <h2 className="text-2xl font-semibold mb-4 text-white">
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4 ">
         Combustibles líquidos
       </h2>
 
@@ -220,7 +220,7 @@ export function CombustiblesLiquidos() {
           return (
             <div
               key={idx}
-              className="bg-[#262626] p-4 rounded border border-[#666666] shadow relative"
+              className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
             >
              {/* Botón de ayuda */}
               <button

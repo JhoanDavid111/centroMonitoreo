@@ -11,6 +11,8 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.2.0",
+    "@turf/turf": "^7.2.0",
+    "export-to-csv": "^1.4.0",
     "firebase": "^11.9.1",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.2",
@@ -22,7 +24,8 @@
     "react-data-table-component": "^7.7.0",
     "react-dom": "^18.3.1",
     "react-map-gl": "^7.0.18",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^7.6.0",
+    "react-select": "^5.10.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
