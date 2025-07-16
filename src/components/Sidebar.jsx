@@ -15,6 +15,8 @@ import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
 import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Off.svg'
 import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg'
+import ProyectosTransmisionOn from '../assets/svg-icons/ProyectosTransmision-On.png'
+import ProyectosTransmisionOff from '../assets/svg-icons/AccionesEstrategicas-On.svg'
 import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg'
 import HidroOn from '../assets/svg-icons/Hidrologia-On.svg'
 import EnergiaOff from '../assets/svg-icons/EnergiaElectrica-Off.svg'
@@ -57,9 +59,9 @@ export function Sidebar({ open, toggle }) {
         },
         {
           title: 'Transmisión',
-          path: '/en_construccion',
-          icon: TransmisionOff,
-          activeIcon: TransmisionOn
+          path: '/Transmision',
+          icon: ProyectosTransmisionOff,
+          activeIcon: ProyectosTransmisionOn
         },
         {
           title: 'Comunidades energéticas',
