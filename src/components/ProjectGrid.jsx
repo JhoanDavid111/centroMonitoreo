@@ -510,7 +510,7 @@ export default function ProyectoDetalle() {
 
       {/* Seguimiento Curva S */}
       {activeTab === 'Seguimiento Curva S' && (
-        <div className="bg-[#262626] p-4 rounded-lg shadow">
+        <div className="bg-[#262626] text-[18px] p-4 rounded-lg shadow">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
             <input
               type="text"
