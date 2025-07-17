@@ -308,8 +308,8 @@ export function CapacidadInstalada() {
   if (!options) return null;
 
   return (
-    <section className="mt-8">
-      <div className="w-full bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+    <section className="mt-8 mb-14">
+      <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
         {/* Botón de ayuda superpuesto */}
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

@@ -179,6 +179,7 @@ export function ResumenCharts() {
         const matColor = {
           'BIOMASA': '#B39FFF',
           'HIDRAULICA': '#3B82F6',
+          'HIDRÁULICA': '#3B82F6',
           'RAD SOLAR': '#FFC800',
           'TERMICA': '#F97316',
           'TÉRMICA': '#F97316',
@@ -187,7 +188,7 @@ export function ResumenCharts() {
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
           'EOLICA': '#5DFF97',
-          'EOLICA': '#5DFF97',
+          'EÓLICA': '#5DFF97',
           'PCH': '#3B82F6',
           'SOLAR FV': '#FFC800'
         };
