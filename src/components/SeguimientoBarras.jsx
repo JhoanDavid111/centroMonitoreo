@@ -39,7 +39,10 @@ Highcharts.setOptions({
   },
   tooltip: {
     backgroundColor: '#112937',
-    style: { color: '#fff', fontSize: '12px' }
+    style: { color: '#fff', fontSize: '12px' },
+    formatter: function () {
+      return `<b>${this.x}</b><br/>${this.series.name}: <b>${this.y}</b>`;
+    }
   }
 });
 
@@ -65,7 +68,7 @@ export function SeguimientoBarras() {
 
   const options = {
     chart: { type: 'column', height: 360 },
-    title: { text: 'Capacidad instalada / No. de proyectos vs porcentaje de avance', style: { color: '#fff' } },
+    title: { text: 'No. de proyectos vs porcentaje de avance', style: { color: '#fff' } },
     subtitle: { text: 'Fuente: XM_2020-2024', style: { color: '#aaa' } },
     xAxis: {
       categories,
@@ -81,7 +84,7 @@ export function SeguimientoBarras() {
     },
     yAxis: {
       title: {
-        text: view === 'capacidad' ? 'Capacidad instalada en MW' : 'Número de proyectos',
+        text: view === 'capacidad' ? 'Número de Proyectos' : 'Número de proyectos',
         style: { color: '#ccc' }
       },
       labels: { style: { color: '#ccc', fontSize: '10px' } },
@@ -94,7 +97,7 @@ export function SeguimientoBarras() {
       }
     },
     series: [{
-      name: view === 'capacidad' ? 'Capacidad instalada' : 'Número de proyectos',
+      name: view === 'capacidad' ? 'Proyectos' : 'Número de proyectos',
       data: view === 'capacidad' ? capacidadData : proyectosData
     }],
     exporting: {
