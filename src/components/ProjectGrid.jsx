@@ -11,6 +11,7 @@ import { Download, Filter } from 'lucide-react';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 import GraficaANLA from './GraficaANLA';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // ——— Tema oscuro para DataTable ———
 createTheme('customDark', {
@@ -89,6 +90,14 @@ const customStyles = {
       color: '#cccccc',
       '&:hover': {
         backgroundColor: '#3a3a3a',
+      },
+      // Para los SVG de Lucide:
+      '& svg': {
+        stroke: '#cccccc',
+      },
+      // Y por si el icono lleva paths con stroke propio:
+      '& svg path': {
+        stroke: '#cccccc',
       },
     },
   },
@@ -290,6 +299,7 @@ export default function ProyectoDetalle() {
   // ——— Filtrado por columna ———
   const filteredSeguimiento = proyectos
   .filter(r => /^[0-9]+$/.test(String(r.id)))
+  .filter(r => String(r.id).includes(columnFilters.id))
   .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
   .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
   .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
@@ -302,7 +312,7 @@ export default function ProyectoDetalle() {
   .filter(applyGlobal);
 
 const filteredAll = proyectos
-  .filter(r => String(r.id   ?? '').includes(columnFilters.id))
+  .filter(r => String(r.id).includes(columnFilters.id))
   .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
   .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
   .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
@@ -314,6 +324,41 @@ const filteredAll = proyectos
   .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
   .filter(applyGlobal);
 
+  const initialFilters = {
+  id: '',
+  nombre: '',
+  capacidad: '',
+  fpo: '',
+  avance: '',
+  priorizado: '',
+  ciclo: '',
+  promotor: '',
+  departamento: '',
+  municipio: ''
+};
+
+  // Función helper para capitalizar cada palabra omitiendo conectores
+function titleCase(raw) {
+  const connectors = ['y','de','la','el','los','las','en','a','por','para','con','sin','del','al','o','u'];
+  return raw
+    .split(' ')
+    .map((word, index) => {
+      // Si es acrónimo con puntos, todo en mayúscula
+      if (word.includes('.')) {
+        return word.toUpperCase();
+      }
+      const lower = word.toLowerCase();
+      // Conectores en minúscula si no es la primera palabra
+      if (index > 0 && connectors.includes(lower)) {
+        return lower;
+      }
+      // Capitalizar primera letra
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(' ');
+}
+
+
   // ——— Columnas compartidas ———
 const columnsSimple = [
   {
@@ -321,7 +366,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>ID</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.id ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
         />
@@ -348,7 +395,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Nombre</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.nombre ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
         />
@@ -371,7 +420,7 @@ const columnsSimple = [
     minWidth: '200px',
     cell: row => {
       const raw = row.nombre_proyecto || '';
-      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const formatted = titleCase(raw);
       const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
       return <span title={formatted}>{disp}</span>;
     }
@@ -381,7 +430,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Capacidad</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.capacidad ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
         />
@@ -409,7 +460,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>FPO</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.fpo ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
         />
@@ -436,7 +489,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Avance</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.avance ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
         />
@@ -464,9 +519,11 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Priorizado</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.priorizado ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
-          onClick={() => setOpenFilter(openFilter === 'priorizado' ? '' : 'priorizado')}
+          onClick={() => setOpenFilter(openFilter==='priorizado'?'':'priorizado')}
         />
         {openFilter === 'priorizado' && (
           <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
@@ -492,9 +549,11 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Ciclo</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.ciclo ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
-          onClick={() => setOpenFilter(openFilter === 'ciclo' ? '' : 'ciclo')}
+          onClick={() => setOpenFilter(openFilter==='ciclo'?'':'ciclo')}
         />
         {openFilter === 'ciclo' && (
           <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
@@ -515,7 +574,7 @@ const columnsSimple = [
     width: '150px',
     cell: row => {
       const raw = row.ciclo_asignacion || '';
-      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const formatted = titleCase(raw);
       const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
       return <span title={formatted}>{disp}</span>;
     }
@@ -525,7 +584,9 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Promotor</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.promotor ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
           onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
         />
@@ -548,7 +609,7 @@ const columnsSimple = [
     minWidth: '200px',
     cell: row => {
       const raw = row.promotor || '';
-      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const formatted = titleCase(raw);
       const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
       return <span title={formatted}>{disp}</span>;
     }
@@ -559,9 +620,11 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Departamento</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.departamento ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
-          onClick={() => setOpenFilter(openFilter === 'departamento' ? '' : 'departamento')}
+          onClick={() => setOpenFilter(openFilter==='departamento'?'':'departamento')}
         />
         {openFilter === 'departamento' && (
           <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
@@ -582,7 +645,7 @@ const columnsSimple = [
     minWidth: '180px',
     cell: row => {
       const raw = row.departamento || '';
-      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const formatted = titleCase(raw);
       const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
       return <span title={formatted}>{disp}</span>;
     }
@@ -593,9 +656,11 @@ const columnsSimple = [
       <div className="relative inline-block pb-11">
         <span>Municipio</span>
         <Filter
-          className="inline ml-1 cursor-pointer"
+          className={`inline ml-1 cursor-pointer ${
+            columnFilters.municipio ? 'text-yellow-400' : 'text-gray-500'
+          }`}
           size={16}
-          onClick={() => setOpenFilter(openFilter === 'municipio' ? '' : 'municipio')}
+          onClick={() => setOpenFilter(openFilter==='municipio'?'':'municipio')}
         />
         {openFilter === 'municipio' && (
           <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
@@ -616,7 +681,7 @@ const columnsSimple = [
     minWidth: '180px',
     cell: row => {
       const raw = row.municipio || '';
-      const formatted = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const formatted = titleCase(raw);
       const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
       return <span title={formatted}>{disp}</span>;
     }
@@ -677,7 +742,13 @@ const columnsSeguimiento = [
         {tabs.map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              // resetea filtros y búsqueda al cambiar de vista:
+              setColumnFilters(initialFilters);
+              setGlobalFilter('');
+              setOpenFilter('');
+            }}
             className={`pb-2 font-medium ${
               activeTab===tab
                 ? 'border-b-2 border-yellow-500 text-white'
@@ -714,10 +785,14 @@ const columnsSeguimiento = [
               theme="customDark"
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
-              pagination
               wrapperClassName="overflow-visible"
               className="overflow-visible"
               customStyles={customStyles}
+              pagination
+              paginationIconPrevious={<ChevronLeft size={20} stroke="#cccccc" />}
+              paginationIconNext    ={<ChevronRight size={20} stroke="#cccccc" />}
+              paginationIconFirstPage={<ChevronLeft size={16} stroke="#cccccc" style={{ transform: 'rotate(360deg)' }} />}
+              paginationIconLastPage ={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(360deg)' }} />}
             />
           </div>
           {/* Curva Chart */}
@@ -751,7 +826,7 @@ const columnsSeguimiento = [
           />
           <button
             className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-            onClick={() => exportToCSV(filteredSeguimiento)}
+            onClick={() => exportToCSV(filteredAll)}
           >
             <Download size={16} /> Exportar CSV
           </button>
@@ -763,10 +838,14 @@ const columnsSeguimiento = [
               theme="customDark"
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
-              pagination
               wrapperClassName="overflow-visible"
               className="overflow-visible"
               customStyles={customStyles}
+              pagination
+              paginationIconPrevious={<ChevronLeft size={20} stroke="#cccccc" />}
+              paginationIconNext    ={<ChevronRight size={20} stroke="#cccccc" />}
+              paginationIconFirst   ={<ChevronLeft size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
+              paginationIconLast    ={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
             />
           </div>
         </div>
