@@ -107,7 +107,7 @@ export function CapacidadInstalada() {
         setIsCached(false);
         setError(null);
 
-        const response = await fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
+        const response = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -217,10 +217,25 @@ export function CapacidadInstalada() {
             style: { color: '#FFF', fontSize: '12px' },
             shared: true,
             formatter() {
-              let s = `<b>Fecha: ${Highcharts.dateFormat('%e %b %Y', this.x)}</b>`;
+              const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
+              let total = 0;
+
+              // Sumar todos los valores de las series
               this.points.forEach(pt => {
-                s += `<br/><span style=\"color:${pt.color}\">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString()} MW</b>`;
+                total += pt.y;
               });
+
+              // Encabezado: fecha
+              let s = `<b>Fecha: ${fecha}</b>`;
+
+              // Total con separador y unidad
+              s += `<br/><span style="color:#FFFFFF"><b>TOTAL: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span>`;
+
+              // Detalle por categoría
+              this.points.forEach(pt => {
+                s += `<br/><span style="color:${pt.color}">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b>`;
+              });
+
               return s;
             }
           },
