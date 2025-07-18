@@ -159,7 +159,7 @@ export function CapacidadInstalada() {
           chart: {
             type: 'area',
             backgroundColor: '#262626',
-            height: 450,
+            height: 550,
             marginBottom: 100
           },
           title: {
@@ -219,20 +219,21 @@ export function CapacidadInstalada() {
               const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
               let total = 0;
 
-              // Sumar todos los valores de las series
+              const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+              // Sumar total
               this.points.forEach(pt => {
                 total += pt.y;
               });
 
-              // Encabezado: fecha
-              let s = `<b>Fecha: ${fecha}</b>`;
+              // Encabezado
+              let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
+              s += `<span style="color:#FFFFFF"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
 
-              // Total con separador y unidad
-              s += `<br/><span style="color:#FFFFFF"><b>TOTAL: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span>`;
-
-              // Detalle por categoría
+              // Categorías
               this.points.forEach(pt => {
-                s += `<br/><span style="color:${pt.color}">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b>`;
+                const nombre = capitalize(pt.series.name);
+                s += `<span style="color:${pt.color}">\u25CF</span> ${nombre}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b><br/><br/>`;
               });
 
               return s;
