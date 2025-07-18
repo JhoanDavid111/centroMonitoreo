@@ -12,7 +12,7 @@ import MapasCreg from '../components/MapasCreg'
 
 /* Iconos SVG  */
 import { HelpCircle } from 'lucide-react'
-import GWOff from '../assets/svg-icons/6GW-banner.svg'
+import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
 import ProcessOn from '../assets/svg-icons/Process-On.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'

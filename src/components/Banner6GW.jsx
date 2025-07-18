@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import bannerImage from '../assets/bannerEstrategia6GW.png';
-import GWOff from '../assets/svg-icons/6GW-banner.svg'
+import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
 import { Link } from 'react-router-dom';
 
 export function Banner6GW({ onClick }) {

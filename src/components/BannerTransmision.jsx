@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import bannerImage from '../assets/bannerCentroMonitoreoTransmision.png';
-import GWOff from '../assets/svg-icons/6GW-banner.svg'
+import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
 
 export default function BannerTransmision({ onClick }) {
   return (
