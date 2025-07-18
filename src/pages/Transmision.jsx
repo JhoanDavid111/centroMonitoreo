@@ -8,10 +8,11 @@ import { CapacidadInstalada } from '../components/CapacidadInstalada';
 
 /* Iconos SVG  */
 import { HelpCircle } from 'lucide-react'
-import GWOff from '../assets/svg-icons/6GW-banner.svg'
+import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
 import ProcessOn from '../assets/svg-icons/Process-On.svg'
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
+import AutoGeneracionOn from '../assets/svg-icons/AutoGeneracion-On.svg'
 
 import MapaProyectosTransmision from '../components/MapaProyectosTransmision';
 
@@ -27,15 +28,39 @@ export default function Transmision() {
       updated: '8/5/2025'
     },
     {
-      icon: <img src={ProcessOn} alt='Proyectos STR' className="w-6 h-6 flex-shrink-0"/>,
+      icon: <img src={DemandaOn} alt='Proyectos STR' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Proyectos STR',
       value: '97',
       updated: '8/5/2025'
     },
     {
-      icon: <img src={Proyecto075On} alt='Proyectos en proceso de adjudicación' className="w-6 h-6 flex-shrink-0"/>,
+      icon: <img src={AutoGeneracionOn} alt='Proyectos en proceso de adjudicación' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Proyectos en proceso de adjudicación',
-      value: '3',
+      value: '8',
+      updated: '8/5/2025'
+    },
+    {
+      icon: <img src={Proyecto075On} alt='Convocatorias proyectadas' className="w-6 h-6 flex-shrink-0"/>,
+      label: 'Convocatorias proyectadas',
+      value: '7',
+      updated: '8/5/2025'
+    },
+    {
+      icon: <img src={DemandaOn} alt='Numero total de líneas' className="w-6 h-6 flex-shrink-0"/>,
+      label: 'Numero total de líneas',
+      value: '00',
+      updated: '8/5/2025'
+    },
+    {
+      icon: <img src={DemandaOn} alt='Longitud total de líneas' className="w-6 h-6 flex-shrink-0"/>,
+      label: 'Longitud total de líneas',
+      value: '000',
+      updated: '8/5/2025'
+    },
+    {
+      icon: <img src={Proyecto075On} alt='Total de subestaciones' className="w-6 h-6 flex-shrink-0"/>,
+      label: 'Total de subestaciones',
+      value: '00',
       updated: '8/5/2025'
     },
     
@@ -94,7 +119,7 @@ export default function Transmision() {
         lineHeight: '66px',
         textAlign: 'center',
       }}>
-        120
+        125
       </span>
     </span>
   </div>
@@ -104,7 +129,7 @@ export default function Transmision() {
         {/* <h2 className="text-2xl font-semibold text-gray-200 mb-4">
           Índices 6GW+
         </h2> */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {indices.map((card, i) => {
             return (
               <div
