@@ -12,8 +12,11 @@ export default function AuthButton() {
   const [loading, setLoading] = useState({ google: false, microsoft: false });
   const navigate = useNavigate();
 
+  
+
   // Función para validar el email con la API externa
     const validateEmailWithAPI = async (email) => {
+      console.log("Juan Pru",email);
         try {
             const response = await fetch(
                 `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`
@@ -23,10 +26,15 @@ export default function AuthButton() {
                 throw new Error('Error al validar el email');
             }
             
+
             const data = await response.json();
             if (!data.success || data.count === 0) {
+                console.error("Email no encontrado en la API:", email);
                 return { isValid: false, error: 'Usuario no encontrado en el sistema' };
             }
+            else
+              console.log("Juan usuario emcontrado en excel",email);
+
             
             const userData = data.results[0];
             
