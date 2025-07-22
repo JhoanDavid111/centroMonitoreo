@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { auth, googleProvider, microsoftProvider } from '../../firebase/config';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import logo from '../../assets/logosEnergiaUpme.svg';
 import { ALLOWED_DOMAINS } from '../../config/allowedDomains';
 
@@ -11,6 +12,40 @@ export default function AuthButton() {
   const [loading, setLoading] = useState({ google: false, microsoft: false });
   const navigate = useNavigate();
 
+  // Función para validar el email con la API externa
+    const validateEmailWithAPI = async (email) => {
+        try {
+            const response = await fetch(
+                `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Error al validar el email');
+            }
+            
+            const data = await response.json();
+            if (!data.success || data.count === 0) {
+                return { isValid: false, error: 'Usuario no encontrado en el sistema' };
+            }
+            
+            const userData = data.results[0];
+            
+            if (!userData.acceso) {
+                return { isValid: false, error: 'Usuario no tiene acceso permitido' };
+            }
+
+
+            return {
+                isValid: true,
+                role: userData.rol,
+                userData: userData
+            };
+        } catch (err) {
+            console.error("Error en validación de email:", err);
+            return { isValid: false, error: 'Error al validar credenciales' };
+        }
+    };
+    //-----
   const handleLogin = async (provider, providerType) => {
     setError('');
     setLoading({ ...loading, [providerType]: true });
@@ -33,6 +68,18 @@ export default function AuthButton() {
         return;
       }
 
+      // Validación adicional con API externa
+            const isEmailValid = await validateEmailWithAPI(userEmail);
+            if (!isEmailValid) {
+                await signOut(auth);
+                setError(validation.error || 'No tienes permisos para acceder');
+                setLoading({ ...loading, [providerType]: false });
+                return;
+            }
+      // Actualizar el rol del usuario en el contexto // Almacenar el rol del usuario
+            updateUserRole(validation.role);
+      //-----
+      // Redirigir al usuario después de iniciar sesión      
       navigate('/6GW+');
     } catch (err) {
       console.error("Error de autenticación:", err);

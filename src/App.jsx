@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { IndicadoresResumen } from './components/IndicadoresResumen';
-import { EnergiaElectrica } from './components/EnergiaElectrica';
-import { CapacidadInstalada } from './components/CapacidadInstalada';
-import { MapaEmbalses } from './components/MapaEmbalses';
-import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
-import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
-import { Banner6GW } from './components/Banner6GW';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+
+import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
+import { ROLES, ROLE_PERMISSIONS } from './config/roles';
+import PrivateRoute from './components/auth/PrivateRoute';
+import Login from '../src/assets/Login.png';
+import  AuthButton  from './components/auth/AuthButton';
+
+// Importación de páginas
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
 import EnConstruccion from './pages/EnConstruccion';
 import Transmision from './pages/Transmision';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { AuthButton } from './components/auth';
-import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
-import Login from '../src/assets/Login.png'
+import Unauthorized from './pages/Unauthorized';
+
+// Importación de componentes de dashboard
+import { Banner6GW } from './components/Banner6GW';
+import { IndicadoresResumen } from './components/IndicadoresResumen';
+import { CapacidadInstalada } from './components/CapacidadInstalada';
+import { MapaEmbalses } from './components/MapaEmbalses';
+import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
+import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 
 function AppContent() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, userRole } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
 
@@ -73,17 +80,19 @@ function AppContent() {
 
   return (
     <div className="relative">
-      <Header />
+      <Header userRole={userRole} />
       
       <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
         <Sidebar
           open={sidebarOpen}
           toggle={() => setSidebarOpen(prev => !prev)}
+          userRole={userRole}
         />
 
         <div className="flex-1 text-white p-6 overflow-auto">
           <Routes>
             <Route path="/" element={
+              <PrivateRoute>
               <>
                 <Banner6GW />
                 <IndicadoresResumen />
@@ -92,24 +101,51 @@ function AppContent() {
                 <CombustiblesLiquidos />
                 <TablaProyectosEnergia />
               </>
+              </PrivateRoute>
             } />
             
-            <Route path="/6GW+" element={<Resumen />} />
-            <Route path="/proyectos075" element={<Proyectos />} />
-            <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
-            <Route path="/Transmision" element={<Transmision />} />
-            <Route path="/en_construccion" element={<EnConstruccion />} />
+            <Route path="/6GW+" element={
+              <PrivateRoute requiredPermission="dashboard">
+                <Resumen />
+              </PrivateRoute>
+            } />
+
+            <Route path="/proyectos075" element={
+              <PrivateRoute requiredPermission="proyectos">
+                <Proyectos />
+              </PrivateRoute> 
+            } />
+
+            <Route path="/comunidades_energeticas" element={
+              <PrivateRoute requiredPermission="comunidades">
+                <ComunidadesEnergeticas />
+              </PrivateRoute>
+            } />
+
+            <Route path="/Transmision" element={
+              <PrivateRoute requiredPermission="transmision" allowedRoles={[ROLES.ADMIN, ROLES.CONSULTOR_1]}>
+                <Transmision/>
+              </PrivateRoute>
+            } />
+
+            <Route path="/en_construccion" element={
+              <PrivateRoute>
+                <EnConstruccion />
+              </PrivateRoute>
+              } />
             
             <Route
               path="/estrategia-6gw"
               element={
+                <PrivateRoute allowedRoles={[ROLES.ADMIN]}>
                 <div className="text-white p-6">
                   <h2 className="text-2xl font-bold mb-4">Estrategia 6GW</h2>
                   <p>Aquí iría el contenido detallado de tu estrategia…</p>
                 </div>
+                </PrivateRoute>
               }
             />
-            
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
