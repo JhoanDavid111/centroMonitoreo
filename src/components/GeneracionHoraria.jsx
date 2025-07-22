@@ -32,15 +32,55 @@ Highcharts.setOptions({
   }
 });
 
+// ---- Helpers ----
+const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
+const SCALE = 0.001; // reducir 3 cifras -> pasar a MW/h
+
+function areaTooltipFormatter() {
+  const pts = this.points || [];
+  const total = pts.reduce((s, p) => s + p.y, 0);
+
+  const rows = pts.map(p => `
+    <tr>
+      <td style="padding:0 8px 0 0; white-space:nowrap;">
+        <span style="color:${p.series.color}">●</span> ${p.series.name}:
+      </td>
+      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
+    </tr>
+  `).join('');
+
+  return `
+    <span style="font-size:12px"><b>Hora: ${this.x}</b></span>
+    <table>
+      ${rows}
+      <tr>
+        <td colspan="2" style="border-top:1px solid #555; padding-top:4px">
+          Total: <b>${fmt(total, 2)} MW/h</b>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+// máximo apilado para ajustar eje Y
+const stackedMax = (series, length) => {
+  let max = 0;
+  for (let i = 0; i < length; i++) {
+    let sum = 0;
+    for (const s of series) sum += (s.data[i] || 0);
+    if (sum > max) max = sum;
+  }
+  return max;
+};
+
 export function GeneracionHoraria() {
   const chartRef1 = useRef(null);
   const chartRef2 = useRef(null);
 
   useEffect(() => {
-    // Generar etiquetas de 1 a 24
     const horas = Array.from({ length: 24 }, (_, i) => String(i + 1));
-    
-    // Tus datos completos
+
+    // ---- Datos originales ----
     const termicaData = [52628.14006497, 51136.7527106 , 49366.90679765, 48704.12749024,
        48474.09836175, 47649.80234143, 46565.78612738, 47041.24969367,
        47762.50126451, 48907.99846279, 49697.79856086, 51639.46869443,
@@ -59,7 +99,6 @@ export function GeneracionHoraria() {
        64300.64829987, 64159.279258  , 64375.17189826, 64174.65295507,
        63438.21538918, 61678.91906607, 65787.76315723, 67381.04108242,
        65570.05250753, 62540.7647199 , 58523.61229447, 54202.91600121];
-
     const solarData = [   13.04709302,    12.39735632,    12.19597701,    12.28244186,
           12.40438202,    54.67483173,  1347.6444857 ,  5118.96367325,
         7310.94941686,  8887.58310051,  9843.03720619, 10250.72883596,
@@ -98,109 +137,76 @@ export function GeneracionHoraria() {
         5060.93605324,  1216.10053925,    48.17986804,   448.1438806 ,
          398.45970588,   140.27884615,     2.56375   ,     2.46653846];
 
+    const toMW = arr => arr.map(v => v * SCALE);
+
+    // Series primer gráfico
+    const baseSeries = [
+      { name: 'TÉRMICA',     data: toMW(termicaData),     color: '#F97316' },
+      { name: 'COGENERADOR', data: toMW(cogeneradorData), color: '#D1D1D0' },
+      { name: 'HIDRÁULICA',  data: toMW(hidraulicaData),  color: '#3B82F6' },
+      { name: 'SOLAR',       data: toMW(solarData),       color: '#FFC800' }
+    ];
+
+    const max1 = stackedMax(baseSeries, horas.length);
+
     const baseOptions = {
-      chart: {
-        type: 'area',
-        height: 500,
-        backgroundColor: '#262626'
-      },
-      title: {
-        text: 'Curva de generación primer semestre 2022',
-        align: 'left'
-      },
-      subtitle: {
-        text: ''
-      },
+      chart: { type: 'area', height: 500, backgroundColor: '#262626' },
+      title: { text: 'Curva de generación primer semestre 2022', align: 'left' },
       xAxis: {
         categories: horas,
         tickInterval: 1,
-        title: {
-          text: 'Hora del día',
-          style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-        },
-        labels: {
-          style: { color: '#ccc', fontSize: '12px' }
-        },
+        title: { text: 'Hora del día', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+        labels: { style: { color: '#ccc', fontSize: '12px' } },
         gridLineColor: '#333'
       },
       yAxis: {
         min: 0,
-        max:160000 , 
-        title: {
-          text: 'Generación (kWh)',
-          style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-        },
-        labels: {
-          style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-        },
+        max: Math.ceil(max1 * 1.1),
+        tickInterval: Math.ceil(max1 / 5),
+        title: { text: 'Generación (MW/h)', style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
+        labels: { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }, formatter() { return fmt(this.value, 0); } },
         gridLineColor: '#333'
       },
       tooltip: {
         shared: true,
-        pointFormat:
-          '<span style="color:{series.color}">●</span> {series.name}: <b>{point.y:.2f}</b><br/>'
+        useHTML: true,
+        borderColor: '#666',
+        formatter: areaTooltipFormatter
       },
       plotOptions: {
-        area: {
-          stacking: 'normal',
-          lineWidth: 1,
-          marker: { enabled: false }
-        }
+        area: { stacking: 'normal', lineWidth: 1, marker: { enabled: false } }
       },
-      legend: {
-        itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-        itemHoverStyle: { color: '#fff' },
-        itemHiddenStyle: { color: '#666' }
-      },
-      series: [
-      { name: 'TÉRMICA',      data: termicaData,     color: '#F97316' },
-      { name: 'COGENERADOR',  data: cogeneradorData, color: '#D1D1D0' },
-      { name: 'HIDRÁULICA',   data: hidraulicaData,  color: '#3B82F6' },
-      { name: 'SOLAR',       data: solarData,       color: '#FFC800' }    // último Térmica
-      ],
-     /*  exporting: {
-        enabled: true,
-        buttons: {
-          contextButton: {
-            menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
-          }
-        }
-      }, */
+      series: baseSeries,
       responsive: {
         rules: [{
           condition: { maxWidth: 600 },
-          chartOptions: {
-            legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom' }
-          }
+          chartOptions: { legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom' } }
         }]
       }
     };
 
-    
-  
-    // Variante: modificamos ligeramente los valores
+    // Series segundo gráfico
+    const variantSeries = [
+      { name: 'TÉRMICA',     data: toMW(termicaData2),     color: '#F97316' },
+      { name: 'COGENERADOR', data: toMW(cogeneradorData2), color: '#D1D1D0' },
+      { name: 'HIDRÁULICA',  data: toMW(hidraulicaData2),  color: '#3B82F6' },
+      { name: 'EÓLICA',      data: toMW(eolicaData2),      color: '#5DFF97' },
+      { name: 'SOLAR',       data: toMW(solarData2),       color: '#FFC800' }
+    ];
+
+    const max2 = stackedMax(variantSeries, horas.length);
+
     const variantOptions = {
       ...baseOptions,
-      title: { 
-        text: 'Curva de generación últimos 6 meses',
-        align: 'left'
-       },
-      /* series: baseOptions.series.map(s => ({
-        ...s,
-        data: s.data.map(v =>
-          s.name === 'SOLAR' ? Math.round(v * 1) : Math.round(v * 1)
-        )
-      })) */
-     series: [
-      { name: 'TÉRMICA',      data: termicaData2,     color: '#F97316' },
-      { name: 'COGENERADOR',  data: cogeneradorData2, color: '#D1D1D0' },
-      { name: 'HIDRÁULICA',   data: hidraulicaData2,  color: '#3B82F6' },
-      { name: 'EÓLICA',      data: eolicaData2,      color: '#5DFF97' },
-      { name: 'SOLAR',       data: solarData2,       color: '#FFC800' }    // último Térmica
-      ]
+      title: { text: 'Curva de generación últimos 6 meses', align: 'left' },
+      yAxis: {
+        ...baseOptions.yAxis,
+        max: Math.ceil(max2 * 1.1),
+        tickInterval: Math.ceil(max2 / 5)
+      },
+      series: variantSeries
     };
 
-    // Aplicar a ambos charts
     if (chartRef1.current) chartRef1.current.chart.update(baseOptions, true, true);
     if (chartRef2.current) chartRef2.current.chart.update(variantOptions, true, true);
   }, []);
@@ -208,77 +214,38 @@ export function GeneracionHoraria() {
   return (
     <section className="mt-8">
       <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4 mt-10 text-left">
-      Curva de generación horaria promedio
+        Curva de generación horaria promedio
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Gráfico original */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden"> 
-         {/*  <button
-            className="absolute top-2 right-2 text-gray-300 hover:text-white"
-            onClick={() => chartRef1.current.chart.fullscreen.toggle()}
-            title="Maximizar gráfico"
-          >⛶</button> */}
+        {/* Gráfico 1 */}
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden">
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
             style={{ width: 30, height: 30 }}
             title="Ayuda"
-            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+            onClick={() => alert('Esta gráfica muestra la curva de generación horaria promedio del primer semestre de 2022.')}
             type="button"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="rounded-full"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
               <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-              <text
-                x="12"
-                y="16"
-                textAnchor="middle"
-                fontSize="16"
-                fill="#fff"
-                fontWeight="bold"
-                fontFamily="Nunito Sans, sans-serif"
-                pointerEvents="none"
-              >?</text>
+              <text x="12" y="16" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif" pointerEvents="none">?</text>
             </svg>
           </button>
-          
           <HighchartsReact highcharts={Highcharts} options={{}} ref={chartRef1} />
         </div>
-        {/* Gráfico variante */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden">
-          {/* <button
-            className="absolute top-2 right-2 text-gray-300 hover:text-white"
-            onClick={() => chartRef2.current.chart.fullscreen.toggle()}
-            title="Maximizar gráfico"
-          >⛶</button> */}
 
+        {/* Gráfico 2 */}
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative overflow-hidden">
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
             style={{ width: 30, height: 30 }}
             title="Ayuda"
-            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
+            onClick={() => alert('Esta gráfica muestra la curva de generación horaria promedio de los últimos 6 meses.')}
             type="button"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="rounded-full"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
               <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-              <text
-                x="12"
-                y="16"
-                textAnchor="middle"
-                fontSize="16"
-                fill="#fff"
-                fontWeight="bold"
-                fontFamily="Nunito Sans, sans-serif"
-                pointerEvents="none"
-              >?</text>
+              <text x="12" y="16" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif" pointerEvents="none">?</text>
             </svg>
           </button>
           <HighchartsReact highcharts={Highcharts} options={{}} ref={chartRef2} />
@@ -289,4 +256,7 @@ export function GeneracionHoraria() {
 }
 
 export default GeneracionHoraria;
+
+
+
 

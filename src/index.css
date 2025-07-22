@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.rdt_TableWrapper,
+.rdt_Table,
+.rdt_TableHead,
+.rdt_TableHeadRow,
+.rdt_TableBody {
+  overflow: visible !important;
+}
+
+@layer utilities {
+  .rdt_Pagination .rdt_PaginationButton,
+  .rdt_Pagination .rdt_PaginationControl {
+    @apply text-gray-300 !important;
+  }
+  .rdt_Pagination .rdt_PaginationButton svg,
+  .rdt_Pagination .rdt_PaginationControl svg,
+  .rdt_Pagination .rdt_PaginationButton svg path,
+  .rdt_Pagination .rdt_PaginationControl svg path {
+    stroke: theme('colors.gray.300') !important;
+    fill:   theme('colors.gray.300') !important;
+  }
+}
