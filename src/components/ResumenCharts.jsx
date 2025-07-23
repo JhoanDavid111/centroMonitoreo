@@ -177,6 +177,7 @@ export function ResumenCharts() {
           'BIOMASA': '#B39FFF',
           'HIDRAULICA': '#3B82F6',
           'HIDRÁULICA': '#3B82F6',
+          'SOLAR': '#FFC800',
           'RAD SOLAR': '#FFC800',
           'TERMICA': '#F97316',
           'TÉRMICA': '#F97316',
@@ -319,7 +320,7 @@ export function ResumenCharts() {
         const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-          title: { text: 'Histórico anual matriz completa', align: 'left' },
+          title: { text: 'Evolución Anual Matriz Energética Despachada Centralmente', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
