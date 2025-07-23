@@ -229,7 +229,7 @@ export function CapacidadInstalada() {
 
               // Encabezado
               let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
-              s += `<span style="color:#FFFFFF"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
+              s += `<span style="color:#FFD700"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
 
               // Categorías
               this.points.forEach(pt => {

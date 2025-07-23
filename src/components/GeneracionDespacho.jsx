@@ -9,34 +9,22 @@ import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
-// Configuración de caché
+// ─────────── Configuración de caché ───────────
 const CACHE_PREFIX = 'generacion-despacho-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-
-// Caché en memoria para la sesión actual
 const memoryCache = new Map();
 
-// Helper para obtener datos del caché
 const getFromCache = (key) => {
-  // Primero verificar caché en memoria
-  if (memoryCache.has(key)) {
-    return memoryCache.get(key);
-  }
-
-  // Si no está en memoria, verificar localStorage
+  if (memoryCache.has(key)) return memoryCache.get(key);
   const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
   if (!cachedItem) return null;
 
   try {
     const { data, timestamp } = JSON.parse(cachedItem);
-    
-    // Verificar si el caché ha expirado
     if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
       localStorage.removeItem(`${CACHE_PREFIX}${key}`);
       return null;
     }
-
-    // Almacenar en memoria para acceso más rápido
     memoryCache.set(key, data);
     return data;
   } catch (e) {
@@ -46,43 +34,31 @@ const getFromCache = (key) => {
   }
 };
 
-// Helper para guardar datos en el caché
 const setToCache = (key, data) => {
   const timestamp = Date.now();
   const cacheItem = JSON.stringify({ data, timestamp });
-  
-  // Almacenar en ambos niveles de caché
   memoryCache.set(key, data);
-  
   try {
     localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
   } catch (e) {
     console.error('LocalStorage is full, clearing oldest items...');
-    // Limpieza de caché si está lleno (mantener solo los 50 más recientes)
     const keys = Object.keys(localStorage)
       .filter(k => k.startsWith(CACHE_PREFIX))
-      .map(k => ({
-        key: k,
-        timestamp: JSON.parse(localStorage.getItem(k)).timestamp
-      }))
+      .map(k => ({ key: k, timestamp: JSON.parse(localStorage.getItem(k)).timestamp }))
       .sort((a, b) => b.timestamp - a.timestamp);
-    
-    keys.slice(50).forEach(item => {
-      localStorage.removeItem(item.key);
-    });
-    
-    // Intentar nuevamente
+
+    keys.slice(50).forEach(item => localStorage.removeItem(item.key));
     localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
   }
 };
 
-// Carga de módulos de Highcharts
+// ─────────── Carga de módulos Highcharts ───────────
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema global: fondo oscuro y Nunito Sans
+// Tema global
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',
@@ -97,43 +73,52 @@ Highcharts.setOptions({
   },
   xAxis: {
     labels: {
-      style: {
-        color: '#ccc',
-        fontSize: '14px',
-        fontFamily: 'Nunito Sans, sans-serif'
-      },
+      style: { color: '#ccc', fontSize: '14px', fontFamily: 'Nunito Sans, sans-serif' },
       rotation: -45,
       align: 'right'
     },
-    title: {
-      style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-    },
+    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333'
   },
   yAxis: {
-    labels: {
-      style: {
-        color: '#ccc',
-        fontSize: '14px',
-        fontFamily: 'Nunito Sans, sans-serif'
-      }
-    },
-    title: {
-      style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-    },
+    labels: { style: { color: '#ccc', fontSize: '14px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title: { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333'
   },
   legend: {
     itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
-    shared: true
   }
 });
+
+// ─────────── Helpers tooltip ───────────
+const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
+
+function areaTooltipFormatter() {
+  // this.points contiene cada serie en esa X
+  const pts = this.points || [];
+  const total = pts.reduce((s, p) => s + p.y, 0);
+
+  const rows = pts.map(p => `
+    <tr>
+      <td style="padding:0 8px 0 0; white-space:nowrap;">${p.series.name}:</td>
+      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
+    </tr>
+  `).join('');
+
+  return `
+    <span style="font-size:12px"><b>${this.x}</b></span>
+    <table>
+      ${rows}
+      <tr>
+        <td colspan="2" style="border-top:1px solid #555; padding-top:4px">
+          Total: <b>${fmt(total, 2)} MW/h</b>
+        </td>
+      </tr>
+    </table>
+  `;
+}
 
 export function GeneracionDespacho() {
   const chartRef = useRef(null);
@@ -148,7 +133,7 @@ export function GeneracionDespacho() {
 
     const fetchData = async () => {
       try {
-        // Verificar caché primero
+        // Cache
         const cachedData = getFromCache(cacheKey);
         if (cachedData && isMounted) {
           setOptions(cachedData);
@@ -161,31 +146,24 @@ export function GeneracionDespacho() {
         setIsCached(false);
         setError(null);
 
-        const response = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
+        const resp = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
-        
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
 
-        const data = await response.json();
-        
-        if (!data || !Array.isArray(data)) {
-          throw new Error('Datos recibidos no válidos');
-        }
+        if (!resp.ok) throw new Error(`Error HTTP: ${resp.status}`);
 
-        // Ordenar por fecha y generar categorías
-        const sorted = [...data].sort(
-          (a, b) => new Date(a.fecha) - new Date(b.fecha)
-        );
+        const data = await resp.json();
+        if (!data || !Array.isArray(data)) throw new Error('Datos recibidos no válidos');
+
+        // Ordenar por fecha
+        const sorted = [...data].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         const categories = sorted.map(item => item.fecha.slice(0, 10));
 
-        // Calcular un tickInterval para las etiquetas X (aprox. 12 etiquetas)
+        // Mostrar aprox. 12 labels en X
         const tickInt = Math.max(1, Math.ceil(categories.length / 12));
 
-        // Series por tecnología
+        // Series (asegura nombres iguales a tus keys reales)
         const techs = ['TERMICA', 'COGENERADOR', 'HIDRAULICA', 'SOLAR', 'EOLICA'];
         const colorMap = {
           EOLICA: '#5DFF97',
@@ -199,7 +177,7 @@ export function GeneracionDespacho() {
           name: tech,
           data: categories.map(date => {
             const rec = sorted.find(d => d.fecha.slice(0, 10) === date);
-            return rec && rec[tech] != null ? rec[tech] : 0;
+            return rec && rec[tech] != null ? Number(rec[tech]) : 0;
           }),
           color: colorMap[tech],
           index: idx,
@@ -208,101 +186,63 @@ export function GeneracionDespacho() {
 
         const chartOptions = {
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
-          title: { 
-            text: 'Generación diaria por tecnología',
-            subtitle: { text: isCached ? '(Datos en caché)' : '' }
-          },
-          legend: {
-            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-          },
+          title: { text: 'Generación diaria por tecnología' },
+          subtitle: { text: isCached ? '(Datos en caché)' : '' },
+          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
             categories,
             tickInterval: tickInt,
-            title: {
-              text: 'Fecha',
-              style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
-            },
-            labels: {
-              rotation: -45,
-              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
-            },
+            title: { text: 'Fecha', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
+            labels: { rotation: -45, style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } }
           },
           yAxis: {
-            title: {
-              text: 'Generación (MW)',
-              style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' }
-            },
-            labels: {
-              style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' }
-            },
+            title: { text: 'Generación (MW/h)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+            labels: { style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
             min: 0,
             gridLineColor: '#333'
           },
           plotOptions: {
-            area: {
-              stacking: 'normal',
-              marker: { enabled: false }
-            }
+            area: { stacking: 'normal', marker: { enabled: false } }
           },
           series,
-      /*     exporting: {
-            enabled: true,
-            buttons: {
-              contextButton: {
-                menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
-              }
-            }
-          } */
+          tooltip: {
+            shared: true,
+            useHTML: true,
+            backgroundColor: '#1f2937',
+            borderColor: '#666',
+            formatter: areaTooltipFormatter
+          },
+          exporting: { enabled: true }
         };
 
         if (isMounted) {
           setOptions(chartOptions);
           setToCache(cacheKey, chartOptions);
-          
-          // Forzar redibujado después de un breve retraso
           setTimeout(() => {
-            if (chartRef.current?.chart) {
-              chartRef.current.chart.redraw();
-            }
+            chartRef.current?.chart?.redraw();
           }, 200);
         }
       } catch (err) {
         console.error('Error al cargar datos:', err);
-        if (isMounted) {
-          setError('No se pudo cargar la gráfica de generación diaria');
-        }
+        if (isMounted) setError('No se pudo cargar la gráfica de generación diaria');
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   if (loading) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
         <div className="flex space-x-2">
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}
-          ></div>
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}
-          ></div>
-          <div
-            className="w-3 h-3 rounded-full animate-bounce"
-            style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}
-          ></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
         </div>
-        <p className="text-gray-300 mt-4">Cargando gráfica de generación Diaria por Tecnología...</p>
+        <p className="text-gray-300 mt-4">Cargando gráfica de generación diaria por tecnología...</p>
       </div>
     );
   }
@@ -310,19 +250,8 @@ export function GeneracionDespacho() {
   if (error) {
     return (
       <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-12 w-12 text-red-500 mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p className="text-red-500 mb-4">{error}</p>
         <button
@@ -342,15 +271,12 @@ export function GeneracionDespacho() {
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Esta gráfica muestra la generación diaria de energía desglosada por tecnología (térmica, cogeneración, hidráulica, solar y eólica).')}
+          onClick={() =>
+            alert('Esta gráfica muestra la generación diaria de energía desglosada por tecnología (térmica, cogenerador, hidráulica, solar y eólica).')
+          }
           type="button"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            className="rounded-full"
-          >
+          <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
             <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
             <text
               x="12"
@@ -365,11 +291,7 @@ export function GeneracionDespacho() {
           </svg>
         </button>
 
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={options}
-          ref={chartRef}
-        />
+        <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
     </section>
   );
