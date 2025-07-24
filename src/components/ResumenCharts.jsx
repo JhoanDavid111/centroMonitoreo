@@ -8,12 +8,11 @@ import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
-// ──────────────────────────────────────────────────────────────
-// Configuración de caché
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Caché
+// ────────────────────────────────────────────────
 const CACHE_PREFIX = 'resumen-charts-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-
 const memoryCache = new Map();
 
 const getFromCache = (key) => {
@@ -52,15 +51,14 @@ const setToCache = (key, data) => {
   }
 };
 
-// ──────────────────────────────────────────────────────────────
-// Inicializar módulos de Highcharts
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Highcharts modules & theme
+// ────────────────────────────────────────────────
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
 
-// Tema oscuro global y Nunito Sans
 Highcharts.setOptions({
   chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
   title: { align: 'left', style: { color: '#fff' } },
@@ -86,36 +84,26 @@ Highcharts.setOptions({
   }
 });
 
-// ──────────────────────────────────────────────────────────────
-// Helpers tooltip
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Tooltip helpers
+// ────────────────────────────────────────────────
 const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
 
-// Tooltip para pie/dona: lista todas las categorías del mismo gráfico + %
-function pieTooltipFormatter() {
-  const total = this.series.data.reduce((s, p) => s + p.y, 0);
-  const rows = this.series.data.map(p => {
-    const percent = total ? (p.y / total) * 100 : 0;
-    return `
-      <tr>
-        <td style="padding:0 8px 0 0; white-space:nowrap;">${p.name}:</td>
-        <td style="text-align:right"><b>${fmt(p.y, 2)} MW</b></td>
-        <td style="padding-left:6px; text-align:right">(${fmt(percent, 2)}%)</td>
-      </tr>
-    `;
-  }).join('');
-
+// Tooltip SOLO para el slice/punto en pies (primeros 2 charts)
+function singlePieTooltipFormatter() {
+  const p = this.point;
+  const percent = typeof p.percentage === 'number' ? p.percentage : (p.y / this.series.data.reduce((s, d) => s + d.y, 0)) * 100;
   return `
-    <span style="font-size:12px"><b>${this.series.name}</b></span>
-    <table>${rows}</table>
+    <span style="font-size:12px"><b>${p.name}</b></span><br/>
+    Capacidad: <b>${fmt(p.y, 2)} MW</b><br/>
+    (${fmt(percent, 2)}%)
   `;
 }
 
-// Tooltip para columnas apiladas: muestra todas las series en el punto X
+// Tooltip para columnas apiladas (todas las series del punto X)
 function columnTooltipFormatter() {
   const pts = (this.points || []).filter(p => p.series.type !== 'scatter');
   const total = pts.reduce((s, p) => s + p.y, 0);
-
   const rows = pts.map(p => `
     <tr>
       <td style="padding:0 8px 0 0; white-space:nowrap;">${p.series.name}:</td>
@@ -131,9 +119,9 @@ function columnTooltipFormatter() {
   `;
 }
 
-// ──────────────────────────────────────────────────────────────
-// Componente principal
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Component
+// ────────────────────────────────────────────────
 export function ResumenCharts() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
@@ -160,7 +148,6 @@ export function ResumenCharts() {
         setIsCached(false);
         setError(null);
 
-        // Fetch data from API (usando env API)
         const [techJson, catJson, entradaJson, matJson] = await Promise.all([
           fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_tecnologia`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
           fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_categoria`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
@@ -168,11 +155,9 @@ export function ResumenCharts() {
           fetch(`${API}/v1/graficas/6g_proyecto/grafica_matriz_completa_anual`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json())
         ]);
 
-        if (!techJson || !catJson || !entradaJson || !matJson) {
-          throw new Error('Datos incompletos recibidos del servidor');
-        }
+        if (!techJson || !catJson || !entradaJson || !matJson) throw new Error('Datos incompletos recibidos del servidor');
 
-        // Paletas de colores
+        // Colores
         const techColor = {
           'BIOMASA': '#B39FFF',
           'EOLICA': '#5DFF97',
@@ -182,23 +167,21 @@ export function ResumenCharts() {
           'TERMICA': '#F97316',
           'TÉRMICA': '#F97316',
         };
-
         const catColor = {
           'AGGE': '#0991B5',
           'AGPE': '#00FBFA',
           'Generacion Centralizada': '#B8F600',
           'Generacion Distribuida': '#FDBA74'
         };
-
         const matColor = {
           'BIOMASA': '#B39FFF',
           'HIDRAULICA': '#3B82F6',
           'HIDRÁULICA': '#3B82F6',
+          'SOLAR': '#FFC800',
           'RAD SOLAR': '#FFC800',
           'TERMICA': '#F97316',
           'TÉRMICA': '#F97316',
         };
-
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
           'EOLICA': '#5DFF97',
@@ -209,20 +192,14 @@ export function ResumenCharts() {
 
         const opts = [];
 
-        // 1) Pie tecnología
+        // 1) Pie tecnología (tooltip SOLO 1 slice)
         opts.push({
           chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
-          title: {
-            text: 'Distribución actual por tecnología',
-            align: 'left'
-          },
+          title: { text: 'Distribución actual por tecnología', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
-          legend: {
-            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-          },
+          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           plotOptions: {
             pie: {
-               // pie lleno
               dataLabels: {
                 enabled: true,
                 format: '<b>{point.name}</b>: {point.y:.2f} MW ({point.percentage:.2f}%)',
@@ -234,10 +211,8 @@ export function ResumenCharts() {
           series: [{
             name: 'Tecnología',
             colorByPoint: false,
-            
             data: techJson.map(d => ({
               name: d.tipo_tecnologia,
-              // IMPORTANT: usa el valor real (MW). Si tu endpoint devuelve porcentaje, cámbialo por el campo en MW
               y: Number(d.capacidad_mw ?? d.valor ?? d.porcentaje),
               color: techColor[d.tipo_tecnologia] || '#666666'
             }))
@@ -246,22 +221,18 @@ export function ResumenCharts() {
             useHTML: true,
             backgroundColor: '#262626',
             borderColor: '#666',
-            formatter: pieTooltipFormatter
+            formatter: singlePieTooltipFormatter
           },
           exporting: { enabled: true }
         });
 
-        // 2) Pie categoría
+        // 2) Pie categoría (tooltip SOLO 1 slice)
         opts.push({
           chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
-          title: {
-            text: 'Distribución de capacidad instalada por tipo de proyecto',
-            align: 'left'
-          },
+          title: { text: 'Distribución de capacidad instalada por tipo de proyecto', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           plotOptions: {
             pie: {
-              
               dataLabels: {
                 enabled: true,
                 format: '<b>{point.name}</b>: {point.y:.2f} MW ({point.percentage:.2f}%)',
@@ -270,13 +241,10 @@ export function ResumenCharts() {
               showInLegend: true
             }
           },
-          legend: {
-            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-          },
+          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           series: [{
             name: 'Categoría',
             colorByPoint: false,
-            
             data: catJson.map(d => ({
               name: d.tipo_proyecto,
               y: Number(d.capacidad_mw ?? d.valor ?? d.porcentaje),
@@ -287,21 +255,19 @@ export function ResumenCharts() {
             useHTML: true,
             backgroundColor: '#262626',
             borderColor: '#666',
-            formatter: pieTooltipFormatter
+            formatter: singlePieTooltipFormatter
           },
           exporting: { enabled: true }
         });
 
-        // 3) Capacidad entrante por mes (columnas apiladas)
+        // 3) Columnas apiladas capacidad entrante por mes (tooltip compartido)
         const meses = entradaJson.map(item => item.mes);
         const tecnologias = Object.keys(entradaJson[0]).filter(k => k !== 'mes');
-
         const seriesData = tecnologias.map(tec => ({
           name: tec,
           data: entradaJson.map(mes => Number(mes[tec] || 0)),
           color: colorEntrada[tec] || '#666666'
         }));
-
         const totalPorMes = entradaJson.map((item, idx) => {
           const total = tecnologias.reduce((sum, tec) => sum + (Number(item[tec]) || 0), 0);
           return {
@@ -319,14 +285,9 @@ export function ResumenCharts() {
 
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-          title: {
-            text: 'Capacidad entrante por mes',
-            align: 'left'
-          },
+          title: { text: 'Capacidad entrante por mes', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
-          legend: {
-            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-          },
+          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
             categories: meses,
             tickInterval: 1,
@@ -343,13 +304,7 @@ export function ResumenCharts() {
           plotOptions: { column: { stacking: 'normal', borderWidth: 0, dataLabels: { enabled: false } } },
           series: [
             ...seriesData,
-            {
-              name: 'Total',
-              type: 'scatter',
-              marker: { enabled: false },
-              data: totalPorMes,
-              enableMouseTracking: false
-            }
+            { name: 'Total', type: 'scatter', marker: { enabled: false }, data: totalPorMes, enableMouseTracking: false }
           ],
           tooltip: {
             shared: true,
@@ -361,19 +316,13 @@ export function ResumenCharts() {
           exporting: { enabled: true }
         });
 
-        // 4) Histórico anual matriz completa (columnas apiladas)
+        // 4) Columnas apiladas histórico anual
         const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
-
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
-          title: {
-            text: 'Histórico anual matriz completa',
-            align: 'left'
-          },
+          title: { text: 'Evolución Anual Matriz Energética Despachada Centralmente', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
-          legend: {
-            itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
-          },
+          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
             categories: years,
             tickInterval: 1,
@@ -407,9 +356,7 @@ export function ResumenCharts() {
           setCharts(opts);
           setToCache(cacheKey, opts);
           setTimeout(() => {
-            chartRefs.current.forEach(ref => {
-              if (ref && ref.chart) ref.chart.reflow();
-            });
+            chartRefs.current.forEach(ref => { if (ref && ref.chart) ref.chart.reflow(); });
           }, 200);
         }
       } catch (err) {
@@ -466,10 +413,8 @@ export function ResumenCharts() {
               style={{ width: 30, height: 30 }}
               title="Ayuda"
               onClick={() => {
-              alert(`${opt.title?.text || 'Gráfica'}
-
-Esta gráfica muestra datos importantes sobre la capacidad instalada.`);
-            }}
+                alert(`${opt.title?.text || 'Gráfica'}\n\nEsta gráfica muestra datos importantes sobre la capacidad instalada.`);
+              }}
               type="button"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -491,5 +436,6 @@ Esta gráfica muestra datos importantes sobre la capacidad instalada.`);
 }
 
 export default ResumenCharts;
+
 
 

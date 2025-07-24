@@ -103,7 +103,7 @@ function areaTooltipFormatter() {
   const rows = pts.map(p => `
     <tr>
       <td style="padding:0 8px 0 0; white-space:nowrap;">${p.series.name}:</td>
-      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
+      <td style="text-align:right;"><b>${fmt(p.y, 2)} MWh-día</b></td>
     </tr>
   `).join('');
 
@@ -113,7 +113,7 @@ function areaTooltipFormatter() {
       ${rows}
       <tr>
         <td colspan="2" style="border-top:1px solid #555; padding-top:4px">
-          Total: <b>${fmt(total, 2)} MW/h</b>
+          Total: <b>${fmt(total, 2)} MWh-día</b>
         </td>
       </tr>
     </table>
@@ -186,7 +186,7 @@ export function GeneracionDespacho() {
 
         const chartOptions = {
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
-          title: { text: 'Generación diaria por tecnología' },
+          title: { text: 'Generación Real Diaria por Tecnología' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
@@ -196,7 +196,7 @@ export function GeneracionDespacho() {
             labels: { rotation: -45, style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } }
           },
           yAxis: {
-            title: { text: 'Generación (MW/h)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+            title: { text: 'Generación (MWh-día)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
             labels: { style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
             min: 0,
             gridLineColor: '#333'
@@ -224,7 +224,7 @@ export function GeneracionDespacho() {
         }
       } catch (err) {
         console.error('Error al cargar datos:', err);
-        if (isMounted) setError('No se pudo cargar la gráfica de generación diaria');
+        if (isMounted) setError('No se pudo cargar la gráfica de Generación Real Diaria por Tecnología');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -242,7 +242,7 @@ export function GeneracionDespacho() {
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
         </div>
-        <p className="text-gray-300 mt-4">Cargando gráfica de generación diaria por tecnología...</p>
+        <p className="text-gray-300 mt-4">Cargando gráfica de Generación Real Diaria por Tecnología...</p>
       </div>
     );
   }
@@ -272,7 +272,7 @@ export function GeneracionDespacho() {
           style={{ width: 30, height: 30 }}
           title="Ayuda"
           onClick={() =>
-            alert('Esta gráfica muestra la generación diaria de energía desglosada por tecnología (térmica, cogenerador, hidráulica, solar y eólica).')
+            alert('Esta gráfica muestra la generación real diaria de energía desglosada por tecnología (térmica, cogenerador, hidráulica, solar y eólica).')
           }
           type="button"
         >
