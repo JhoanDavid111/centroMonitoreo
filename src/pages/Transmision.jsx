@@ -15,6 +15,7 @@ import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
 import AutoGeneracionOn from '../assets/svg-icons/AutoGeneracion-On.svg'
 
 import MapaProyectosTransmision from '../components/MapaProyectosTransmision';
+import ProjectGrid from '../components/ProjectGrid';
 
 export default function Transmision() {
   const navigate = useNavigate()
@@ -161,7 +162,7 @@ export default function Transmision() {
           Proyectos de Transmisión en ejecución
         </h2>
       {/* Sección desplegable de Comunidades y Colombia Solar */}
-      <ComunidadesResumen />
+      <ProjectGrid /> 
       <div className="px-2">
         <CapacidadInstalada />
       </div>
