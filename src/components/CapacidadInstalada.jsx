@@ -159,7 +159,7 @@ export function CapacidadInstalada() {
           chart: {
             type: 'area',
             backgroundColor: '#262626',
-            height: 450,
+            height: 550,
             marginBottom: 100
           },
           title: {
@@ -217,10 +217,26 @@ export function CapacidadInstalada() {
             style: { color: '#FFF', fontSize: '12px' },
             shared: true,
             formatter() {
-              let s = `<b>Fecha: ${Highcharts.dateFormat('%e %b %Y', this.x)}</b>`;
+              const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
+              let total = 0;
+
+              const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+              // Sumar total
               this.points.forEach(pt => {
-                s += `<br/><span style=\"color:${pt.color}\">\u25CF</span> ${pt.series.name}: <b>${pt.y.toLocaleString()} MW</b>`;
+                total += pt.y;
               });
+
+              // Encabezado
+              let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
+              s += `<span style="color:#FFD700"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
+
+              // Categorías
+              this.points.forEach(pt => {
+                const nombre = capitalize(pt.series.name);
+                s += `<span style="color:${pt.color}">\u25CF</span> ${nombre}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b><br/><br/>`;
+              });
+
               return s;
             }
           },
@@ -308,8 +324,8 @@ export function CapacidadInstalada() {
   if (!options) return null;
 
   return (
-    <section className="mt-8">
-      <div className="w-full bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+    <section className="mt-8 mb-14">
+      <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
         {/* Botón de ayuda superpuesto */}
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
