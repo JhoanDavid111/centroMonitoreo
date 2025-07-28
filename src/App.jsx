@@ -1,14 +1,15 @@
+// src/App.jsx
 import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
+import { ALLOWED_DOMAINS } from './config/allowedDomains';
 import { ROLES, ROLE_PERMISSIONS } from './config/roles';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Login from '../src/assets/Login.png';
-import  AuthButton  from './components/auth/AuthButton';
+import AuthButton from './components/auth/AuthButton';
 
 // Importación de páginas
 import Resumen from './pages/resumen';
@@ -46,8 +47,16 @@ function AppContent() {
     const isProtectedRoute = !['/', '/login'].includes(location.pathname);
     
     return (
-      <div style={{ backgroundImage: `url(${Login})` }} className="h-screen bg-[#262626] flex flex-col items-center justify-center bg-cover bg-center overflow-hidden">
-        <div className="w-full max-w-md">
+      <div 
+        style={{ 
+          backgroundImage: `url(${Login})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }} 
+        className="h-screen bg-[#262626] flex flex-col items-center justify-center overflow-hidden"
+      >
+        <div className="w-full max-w-md bg-transparent">
           <AuthButton />
           {isProtectedRoute && (
             <p className="mt-4 text-sm text-red-500 text-center">
@@ -59,7 +68,6 @@ function AppContent() {
     );
   }
 
-  // Validación usando ALLOWED_DOMAINS importado
   const emailDomain = currentUser.email?.split('@')[1];
   const isAuthorized = ALLOWED_DOMAINS.some(domain => 
     emailDomain === domain || emailDomain?.endsWith(`.${domain}`)
@@ -93,14 +101,14 @@ function AppContent() {
           <Routes>
             <Route path="/" element={
               <PrivateRoute>
-              <>
-                <Banner6GW />
-                <IndicadoresResumen />
-                <CapacidadInstalada />
-                <MapaEmbalses />
-                <CombustiblesLiquidos />
-                <TablaProyectosEnergia />
-              </>
+                <>
+                  <Banner6GW />
+                  <IndicadoresResumen />
+                  <CapacidadInstalada />
+                  <MapaEmbalses />
+                  <CombustiblesLiquidos />
+                  <TablaProyectosEnergia />
+                </>
               </PrivateRoute>
             } />
             
@@ -132,7 +140,7 @@ function AppContent() {
               <PrivateRoute>
                 <EnConstruccion />
               </PrivateRoute>
-              } />
+            } />
             
             <Route
               path="/estrategia-6gw"
@@ -160,7 +168,15 @@ export default function App() {
       <Routes>
         <Route path="/*" element={<AppContent />} />
         <Route path="/login" element={
-          <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
+          <div 
+            style={{ 
+              backgroundImage: `url(${Login})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }} 
+            className="min-h-screen flex flex-col items-center justify-center p-4"
+          >
             <div className="w-full max-w-md">
               <AuthButton />
             </div>
