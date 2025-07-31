@@ -1,3 +1,5 @@
+// src/pages/Transmision.jsx
+import React, { useState } from 'react'; // Añade { useState } aquí
 import { useNavigate } from 'react-router-dom'
 import bannerImage from '../assets/bannerCentroMonitoreoTransmision.png' // ajusta ruta/nombre si cambiaste
 import { ComunidadesResumen } from '../components/ComunidadesResumen'
@@ -16,9 +18,11 @@ import AutoGeneracionOn from '../assets/svg-icons/AutoGeneracion-On.svg'
 
 import MapaProyectosTransmision from '../components/MapaProyectosTransmision';
 import ProjectGrid from '../components/ProjectGrid';
+import PageProjectTransmision from './PageProjectTransmision';
 
 export default function Transmision() {
   const navigate = useNavigate()
+  const [selectedProject, setSelectedProject] = useState(null); // Estado añadido
 
   // Tus índices originales
   const indices = [
@@ -26,13 +30,19 @@ export default function Transmision() {
       icon: <img src={DemandaOn} alt='Proyectos por convocatorias' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Proyectos por convocatorias',
       value: '20',
-      updated: '8/5/2025'
+      updated: '8/5/2025',
+      id: 'convocatorias',
+      onClick: () => setSelectedProject('convocatorias')
+      
     },
+
     {
       icon: <img src={DemandaOn} alt='Proyectos STR' className="w-6 h-6 flex-shrink-0"/>,
       label: 'Proyectos STR',
       value: '97',
-      updated: '8/5/2025'
+      updated: '8/5/2025',
+      id: 'str',
+      onClick: () => setSelectedProject('str')
     },
     {
       icon: <img src={AutoGeneracionOn} alt='Proyectos en proceso de adjudicación' className="w-6 h-6 flex-shrink-0"/>,
@@ -66,14 +76,28 @@ export default function Transmision() {
     },
     
     
-  ]
+   ]
+ 
+  const handleBack = () => {
+    setSelectedProject(null);
+  };
 
-  // Convertir los dos primeros strings a número y sumar
+    // Si hay un proyecto seleccionado, muestra PageProjectTransmision
+  if (selectedProject) {
+    return (
+      <PageProjectTransmision 
+        projectType={selectedProject} 
+        onBack={handleBack}
+      />
+    );
+  }  
+
+/*   // Convertir los dos primeros strings a número y sumar
   const parseMW = str =>
     parseFloat(str.replace(/\./g, '').replace(',', '.').replace(' MW', ''))
   const op = parseMW(indices[0].value)
   const pr = parseMW(indices[1].value)
-  const total = op + pr
+  const total = op + pr */
 
   return (
     <div className="space-y-8">

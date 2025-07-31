@@ -26,6 +26,7 @@ import { CapacidadInstalada } from './components/CapacidadInstalada';
 import { MapaEmbalses } from './components/MapaEmbalses';
 import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
+import PageProjectTransmision from './pages/PageProjectTransmision';
 
 function AppContent() {
   const { currentUser, loading, userRole } = useAuth();
@@ -133,6 +134,12 @@ function AppContent() {
             <Route path="/Transmision" element={
               <PrivateRoute requiredPermission="transmision" allowedRoles={[ROLES.ADMIN, ROLES.CONSULTOR_1]}>
                 <Transmision/>
+              </PrivateRoute>
+            } />
+
+            <Route path="/transmision_pages" element={
+              <PrivateRoute requiredPermission="transmisionpages" allowedRoles={[ROLES.ADMIN, ROLES.CONSULTOR_1]}>
+                <PageProjectTransmision/>
               </PrivateRoute>
             } />
 

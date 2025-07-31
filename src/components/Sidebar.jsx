@@ -122,6 +122,13 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           activeIcon: AccionesEstrategicasOn,
           roles: [ROLES.ADMIN] // Solo para Administradores
         },
+        {
+          title: 'Transmisión Pages',
+          path: '/transmision_pages?projectId=sogamoso-norte',
+          icon: ProyectosTransmisionOff,
+          activeIcon: ProyectosTransmisionOn,
+          roles: [ROLES.ADMIN, ROLES.CONSULTOR_1] // Solo para Administrador y Consultor 1
+        },
         /*
         {
           title: 'Autogeneración y GD',
