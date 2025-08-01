@@ -108,20 +108,15 @@ console.log('rna Milestones:', projectData?.milestones);
      
 
       {/* Sección de Fechas de puesta en operación */}
-      <section className="bg-gray-800 rounded-lg p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-yellow-400">Fechas de puesta en operación</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-       {/*   {projectData.milestones?.map((milestone, index) => (
-            <MilestoneCard 
-              key={`milestone-${index}`}
-              title={milestone.title}
-              date={milestone.value}
-              updated={milestone.updated}
-              hasNote={milestone.title.includes('FPO')}
-            />
-          ))}   */}
-        </div>
-      </section>
+     {projectData?.milestones?.map((milestone, index) => (
+      <MilestoneCard 
+        key={`milestone-${index}`}
+        title={milestone.title}
+        date={milestone.value}
+        updated={milestone.updated}
+        hasNote={milestone.hasNote}
+      />
+      ))}
 
     
 
