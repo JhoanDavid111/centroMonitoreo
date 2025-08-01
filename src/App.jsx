@@ -28,6 +28,8 @@ import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import PageProjectTransmision from './pages/PageProjectTransmision';
 
+
+
 function AppContent() {
   const { currentUser, loading, userRole } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);

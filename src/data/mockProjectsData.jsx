@@ -85,6 +85,7 @@ export const getMockProjectData = (projectId) => {
   return new Promise(resolve => {
     // Simula un pequeño retraso de red
     setTimeout(() => {
+      console.log(`Obteniendo datos del proyecto: ${projectId}`);
       resolve(mockProjectsData[projectId]);
     }, 300);
   });

@@ -3,9 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { getMockProjectData } from '../data/mockProjectsData';
 
 // Componentes
-//import ProjectBanner from '../components/ProjectBanner';
+import ProjectBanner from '../components/projects/ProjectBanner/ProjectBanner';
 import ProjectSummary from '../components/projects/ProjectSummary/ProjectSummary';
-//import MilestoneCard from '../components/projects/MilestoneCard/MilestoneCard';
+import MilestoneCard from '../components/projects/MilestoneCard/MilestoneCard';
 import ProgressSummaryCard from '../components/projects/ProgressSummaryCard/ProgressSummaryCard';
 import ProgressSection from '../components/projects/ProgressSection/ProgressSection';
 //import MonitoringChart from '../components/projects/MonitoringChart/MonitoringChart';
@@ -30,6 +30,7 @@ const PageProjectTransmision = ({ onBack }) => {
   });
 
   useEffect(() => {
+    
     const getProject = async () => {
       try {
         setState(prev => ({ ...prev, loading: true, error: null }));
@@ -37,10 +38,15 @@ const PageProjectTransmision = ({ onBack }) => {
         if (!projectId) {
           throw new Error('No se especificó un ID de proyecto');
         }
+        
+            
 
         const data = await getMockProjectData(projectId);
+
+        
         
         if (data) {
+          console.log('Datos del proyecto encontrado:', data);
           setState({
             projectData: data,
             loading: false,
@@ -67,8 +73,12 @@ const PageProjectTransmision = ({ onBack }) => {
   if (error) return <ErrorDisplay message={error} />;
   if (!projectData) return <EmptyState />;
 */
+console.log('raro Project Data:', projectData);
+console.log('rna Milestones:', projectData?.milestones);
   return (
     <div className="space-y-8 p-5 bg-gray-900 text-white min-h-screen">
+      {projectData ? (
+      <>      
       {/* Botón de volver */}
       <button 
         onClick={onBack}
@@ -79,19 +89,29 @@ const PageProjectTransmision = ({ onBack }) => {
       </button>
 
       {/* Banner del proyecto */}
-    {/*   <ProjectBanner 
+      <ProjectBanner 
         title={projectData.header.title}
         subtitle={projectData.header.location}
         status={projectData.header.status}
         image={bannerImage}
         icon={GWOff}
-      /> */}
+      /> 
+
+          </>
+      ) : (
+        <div className="text-center text-yellow-400">
+          <h2 className="text-2xl font-bold mb-4">Proyecto no encontrado</h2>
+          <p>Por favor, verifica el ID del proyecto.</p>
+        </div>
+      )}
+
+     
 
       {/* Sección de Fechas de puesta en operación */}
       <section className="bg-gray-800 rounded-lg p-6 mb-6">
         <h2 className="text-2xl font-bold mb-4 text-yellow-400">Fechas de puesta en operación</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/*   {projectData.milestones.map((milestone, index) => (
+       {/*   {projectData.milestones?.map((milestone, index) => (
             <MilestoneCard 
               key={`milestone-${index}`}
               title={milestone.title}
@@ -99,9 +119,13 @@ const PageProjectTransmision = ({ onBack }) => {
               updated={milestone.updated}
               hasNote={milestone.title.includes('FPO')}
             />
-          ))}  */}
+          ))}   */}
         </div>
       </section>
+
+    
+
+     
 
       {/* Sección de Documentos */}
       {/* {projectData.documents?.length > 0 && (
