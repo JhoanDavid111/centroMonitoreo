@@ -104,7 +104,7 @@ export default function Transmision() {
         borderRadius: 100,
       }}>
         <img
-          src="/src/assets/svg-icons/InfraElectrica-Amarillo.svg"
+          src="../src/assets/svg-icons/InfraElectrica-Amarillo.svg"
           alt="Infraestructura Eléctrica"
           style={{
           width: 36,

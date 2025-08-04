@@ -26,7 +26,8 @@ export default function PrivateRoute({
   requiredPermission, // Propiedad para un permiso específico
   allowedRoles,       // Propiedad para roles específicos permitidos
   unauthenticatedRedirect = '/login', // Redirección si no está logueado
-  unauthorizedRedirect = '/unauthorized' // Redirección si no está autorizado (pero sí logueado)
+  //unauthorizedRedirect = '/unauthorized' // Redirección si no está autorizado (pero sí logueado)
+  unauthorizedRedirect = '/login'
 }) {
   const { currentUser, userRole, loading } = useAuth();
 
