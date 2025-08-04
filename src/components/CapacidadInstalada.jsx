@@ -107,7 +107,7 @@ export function CapacidadInstalada() {
         setIsCached(false);
         setError(null);
 
-        const response = await fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
+        const response = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });

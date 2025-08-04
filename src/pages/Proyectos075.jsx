@@ -8,6 +8,7 @@ import SeguimientoCiclos from '../components/SeguimientoCiclos';
 import Ciclo1charts from '../components/Ciclo1charts';
 import Ciclo2charts from '../components/Ciclo2charts';
 import { Search } from "lucide-react";
+import IndicadoresProyectos075 from '../components/IndicadoresProyectos075';
 
 export default function Proyectos075() {
     const [showCiclos, setShowCiclos] = useState(false);
@@ -53,7 +54,7 @@ export default function Proyectos075() {
                         Seguimiento de proyectos resolución 075
                     </h2>
                     <div className="p-6 bg-[#262626] rounded-lg">
-                        <SeguimientoBarras />
+                        <IndicadoresProyectos075 />
                     </div>
                     <br />
                     <div>
