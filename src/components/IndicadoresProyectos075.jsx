@@ -122,7 +122,7 @@ export default function IndicadoresProyectos075() {
       <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
         
             <p className="text-white text-2xl mr-2">
-                Total de proyectos:
+                Total de proyectos
             </p>
             <p
                 className="text-6xl font-semibold"
