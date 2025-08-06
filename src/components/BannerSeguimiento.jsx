@@ -14,7 +14,7 @@ export default function BannerSeguimiento({ onClick }) {
       />
       <div className="absolute inset-0 flex justify-between items-center px-6">
         <h1 className="text-6xl font-semibold text-white mb-4">
-          Resolución CREG 075
+          Proyectos resolución CREG 075
         </h1>
         <img src={GWOff} className="w-24 h-24 flex-shrink-0"/>
       </div>
