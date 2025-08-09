@@ -1,6 +1,6 @@
 // src/components/milestones/MilestoneCard/MilestoneCard.styles.js
 import styled from 'styled-components';
-import { colors } from '../../../../styles/theme';
+import { colors } from '../../../styles/theme'; // Asegúrate de que la ruta sea correcta
 
 export const CardContainer = styled.div`
   background: ${colors.gray700};

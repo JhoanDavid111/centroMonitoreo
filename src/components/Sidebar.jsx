@@ -124,7 +124,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
         },
         {
           title: 'Transmisión Pages',
-          path: '/transmision_pages?projectId=sogamoso-norte',
+          path: '/transmision_pages?projectId=norte-nueva-esperanza',
           icon: ProyectosTransmisionOff,
           activeIcon: ProyectosTransmisionOn,
           roles: [ROLES.ADMIN, ROLES.CONSULTOR_1] // Solo para Administrador y Consultor 1

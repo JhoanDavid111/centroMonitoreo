@@ -140,7 +140,7 @@ export default function Transmision() {
       style={{
         fontFamily: '"Nunito Sans", sans-serif',
         fontWeight: 800,
-        fontSize: '62px',
+        fontSize: '50px',
         lineHeight: '66px',
         textAlign: 'center',
       }}>

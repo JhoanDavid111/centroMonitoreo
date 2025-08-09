@@ -97,18 +97,12 @@ console.log('rna Milestones:', projectData?.milestones);
         icon={GWOff}
       /> 
 
-          </>
-      ) : (
-        <div className="text-center text-yellow-400">
-          <h2 className="text-2xl font-bold mb-4">Proyecto no encontrado</h2>
-          <p>Por favor, verifica el ID del proyecto.</p>
-        </div>
-      )}
+     
 
      
 
       {/* Sección de Fechas de puesta en operación */}
-     {projectData?.milestones?.map((milestone, index) => (
+      {projectData?.milestones?.map((milestone, index) => (
       <MilestoneCard 
         key={`milestone-${index}`}
         title={milestone.title}
@@ -116,7 +110,15 @@ console.log('rna Milestones:', projectData?.milestones);
         updated={milestone.updated}
         hasNote={milestone.hasNote}
       />
-      ))}
+      ))} 
+
+           </>
+      ) : (
+        <div className="text-center text-yellow-400">
+          <h2 className="text-2xl font-bold mb-4">Proyecto no encontrado</h2>
+          <p>Por favor, verifica el ID del proyecto.</p>
+        </div>
+      )}
 
     
 
