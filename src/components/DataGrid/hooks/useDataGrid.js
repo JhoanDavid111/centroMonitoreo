@@ -4,62 +4,106 @@ import { useFilters } from './useFilters';
 import { useExport } from './useExport';
 
 export const useDataGrid = (config) => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [chartOptions, setChartOptions] = useState(null);
-  
-  const { filteredData, filters, setFilters, applyFilters } = useFilters(data);
-  const { exportToCSV } = useExport();
+    const [activeTab, setActiveTab] = useState(0);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [chartOptions, setChartOptions] = useState(null);
+    const [globalFilter, setGlobalFilter] = useState('');
+    const [columnFilters, setColumnFilters] = useState({});
+    
+    const { filteredData, filters, setFilters, applyFilters } = useFilters(data);
+    const { exportToCSV } = useExport();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                
+                if (!config.tabs || !config.tabs[activeTab]) {
+                    throw new Error('Configuración de pestañas no válida');
+                }
 
-       
-        const response = await fetch(config.tabs[activeTab].apiUrl, config.tabs[activeTab].fetchOptions);
-       
-       
-        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-        const jsonData = await response.json();
+                const currentTab = config.tabs[activeTab];
+                const response = await fetch(currentTab.apiUrl, currentTab.fetchOptions || {});
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
 
-       
-        setData(jsonData);
-        applyFilters(jsonData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+                const jsonData = await response.json();
+                setData(jsonData);
+                applyFilters(jsonData);
+                // Inicializar filtros por columna
+                const initialFilters = {};
+                config.tabs[activeTab].columns.forEach(col => {
+                    if (col.filter) {
+                        initialFilters[col.selector.replace('row.', '')] = '';
+                    }
+                });
+                setColumnFilters(initialFilters);
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [activeTab, config.tabs]);
+
+    // Aplicar todos los filtros
+    const applyAllFilters = (data) => {
+        let result = [...data];
+        
+        // Filtro global
+        if (globalFilter) {
+            result = result.filter(row => 
+                Object.values(row).some(val => 
+                    String(val).toLowerCase().includes(globalFilter.toLowerCase())
+                )
+            );
+        }
+        
+        // Filtros por columna
+        result = result.filter(row => 
+            Object.entries(columnFilters).every(([key, value]) => {
+                if (!value) return true;
+                return String(row[key] || '').toLowerCase().includes(value.toLowerCase());
+            })
+        );
+        
+        return result;
     };
 
-    fetchData();
-  }, [activeTab, config.tabs]);
+    const handleTabChange = (index) => {
+        setActiveTab(index);
+        setChartOptions(null);
+        setGlobalFilter('');
+        setColumnFilters({});
+    };
 
-  const handleTabChange = (index) => {
-    setActiveTab(index);
-    setChartOptions(null);
-  };
+    const handleViewChart = (row) => {
+        if (config.tabs[activeTab]?.chart?.getOptions) {
+            const options = config.tabs[activeTab].chart.getOptions(row);
+            setChartOptions(options);
+        }
+    };
 
-  const handleViewChart = (row) => {
-    if (config.tabs[activeTab].chart?.getOptions) {
-      const options = config.tabs[activeTab].chart.getOptions(row);
-      setChartOptions(options);
-    }
-  };
-
-  return {
-    activeTab,
-    filteredData,
-    loading,
-    error,
-    chartOptions,
-    filters,
-    setFilters,
-    handleTabChange,
-    handleViewChart,
-    exportToCSV: () => exportToCSV(filteredData, config.tabs[activeTab].columns)
-  };
+    return {
+        activeTab,
+        filteredData: applyAllFilters(filteredData),
+        loading,
+        error,
+        chartOptions,
+        filters: columnFilters,
+        setFilters: setColumnFilters,
+        globalFilter,
+        setGlobalFilter,
+        handleTabChange,
+        handleViewChart,
+        exportToCSV: () => exportToCSV(applyAllFilters(filteredData), config.tabs[activeTab].columns)
+    };
 };

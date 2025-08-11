@@ -4,25 +4,25 @@ export const strConfig = {
     columns: [
         {
             name: 'Proyecto',
-            selector: row => row.nombre_proyecto,
+            selector: row => row.nombre_proyecto || '',
             sortable: true,
             wrap: true
         },
         {
             name: 'OR',
-            selector: row => row.or,
+            selector: row => row.or || '',
             sortable: true,
             width: '80px'
         },
         {
             name: 'Etapa',
-            selector: row => row.etapa,
+            selector: row => row.etapa || '',
             sortable: true,
             width: '80px'
         },
         {
             name: 'Estado',
-            selector: row => row.estado,
+            selector: row => row.estado ? row.estado.trim() : '',
             sortable: true
         },
         {

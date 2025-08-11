@@ -1,3 +1,4 @@
+// src/config/transmisionGrid.jsx
 export const TRANSMISION_GRID_CONFIG = {
   title: "Proyectos de Transmisión",
   tabs: [
