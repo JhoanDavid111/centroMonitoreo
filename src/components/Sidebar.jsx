@@ -106,7 +106,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           path: '/Transmision',
           icon: ProyectosTransmisionOff,
           activeIcon: ProyectosTransmisionOn,
-          roles: [ROLES.CONSULTOR_2] // Solo para Administrador y Consultor 1
+          roles: [ROLES.ADMIN] // Solo para Administrador y Consultor 1
         },
         {
           title: 'Comunidades energéticas',
