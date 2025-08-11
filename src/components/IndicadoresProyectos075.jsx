@@ -1,18 +1,19 @@
 // src/components/IndicadoresProyectos075.jsx
 import { useEffect, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
+import { API } from '../config/api';
 
 // Importa aquí los íconos SVG que correspondan a cada tarjeta
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 
-// async function fetchIndicadores075() {
-//   const resp = await fetch(
-//     'http://192.168.8.138:8002/v1/indicadores/proyectos_075/indicadores_proyectos_075',
-//     { method: 'POST' }
-//   );
-//   if (!resp.ok) throw new Error('Error al consultar indicadores de proyectos 075');
-//   return resp.json();
-// }
+async function fetchIndicadores075() {
+  const resp = await fetch(
+      `${API}/v1/indicadores/transmision/indicadores_proyectos_075`,
+    { method: 'POST' }
+  );
+  if (!resp.ok) throw new Error('Error al consultar indicadores de proyectos 075');
+  return resp.json();
+}
 
 const LABEL_MAP = {
   total_proyectos_bd075: {
@@ -98,15 +99,17 @@ export default function IndicadoresProyectos075() {
     <>
       {/* Sección Total de proyectos */}
       <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
-        <p className="text-white text-2xl mr-2">
-          {LABEL_MAP.total_proyectos_bd075.label}
-        </p>
-        <p
-          className="text-4xl font-semibold"
-          style={{ color: '#FFC800', lineHeight: '36px' }}
-        >
-          {LABEL_MAP.total_proyectos_bd075.value}
-        </p>
+
+            <p className="text-white text-2xl mr-2">
+                Total de proyectos
+            </p>
+            <p
+                className="text-6xl font-semibold"
+                style={{ color: '#FFC800', lineHeight: '36px' }}
+            >
+                {formatCount(totalProyectos)}
+            </p>
+
       </div>
 
       {/* Tarjetas de indicadores */}
