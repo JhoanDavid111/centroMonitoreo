@@ -11,8 +11,8 @@ export default function TotalProyectos({total}) {
         <span 
           className="bg-yellow-400 flex items-center justify-center mr-4"
           style={{
-            width: 60,
-            height: 60,
+            width: 36,
+            height: 36,
             borderRadius: 100,
           }}
         >
@@ -27,7 +27,7 @@ export default function TotalProyectos({total}) {
           style={{
             fontFamily: '"Nunito Sans", sans-serif',
             fontWeight: 800,
-            fontSize: '62px',
+            fontSize: '50px',
             lineHeight: '66px',
             textAlign: 'center',
           }}
