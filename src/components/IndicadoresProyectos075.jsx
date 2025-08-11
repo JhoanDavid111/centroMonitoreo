@@ -9,7 +9,7 @@ import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 async function fetchIndicadores075() {
   const resp = await fetch(
       `${API}/v1/indicadores/transmision/indicadores_proyectos_075`,
-    { method: 'POST' }
+      { method: 'POST' }
   );
   if (!resp.ok) throw new Error('Error al consultar indicadores de proyectos 075');
   return resp.json();
@@ -66,20 +66,20 @@ export default function IndicadoresProyectos075() {
 
   if (loading) {
     return (
-      <div className="px-4 py-6 text-white">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                <div className="h-6 bg-neutral-700 rounded mb-4" />
-                <div className="h-8 bg-neutral-600 rounded mb-2" />
-                <div className="h-3 bg-neutral-700 rounded w-1/2" />
-              </div>
-            ))}
+        <div className="px-4 py-6 text-white">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                    <div className="h-6 bg-neutral-700 rounded mb-4" />
+                    <div className="h-8 bg-neutral-600 rounded mb-2" />
+                    <div className="h-3 bg-neutral-700 rounded w-1/2" />
+                  </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
     );
   }
 
@@ -96,52 +96,47 @@ export default function IndicadoresProyectos075() {
   }));
 
   return (
-    <>
-      {/* Sección Total de proyectos */}
-      <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
+      <>
+        {/* Sección Total de proyectos */}
+        <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
 
-            <p className="text-white text-2xl mr-2">
-                Total de proyectos
-            </p>
-            <p
-                className="text-6xl font-semibold"
-                style={{ color: '#FFC800', lineHeight: '36px' }}
-            >
-                {formatCount(totalProyectos)}
-            </p>
+          <p className="text-white text-2xl mr-2">
+            Total de proyectos
+          </p>
+          <p
+              className="text-6xl font-semibold"
+              style={{ color: '#FFC800', lineHeight: '36px' }}
+          >
+            {formatCount(totalProyectos)}
+          </p>
 
-      </div>
+        </div>
 
-      {/* Tarjetas de indicadores */}
-      <div className="px-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cards.map(({ key, icon, label, value }) => (
-            <div key={key} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-              <div className="flex items-center mb-2">
-                <img src={icon} alt={label} className="w-6 h-6 flex-shrink-0" />
-                <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+        {/* Tarjetas de indicadores */}
+        <div className="px-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {cards.map(({ key, icon, label, value }) => (
+                <div key={key} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                  <div className="flex items-center mb-2">
+                    <img src={icon} alt={label} className="w-6 h-6 flex-shrink-0" />
+                    <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
                   {label}
                 </span>
-              </div>
-              <div className="flex text-white text-2xl font-bold">
-                {value} {/* Reducido el tamaño de la fuente de 3xl a 2xl */}
-                <HelpCircle
-                  className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                  title="Ayuda"
-                />
-              </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">
-                Actualizado el: {updated}
-              </div>
-            </div>
-          ))}
+                  </div>
+                  <div className="flex text-white text-2xl font-bold">
+                    {value} {/* Reducido el tamaño de la fuente de 3xl a 2xl */}
+                    <HelpCircle
+                        className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                        title="Ayuda"
+                    />
+                  </div>
+                  <div className="text-xs text-[#B0B0B0] mt-1">
+                    Actualizado el: {updated}
+                  </div>
+                </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </>
+      </>
   );
 }
-
-
-
-
-
