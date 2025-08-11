@@ -1,7 +1,10 @@
 // src/components/DataGrid/DataGridTable.jsx
+import { Link } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
 import { darkTheme } from './styles/darkTheme';
+import ojoAmarillo from '../../assets/ojoAmarillo.svg';
+import curvaSAmarillo from '../../assets/curvaSAmarillo.svg';
 
 const DataGridTable = ({ 
   columns, 
@@ -13,7 +16,8 @@ const DataGridTable = ({
   filters,
   setFilters,
   globalFilter,
-  setGlobalFilter 
+  setGlobalFilter,
+  showActionsColumn = false // Nuevo prop para controlar columna de acciones
 }) => {
   // Estilos personalizados mejorados
   const customStyles = {
@@ -104,8 +108,44 @@ const DataGridTable = ({
     });
   });
 
+  // Añadir columna de acciones si es necesario
+  const finalColumns = showActionsColumn 
+    ? [
+        {
+          name: 'Acciones',
+          cell: row => (
+            <div className="flex space-x-2">
+              <Link 
+                to={`/transmision_pages?projectId=${encodeURIComponent(row.numero_convocatoria)}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+              <img 
+                src={ojoAmarillo} 
+                alt="Ver proyecto" 
+                className="w-5 h-5 cursor-pointer"
+              />
+              </Link>
+             {/*  <img 
+                src={curvaSAmarillo} 
+                alt="Ver curva S" 
+                className="w-5 h-5 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewChart(row);
+                }}
+              /> */}
+            </div>
+          ),
+          ignoreRowClick: true,
+          width: '100px',
+          button: true
+        },
+        ...columns
+      ]
+    : columns;
+
   return (
-    <div className="bg-[#262626] p-4 rounded-lg shadow">
+   <div className="bg-[#262626] p-4 rounded-lg shadow">
       <div className="flex items-center justify-between mb-4">
         <input
           type="text"
@@ -115,61 +155,16 @@ const DataGridTable = ({
           className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
         />
         <button
-           className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-  onClick={() => {
-    if (typeof onExport === 'function') {
-      try {
-        onExport(filteredData, columns);
-      } catch (error) {
-        console.error('Error al exportar:', error);
-        // Puedes mostrar un mensaje de error al usuario aquí si lo deseas
-      }
-    }
-  }}
-  disabled={!filteredData.length}
+          className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+          onClick={() => onExport(data, columns)}
         >
           <Download size={16} /> Exportar CSV
         </button>
       </div>
 
       <DataTable
-        columns={columns.map(col => ({
-          ...col,
-          name: col.filter ? (
-            <div className="relative inline-block pb-11">
-              <span>{col.name}</span>
-              <Filter
-                className={`inline ml-1 cursor-pointer ${
-                  filters[col.selector.replace('row.', '')] ? 'text-yellow-400' : 'text-gray-500'
-                }`}
-                size={16}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilters({
-                    ...filters,
-                    [col.selector.replace('row.', '')]: filters[col.selector.replace('row.', '')] || ''
-                  });
-                }}
-              />
-              {filters.hasOwnProperty(col.selector.replace('row.', '')) && (
-                <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-                  <input
-                    type="text"
-                    placeholder="Filtrar..."
-                    value={filters[col.selector.replace('row.', '')] || ''}
-                    onChange={(e) => setFilters({
-                      ...filters,
-                      [col.selector.replace('row.', '')]: e.target.value
-                    })}
-                    className="bg-[#262626] text-white p-1 text-sm"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              )}
-            </div>
-          ) : col.name,
-        }))}
-        data={filteredData}
+        columns={finalColumns}
+        data={data}
         theme="customDark"
         customStyles={customStyles}
         pagination

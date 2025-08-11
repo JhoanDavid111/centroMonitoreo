@@ -42,6 +42,7 @@ const DataGrid = ({ config }) => {
                     setFilters={setFilters}
                     globalFilter={globalFilter}
                     setGlobalFilter={setGlobalFilter}
+                    showActionsColumn={activeTab === 0} // Mostrar acciones solo en primera pestaña
                 />
             )}
 

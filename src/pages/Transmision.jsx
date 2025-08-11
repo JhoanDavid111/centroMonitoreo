@@ -73,10 +73,10 @@ export default function Transmision() {
       </h2> */}
 
       <TransmisionGrid /> 
-      <div className="px-2">
+     {/*  <div className="px-2">
         <CapacidadInstalada />
       </div>
-      <ResumenCharts />
+      <ResumenCharts /> */}
       <MapaProyectosTransmision />
 
     </div>
