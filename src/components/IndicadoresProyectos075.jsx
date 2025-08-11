@@ -16,7 +16,7 @@ import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 
 const LABEL_MAP = {
   total_proyectos_bd075: {
-    label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026',
+    label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
     icon: DemandaOn,
     value: '145 proyectos (4430 MW)', // Quemado tal como me diste
   },
