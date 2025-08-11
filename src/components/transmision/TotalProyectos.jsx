@@ -1,4 +1,6 @@
 // src/components/transmision/TotalProyectos.jsx
+import InfraElectricaAmarillo from '../../assets/svg-icons/InfraElectrica-Amarillo.svg';
+
 export default function TotalProyectos({total}) {
    return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
@@ -15,7 +17,7 @@ export default function TotalProyectos({total}) {
           }}
         >
           <img
-            src="../src/assets/svg-icons/InfraElectrica-Amarillo.svg"
+            src={InfraElectricaAmarillo}
             alt="Infraestructura Eléctrica"
             style={{ width: 36, height: 36 }}
           />
