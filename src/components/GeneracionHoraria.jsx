@@ -52,7 +52,7 @@ function areaTooltipFormatter() {
 
 async function fetchPromedio(payload) {
   const resp = await fetch(
-    'http://192.168.8.138:8002/v1/graficas/6g_proyecto/generacion_horaria_promedio',
+      `${API}/v1/graficas/6g_proyecto/generacion_horaria_promedio`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
