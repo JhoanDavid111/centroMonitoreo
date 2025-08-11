@@ -117,10 +117,11 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
         },
         {
           title: 'Acciones estratégicas',
-          path: '/estrategia-6gw', // Cambié a la ruta que definiste para esta sección con allowedRoles
+          path: 'http://192.168.1.74:8065/boards/',
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn,
-          roles: [ROLES.ADMIN] // Solo para Administradores
+          roles: [ROLES.ADMIN],
+          external: true
         },
         /* {
           title: 'Transmisión Pages',
@@ -157,7 +158,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           path: '/en_construccion',
           icon: EnergiaOff,
           activeIcon: EnergiaOn,
-          permission: 'suficiencia' 
+          permission: 'suficiencia'
 
         },
         {
@@ -207,7 +208,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           activeIcon: GLPOn,
           permission: 'combustibles'
         }
-        
+
       ]
     }
     */
@@ -326,7 +327,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           );
         })}
       </nav>
-    
+
     </aside>
   );
 }
