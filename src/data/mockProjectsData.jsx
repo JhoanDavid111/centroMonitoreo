@@ -1,7 +1,7 @@
 // src/data/mockProjectsData.jsx
 // Simulación de los datos que devolvería la API para cada proyecto
 export const mockProjectsData = {
-  'sogamoso-norte': {
+  'UPME 2007-2021': {
     header: { title: 'UPME 01 - 2013 Sogamoso - Norte - Nueva Esperanza 500 kV', status: 'En ejecución de obras', location: 'Sogamoso' },
     milestones: [
       { title: 'FPO reporte', value: '26/dic/2025', updated: '20/ene/2025' },
