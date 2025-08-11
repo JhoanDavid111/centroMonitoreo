@@ -1,6 +1,7 @@
 // src/components/IndicadoresProyectos075.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
+import { API } from '../config/api';
 
 // Importa aquí los íconos SVG que correspondan a cada tarjeta
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
