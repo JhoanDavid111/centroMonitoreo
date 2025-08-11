@@ -7,10 +7,10 @@ export const ALLOWED_DOMAINS = [
   'mininterior.gov.co',
   'ipse.gov.co',
   'minambiente.gov.co',
-  'ecopetrol.com.co',
+  'ecopetrol.com.co',// no transmision
   'anla.gov.co',
   'anh.gov.co',
-  'isa.com.co'
+  'isa.com.co' // no transmision
 
 
 

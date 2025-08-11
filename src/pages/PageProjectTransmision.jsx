@@ -162,10 +162,10 @@ const proyecto = {
 };
 
 const carouselImgs = [
-  '../src/assets/images/subestacion.jpg',
-  '/assets/images/transmision-linea.jpg',
-  '/assets/images/transmision-subestacion.jpg',
-  '/assets/images/transmision-linea.jpg'
+  '../src/assets/images/Slider_transmision1.png',
+  '../src/assets/images/Slider_transmision2.png',
+  '../src/assets/images/Slider_transmision3.png',
+  
 ];
 
 /* ===== Page ===== */
@@ -296,7 +296,7 @@ export default function TransmisionDetalle() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Mapa ilustrativo (imagen para el mock) */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
-            <img src="/assets/images/mapa-transmision.jpg" alt="Mapa" className="w-full h-[300px] object-cover rounded-lg" />
+            <img src="../src/assets/images/mapa_interno.png" alt="Mapa" className="w-full h-[300px] object-cover rounded-lg" />
           </div>
 
           <div className="grid grid-cols-1 gap-4">
