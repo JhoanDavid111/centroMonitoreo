@@ -1,8 +1,8 @@
 // src/config/roles.js
 export const ROLES = {
     ADMIN: 'Administrador',
-    CONSULTOR_1: 'Consultor 1',
-    CONSULTOR_2: 'Consultor 2',
+    CONSULTOR_1: 'Consultor1',
+    CONSULTOR_2: 'Consultor2',
     // ... otros roles
 };
 

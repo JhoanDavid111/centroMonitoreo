@@ -1,4 +1,5 @@
 // src/pages/Unauthorized.jsx
+// src/pages/Unauthorized.jsx
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
