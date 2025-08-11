@@ -1,43 +1,49 @@
 // src/components/IndicadoresProyectos075.jsx
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
 // Importa aquí los íconos SVG que correspondan a cada tarjeta
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 
-async function fetchIndicadores075() {
-  const resp = await fetch(
-    'http://192.168.8.138:8002/v1/indicadores/transmision/indicadores_proyectos_075',
-    { method: 'POST' }
-  );
-  if (!resp.ok) throw new Error('Error al consultar indicadores de proyectos 075');
-  return resp.json();
-}
+// async function fetchIndicadores075() {
+//   const resp = await fetch(
+//     'http://192.168.8.138:8002/v1/indicadores/proyectos_075/indicadores_proyectos_075',
+//     { method: 'POST' }
+//   );
+//   if (!resp.ok) throw new Error('Error al consultar indicadores de proyectos 075');
+//   return resp.json();
+// }
 
 const LABEL_MAP = {
   total_proyectos_bd075: {
-    label: 'Total de proyectos',
+    label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026',
     icon: DemandaOn,
+    value: '145 proyectos (4430 MW)', // Quemado tal como me diste
   },
   total_proyectos_aprobados_bd075: {
-    label: 'No. de proyectos aprobados',
+    label: 'Solicitudes totales',
     icon: DemandaOn,
+    value: '2802', // Quemado tal como me diste
   },
   total_capacidad_instalada_bd075: {
-    label: 'Capacidad vigente total (MW)',
+    label: 'Proyectos en operación',
     icon: DemandaOn,
+    value: '35 proyectos (2998 MW)', // Quemado tal como me diste
   },
   total_capacidad_instalada_aprobados_bd075: {
-    label: 'Capacidad vigente proyectos aprobados (MW)',
+    label: 'Proyectos en operación FNCER',
     icon: DemandaOn,
+    value: '20 proyectos (1303 MW)', // Quemado tal como me diste
   },
   total_proyectos_curva_s: {
-    label: 'No. proyectos con curva S',
+    label: 'Solicitudes aprobadas FNCER por entrar',
     icon: DemandaOn,
+    value: '385 solicitudes (16789 MW)', // Quemado tal como me diste
   },
   proyectos_aprobados_no_curva_s: {
-    label: 'No. proyectos sin curva S',
+    label: 'Proyectos FNCER con FPO vencida',
     icon: DemandaOn,
+    value: '83 proyectos (1561 MW)', // Quemado tal como me diste
   },
 };
 
@@ -50,34 +56,9 @@ const ORDER = [
   'proyectos_aprobados_no_curva_s',
 ];
 
-// Formateadores
-const formatCount = n => n.toLocaleString('es-CO', { minimumFractionDigits: 0 });
-const formatMW = n =>
-  n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export default function IndicadoresProyectos075() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetchIndicadores075();
-        if (alive) {
-          setData(res);
-          setLoading(false);
-        }
-      } catch (e) {
-        if (alive) {
-          setError(e.message);
-          setLoading(false);
-        }
-      }
-    })();
-    return () => { alive = false; };
-  }, []);
 
   // Fecha de actualización
   const updated = new Date().toLocaleDateString('es-CO');
@@ -105,32 +86,27 @@ export default function IndicadoresProyectos075() {
     return <div className="text-red-400 p-6">Error: {error}</div>;
   }
 
-  // Total de proyectos arriba
-  const totalProyectos = data.total_proyectos_bd075;
-
   // Resto de tarjetas
   const cards = ORDER.map(key => ({
     key,
     icon: LABEL_MAP[key].icon,
     label: LABEL_MAP[key].label,
-    value: data[key],
+    value: LABEL_MAP[key].value,
   }));
 
   return (
     <>
       {/* Sección Total de proyectos */}
       <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
-        
-            <p className="text-white text-2xl mr-2">
-                Total de proyectos
-            </p>
-            <p
-                className="text-6xl font-semibold"
-                style={{ color: '#FFC800', lineHeight: '36px' }}
-            >
-                {formatCount(totalProyectos)}
-            </p>
-        
+        <p className="text-white text-2xl mr-2">
+          {LABEL_MAP.total_proyectos_bd075.label}
+        </p>
+        <p
+          className="text-4xl font-semibold"
+          style={{ color: '#FFC800', lineHeight: '36px' }}
+        >
+          {LABEL_MAP.total_proyectos_bd075.value}
+        </p>
       </div>
 
       {/* Tarjetas de indicadores */}
@@ -144,11 +120,8 @@ export default function IndicadoresProyectos075() {
                   {label}
                 </span>
               </div>
-              <div className="flex text-white text-3xl font-bold">
-                {key.includes('capacidad')
-                  ? formatMW(value)
-                  : formatCount(value)}
-                {key.includes('capacidad') && ' MW'}
+              <div className="flex text-white text-2xl font-bold">
+                {value} {/* Reducido el tamaño de la fuente de 3xl a 2xl */}
                 <HelpCircle
                   className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                   title="Ayuda"
@@ -164,3 +137,8 @@ export default function IndicadoresProyectos075() {
     </>
   );
 }
+
+
+
+
+

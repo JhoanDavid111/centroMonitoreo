@@ -55,7 +55,7 @@ const fmtMesYY = (yyyy_mm) => {
 
 // Endpoints (POST sin datos de entrada)
 async function fetchHitosPorCumplir() {
-  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/hitos_por_cumplir', {
+  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/proyectos_075/hitos_por_cumplir', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{}' // POST sin payload
@@ -65,7 +65,7 @@ async function fetchHitosPorCumplir() {
 }
 
 async function fetchProyectosIncumplimientos() {
-  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/proyectos_incumplimientos', {
+  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/proyectos_075/proyectos_incumplimientos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{}' // POST sin payload
