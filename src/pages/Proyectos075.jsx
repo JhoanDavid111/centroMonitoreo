@@ -57,7 +57,6 @@ export default function Proyectos075() {
                     <div>
                         <ProjectGrid />
                     </div>
-                        <HitosBarras />
                 </div>
             ) : (
                 <div id="ciclos-tab">
