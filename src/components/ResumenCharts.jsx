@@ -149,10 +149,10 @@ export function ResumenCharts() {
         setError(null);
 
         const [techJson, catJson, entradaJson, matJson] = await Promise.all([
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_tecnologia`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_categoria`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_entrar_075`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/grafica_matriz_completa_anual`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json())
+          fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_tecnologia`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
+          fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_categoria`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
+          fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/capacidad_por_entrar_075`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
+          fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_matriz_completa_anual`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json())
         ]);
 
         if (!techJson || !catJson || !entradaJson || !matJson) throw new Error('Datos incompletos recibidos del servidor');

@@ -146,7 +146,7 @@ export function GeneracionDespacho() {
         setIsCached(false);
         setError(null);
 
-        const resp = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
+        const resp = await fetch(`http://192.168.8.138:8002/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });

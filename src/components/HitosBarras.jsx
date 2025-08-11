@@ -1,12 +1,11 @@
 // src/components/HitosBarras.jsx
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
-
 
 // ——— Carga de módulos ———
 Exporting(Highcharts);
@@ -45,75 +44,151 @@ Highcharts.setOptions({
   }
 });
 
+// Helpers
+const monthAbbrEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const fmtMesYY = (yyyy_mm) => {
+  // "2025-12" -> "Dic-25"
+  const [y, m] = yyyy_mm.split('-');
+  const mi = Math.max(1, Math.min(12, parseInt(m, 10))) - 1;
+  return `${monthAbbrEs[mi]}-${y.slice(2)}`;
+};
+
+// Endpoints (POST sin datos de entrada)
+async function fetchHitosPorCumplir() {
+  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/hitos_por_cumplir', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}' // POST sin payload
+  });
+  if (!resp.ok) throw new Error('Error al consultar hitos_por_cumplir');
+  return resp.json();
+}
+
+async function fetchProyectosIncumplimientos() {
+  const resp = await fetch('http://192.168.8.138:8002/v1/graficas/6g_proyecto/proyectos_incumplimientos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}' // POST sin payload
+  });
+  if (!resp.ok) throw new Error('Error al consultar proyectos_incumplimientos');
+  return resp.json();
+}
+
 export function HitosBarras() {
   const chartRefs = useRef([]);
+  const [opt1, setOpt1] = useState(null);
+  const [opt2, setOpt2] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
 
-  // Configuración base de los gráficos
-  const rawOptions = [
-    {
-      title:    { text: 'Número de hitos por cumplir' },
-      subtitle: { text: 'Fuente: XM. 2020-2024' },
-      chart:    { type: 'column', height: 350 },
-      xAxis: {
-        categories: ['May-25','Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25'],
-        title:      { text: null },
-        tickInterval: 1,         // un tick por cada categoría
-        labels: {
-          style:         { color: '#ccc', fontSize: '10px' },
-          rotation:      -45,     // rotar para que quepan todas
-          step:           1,      // forzar cada etiqueta
-          autoRotation:   false   // desactivar rotación automática
-        },
-        gridLineColor: '#333'
-      },
-      yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } } },
-      series: [
-        {
-          name: 'Hitos por cumplir',
-          data: [35, 15, 60, 15, 35, 48, 33, 57],
-          color: '#3B82F6'
-        }
-      ]
-    },
-    {
-      title:    { text: 'Número de hitos con incumplimientos' },
-      subtitle: { text: 'Fuente: XM. 2020-2024' },
-      chart:    { type: 'column', height: 350 },
-      xAxis: {
-        categories: ['Sep-25','Oct-24','Nov-24','Dic-24','Ene-25','Feb-25','Mar-25','Abr-25'],
-        title:      { text: null },
-        tickInterval: 1,
-        labels: {
-          style:         { color: '#ccc', fontSize: '10px' },
-          rotation:      -45,
-          step:           1,
-          autoRotation:   false
-        },
-        gridLineColor: '#333'
-      },
-      yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } } },
-      series: [
-        {
-          name: 'Hitos con incumplimientos',
-          data: [24, 15, 21, 26, 11, 24, 28, 34],
-          color: '#F87171'
-        }
-      ]
-    }
-  ];
+  useEffect(() => {
+    (async () => {
+      try {
+        const [hitos, incumpl] = await Promise.all([
+          fetchHitosPorCumplir(),
+          fetchProyectosIncumplimientos()
+        ]);
 
-  // Añade los botones de exportación a cada set de opciones
-  const chartOptions = rawOptions.map(opt => ({
-    ...opt,
- /*    exporting: {
-      enabled: true,
-      buttons: {
-        contextButton: {
-          menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
-        }
+        // ===== Gráfica 1: Número de hitos por cumplir =====
+        // Orden cronológico por "fpo_mes_año"
+        const hitosSorted = [...hitos].sort((a, b) => a.fpo_mes_año.localeCompare(b.fpo_mes_año));
+        const categorias1 = hitosSorted.map(d => fmtMesYY(d.fpo_mes_año));
+        const data1 = hitosSorted.map(d => d.hitos_por_cumplir ?? 0);
+
+        const options1 = {
+          title:    { text: 'Número de hitos por cumplir' },
+          subtitle: { text: 'Fuente: XM. 2020-2024' },
+          chart:    { type: 'column', height: 350 },
+          xAxis: {
+            categories: categorias1,
+            title:      { text: null },
+            tickInterval: 1,
+            labels: {
+              style:       { color: '#ccc', fontSize: '10px' },
+              rotation:    -45,
+              step:         1,
+              autoRotation: false
+            },
+            gridLineColor: '#333'
+          },
+          yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } }, min: 0 },
+          plotOptions: {
+            column: {
+              borderRadius: 4,
+              borderWidth: 0,
+              dataLabels: {
+                enabled: true,
+                formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
+                style: { fontWeight: 'bold', color: '#fff' },
+                y: -10
+              },
+              pointPadding: 0.1,
+              groupPadding: 0.1
+            }
+          },
+          series: [
+            {
+              name: 'Hitos por cumplir',
+              data: data1,
+              color: '#3B82F6'
+            }
+          ]
+        };
+
+        // ===== Gráfica 2: Proyectos por número de incumplimientos =====
+        const incSorted = [...incumpl].sort((a, b) => a.incumplimientos - b.incumplimientos);
+        const categorias2 = incSorted.map(d => String(d.incumplimientos));
+        const data2 = incSorted.map(d => d.count ?? 0);
+
+        const options2 = {
+          title:    { text: 'Número de hitos con incumplimientos' }, // mantengo tu título
+          subtitle: { text: 'Fuente: XM. 2020-2024' },
+          chart:    { type: 'column', height: 350 },
+          xAxis: {
+            categories: categorias2,
+            title:      { text: null },
+            tickInterval: 1,
+            labels: {
+              style:       { color: '#ccc', fontSize: '10px' },
+              rotation:    -45,
+              step:         1,
+              autoRotation: false
+            },
+            gridLineColor: '#333'
+          },
+          yAxis: { title: { text: 'Número de hitos', style: { color: '#ccc' } }, min: 0 },
+          plotOptions: {
+            column: {
+              borderRadius: 4,
+              borderWidth: 0,
+              dataLabels: {
+                enabled: true,
+                formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
+                style: { fontWeight: 'bold', color: '#fff' },
+                y: -10
+              },
+              pointPadding: 0.1,
+              groupPadding: 0.1
+            }
+          },
+          series: [
+            {
+              name: 'Hitos incumplidos',
+              data: data2,
+              color: '#F87171'
+            }
+          ]
+        };
+
+        setOpt1(options1);
+        setOpt2(options2);
+        setLoading(false);
+      } catch (e) {
+        setError(e.message || String(e));
+        setLoading(false);
       }
-    } */
-  }));
+    })();
+  }, []);
 
   return (
     <section className="mt-8 space-y-4">
@@ -121,48 +196,63 @@ export function HitosBarras() {
         Seguimiento de hitos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {chartOptions.map((opt, idx) => (
-          <div
-            key={idx}
-            className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
-          >
-             {/* Botón de ayuda */}
+        {/* Chart 1 */}
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+          {/* Botón de ayuda */}
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
             style={{ width: 30, height: 30 }}
             title="Ayuda"
-            onClick={() => alert('Ok Aquí puedes mostrar ayuda contextual o abrir un modal.')}
+            onClick={() => alert('Esta gráfica muestra el número de hitos por cumplir por mes.')}
             type="button"
           >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            className="rounded-full"
-          >
-            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-            <text
-              x="12"
-              y="18"
-              textAnchor="middle"
-              fontSize="16"
-              fill="#fff"
-              fontWeight="bold"
-              fontFamily="Nunito Sans, sans-serif"
-              pointerEvents="none"
-            >?</text>
+            <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif" pointerEvents="none">?</text>
             </svg>
-            </button>
+          </button>
+
+          {loading && <div className="text-white">Cargando…</div>}
+          {error   && <div className="text-red-400">Error: {error}</div>}
+          {!loading && !error && opt1 && (
             <HighchartsReact
               highcharts={Highcharts}
-              options={opt}
-              ref={el => (chartRefs.current[idx] = el)}
+              options={opt1}
+              ref={el => (chartRefs.current[0] = el)}
             />
-          </div>
-        ))}
+          )}
+        </div>
+
+        {/* Chart 2 */}
+        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+          {/* Botón de ayuda */}
+          <button
+            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+            style={{ width: 30, height: 30 }}
+            title="Ayuda"
+            onClick={() => alert('Esta gráfica muestra proyectos agrupados por número de incumplimientos.')}
+            type="button"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+              <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif" pointerEvents="none">?</text>
+            </svg>
+          </button>
+
+          {loading && <div className="text-white">Cargando…</div>}
+          {error   && <div className="text-red-400">Error: {error}</div>}
+          {!loading && !error && opt2 && (
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={opt2}
+              ref={el => (chartRefs.current[1] = el)}
+            />
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
 export default HitosBarras;
+
