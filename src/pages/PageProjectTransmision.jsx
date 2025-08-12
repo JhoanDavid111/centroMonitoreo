@@ -1,22 +1,23 @@
-// src/pages/TransmisionDetalle.jsx
-import React, { useState } from 'react';
+// src/pages/PageProjectTransmision.jsx
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { fetchProjectData } from '../service/apiServiceConvocatoriaTransmision';
+import {
+  ChevronLeft, CalendarDays, CalendarClock, CalendarRange, FileText,
+  AlertTriangle, Gauge, Zap, Cable, MapPin, Sun, Wind, Factory, Clock,
+  ChevronRight
+} from 'lucide-react';
+
+// Assets
 import imgsubestacion from '../assets/images/subestacion.jpg';
-import imgmapaInterno from '../assets/images/mapa_interno.png';
 import imgSliderTransm1 from '../assets/images/Slider_transmision1.png';
 import imgSliderTransm2 from '../assets/images/Slider_transmision2.png';
 import imgSliderTransm3 from '../assets/images/Slider_transmision3.png';
-
-
-
-
-import {
-  ChevronLeft, CalendarDays, CalendarClock, CalendarRange, FileText,
-  AlertTriangle, Gauge, Zap, Cable, MapPin, Circle, Sun, Wind, Factory, Clock, ChevronRight, ChevronLeft as ArrowLeft
-} from 'lucide-react';
+import imgMapaInterno from '../assets/images/mapa_interno.png';
 
 /* ===== Design tokens ===== */
 const COLORS = {
-  pageBg: '#1a1a1a',
+   //pageBg: '#292929',
   cardBg: '#262626',
   border: '#3a3a3a',
   heading: '#D1D1D0',
@@ -29,10 +30,11 @@ const COLORS = {
 
 /* ===== Helpers ===== */
 const fmtDate = (iso) => {
-  // 2025-12-26 -> 26/dic/2025
-  const d = new Date(iso);
-  const m = d.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
-  return `${String(d.getDate()).padStart(2, '0')}/${m}/${d.getFullYear()}`;
+   if (!iso) return 'N/A';
+  const [year, month, day] = iso.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)); // Mes base 0
+  const mes = date.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
+  return `${String(date.getDate()).padStart(2, '0')}/${mes}/${date.getFullYear()}`;
 };
 
 const Bar = ({ value = 0, color = 'bg-emerald-500', track = 'bg-neutral-700' }) => (
@@ -41,7 +43,7 @@ const Bar = ({ value = 0, color = 'bg-emerald-500', track = 'bg-neutral-700' }) 
   </div>
 );
 
-/* ===== UI atoms ===== */
+/* ===== UI Components ===== */
 const Chip = ({ children, className = '' }) => (
   <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[#3a3a3a] text-gray-200 ${className}`}>
     {children}
@@ -60,8 +62,8 @@ const DotLabel = ({ text }) => (
     <span>{text}</span>
   </div>
 );
-
 /* ===== Cards ===== */
+
 const StatCard = ({ icon, title, value, hint }) => (
   <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
     <div className="flex items-center gap-2 mb-1">
@@ -82,9 +84,11 @@ const SmallMetricCard = ({ icon, title, value, updated }) => (
       <span className="text-sm" style={{ color: COLORS.label }}>{title}</span>
     </div>
     <div className="text-2xl font-semibold text-white mb-1">{value}</div>
-    <div className="flex items-center gap-1 text-xs" style={{ color: COLORS.label }}>
-      <Clock size={12} /> Actualizado el: {updated}
-    </div>
+    {updated && (
+      <div className="flex items-center gap-1 text-xs" style={{ color: COLORS.label }}>
+        <Clock size={12} /> Actualizado el: {updated}
+      </div>
+    )}
   </div>
 );
 
@@ -102,109 +106,122 @@ const ProgressCard = ({ title, bars = [] }) => (
   </div>
 );
 
-/* ===== Mock data (reemplaza con API luego) ===== */
-const proyecto = {
-  nombre: 'UPME 01 – 2013 Sogamoso - Norte - Nueva Esperanza 500 kV',
-  badges: [
-    'Inversionista: GEB Grupo Energía Bogotá',
-    'Ubicación: Santander, Boyacá y Cundinamarca',
-    'Etapa: Ejecución de obras'
-  ],
-  estado: 'Estado: Desfase crítico',
-  fpo: {
-    vigente: '2025-12-26',
-    inicial: '2017-09-30',
-    estimadaInter: '2027-08-18',
-    cambios: 12
-  },
-  avances: {
-    subestaciones: 56,
-    lineas: 35,
-    desfaseDias: 950,
-    updated: '05/2025'
-  },
-  tramos: [
-    {
-      titulo: 'Tramo Sogamoso - Norte',
-      barras: [
-        { label: 'Licencia ambiental', value: 100, color: 'bg-emerald-500' },
-        { label: 'Avance en la construcción', value: 50, color: 'bg-yellow-400' }
-      ]
-    },
-    {
-      titulo: 'Tramo Norte - Nueva Esperanza',
-      barras: [
-        { label: 'Licencia ambiental', value: 100, color: 'bg-emerald-500' },
-        { label: 'Avance en la construcción', value: 0, color: 'bg-yellow-400' }
-      ]
-    }
-  ],
-  subestaciones: [
-    {
-      titulo: 'Subestación Sogamoso',
-      barras: [
-        { label: 'Licencia ambiental', value: 100, color: 'bg-emerald-500' },
-        { label: 'Avance en la construcción', value: 50, color: 'bg-yellow-400' }
-      ]
-    },
-    {
-      titulo: 'Subestación Norte',
-      barras: [
-        { label: 'Licencia ambiental', value: 100, color: 'bg-emerald-500' },
-        { label: 'Avance en la construcción', value: 0, color: 'bg-yellow-400' }
-      ]
-    },
-    {
-      titulo: 'Subestación Nueva Esperanza',
-      barras: [
-        { label: 'Licencia ambiental', value: 100, color: 'bg-emerald-500' },
-        { label: 'Avance en la construcción', value: 0, color: 'bg-yellow-400' }
-      ]
-    }
-  ],
-  generacion: {
-    totalProyectos: 19,
-    totalMW: 1546,
-    solares: 15,
-    eolicos: 4
-  }
-};
+const PageProjectTransmision = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const projectId = searchParams.get('projectId');
 
-const carouselImgs = [
-  imgSliderTransm1,
-  imgSliderTransm2,
-  imgSliderTransm3
+ 
   
-];
+  const [state, setState] = useState({
+    projectData: null,
+    loading: true,
+    error: null
+  });
 
-/* ===== Page ===== */
-export default function TransmisionDetalle() {
   const [slide, setSlide] = useState(0);
+  const carouselImgs = [imgSliderTransm1, imgSliderTransm2, imgSliderTransm3];
+  
   const prev = () => setSlide((s) => (s - 1 + carouselImgs.length) % carouselImgs.length);
   const next = () => setSlide((s) => (s + 1) % carouselImgs.length);
 
+  useEffect(() => {
+    const getProject = async () => {
+      try {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+
+        if (!projectId) {
+          throw new Error("No se especificó un ID de proyecto");
+        }
+
+        const data = await fetchProjectData(projectId);
+
+        setState({
+          projectData: data,
+          loading: false,
+          error: null
+        });
+      } catch (err) {
+        setState({
+          projectData: null,
+          loading: false,
+          error: err.message
+        });
+      }
+    };
+
+    getProject();
+  }, [projectId]);
+
+  const { projectData, loading, error } = state;
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: COLORS.pageBg }}>
+      <div className="text-white">Cargando proyecto...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: COLORS.pageBg }}>
+      <div className="text-red-500 max-w-md text-center p-4">
+        <AlertTriangle size={24} className="mx-auto mb-2" />
+        <h3 className="text-lg font-semibold mb-2">Error al cargar el proyecto</h3>
+        <p className="mb-4">{error}</p>
+        <button 
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg"
+          style={{ background: COLORS.yellow, color: '#000' }}
+        >
+          <ChevronLeft size={18} /> Volver a proyectos
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!projectData) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: COLORS.pageBg }}>
+      <div className="text-yellow-400 max-w-md text-center p-4">
+        <h3 className="text-lg font-semibold mb-2">Proyecto no encontrado</h3>
+        <p className="mb-4">No se encontraron datos para el proyecto {projectId}</p>
+        <button 
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg"
+          style={{ background: COLORS.yellow, color: '#000' }}
+        >
+          <ChevronLeft size={18} /> Volver a proyectos
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen" style={{ background: COLORS.pageBg, color: COLORS.white }}>
-      {/* Header local de la página (tu app ya tiene nav superior) */}
+      {/* Header */}
       <div className="max-w-7xl mx-auto px-4 pt-4">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-2xl font-semibold">{proyecto.nombre}</h1>
+          <h1 className="text-2xl font-semibold">{projectData.header.title}</h1>
           <button
-            onClick={() => history.back()}
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg"
             style={{ background: '#2d2d2d', border: `1px solid ${COLORS.border}` }}
           >
-            <ChevronLeft size={18}/> Volver
+            <ChevronLeft size={18} /> Volver
           </button>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {proyecto.badges.map((b, i) => <Chip key={i}>{b}</Chip>)}
-          <Chip className="bg-red-600/90 text-white border-red-700"><AlertTriangle size={14}/> {proyecto.estado}</Chip>
+          <Chip>Inversionista: {projectData.header.investor}</Chip>
+          <Chip>Ubicación: {projectData.header.location}</Chip>
+          <Chip>Etapa: {projectData.header.stage}</Chip>
+          {projectData.progressSummary.some(p => p.hasDelay) && (
+            <Chip className="bg-red-600/90 text-white border-red-700">
+              <AlertTriangle size={14} /> {projectData.header.status}
+            </Chip>
+          )}
         </div>
       </div>
 
-      {/* ===== Fechas de puesta en operación ===== */}
+      {/* Fechas de puesta en operación */}
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Fechas de puesta en operación</h2>
 
@@ -213,58 +230,65 @@ export default function TransmisionDetalle() {
           <div className="lg:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
             <div className="overflow-hidden rounded-lg">
               <img
-              
                 src={imgsubestacion}
-                alt="Subestación_"
+                alt="Proyecto"
                 className="w-full h-56 md:h-72 object-cover"
               />
             </div>
             <div className="mt-3">
               <button className="inline-flex items-center gap-2 font-medium px-3 py-2 rounded-md hover:brightness-95"
                 style={{ background: COLORS.yellow, color: '#000' }}>
-                <FileText size={16}/> Documentos del proyectos
+                <FileText size={16} /> Documentos del proyecto
               </button>
             </div>
           </div>
 
-          {/* 4 stats en grid 2×2 */}
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-4">
-            <StatCard icon={<CalendarClock size={16} />} title="FPO vigente" value={fmtDate(proyecto.fpo.vigente)} hint="Res. MME 403150 de 2025" />
-            <StatCard icon={<CalendarDays size={16} />} title="FPO inicial" value={fmtDate(proyecto.fpo.inicial)} />
-            <StatCard icon={<CalendarRange size={16} />} title="FPO estimada interconexión" value={fmtDate(proyecto.fpo.estimadaInter)} hint="Actualizado el 4/7/2025" />
-            <StatCard icon={<FileText size={16} />} title="No. de cambios FPO" value={`${proyecto.fpo.cambios} cambios`} />
+            {projectData.milestones.map((milestone, index) => (
+              <StatCard 
+                key={index}
+                icon={
+                  index === 0 ? <CalendarClock size={16} /> :
+                  index === 1 ? <CalendarDays size={16} /> :
+                  index === 2 ? <CalendarRange size={16} /> :
+                  <FileText size={16} />
+                }
+                title={milestone.title}
+                value={milestone.title.includes('cambios') ? `${milestone.value} cambios` : fmtDate(milestone.value)}
+                hint={milestone.updated ? `Actualizado: ${fmtDate(milestone.updated)}` : null}
+              />
+            ))}
           </div>
         </div>
 
-        {/* ===== Avances ===== */}
+        {/* Avances */}
         <h3 className="text-xl font-semibold mt-7 mb-3" style={{ color: COLORS.heading }}>Avances</h3>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <SmallMetricCard
-            icon={<Factory size={16} />}
-            title="Subestaciones"
-            value={`${proyecto.avances.subestaciones}% de avance`}
-            updated={proyecto.avances.updated}
-          />
-          <SmallMetricCard
-            icon={<Cable size={16} />}
-            title="Líneas de transmisión"
-            value={`${proyecto.avances.lineas}% de avance`}
-            updated={proyecto.avances.updated}
-          />
-          {/* Slider a la derecha con flechas */}
+          {projectData.progressSummary.map((progress, index) => (
+            <SmallMetricCard
+              key={index}
+              icon={index === 0 ? <Factory size={16} /> : <Cable size={16} />}
+              title={progress.title}
+              value={`${progress.percentage}% de avance`}
+              updated={progress.updated}
+            />
+          ))}
+          
+          {/* Carrusel */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 relative overflow-hidden">
             <img src={carouselImgs[slide]} alt="Galería" className="w-full h-56 object-cover rounded-lg" />
-            <button
-              onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80"
+            <button 
+              onClick={prev} 
+              className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80" 
               aria-label="Anterior"
             >
-              <ArrowLeft size={18} />
+              <ChevronLeft size={18} />
             </button>
-            <button
-              onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80"
+            <button 
+              onClick={next} 
+              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80" 
               aria-label="Siguiente"
             >
               <ChevronRight size={18} />
@@ -277,91 +301,114 @@ export default function TransmisionDetalle() {
           </div>
         </div>
 
-        {/* Desfase cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <SmallMetricCard icon={<AlertTriangle size={16} />} title="Desfase del Proyecto" value={`${proyecto.avances.desfaseDias} días`} updated="4/7/2025" />
-          <SmallMetricCard icon={<AlertTriangle size={16} />} title="Desfase del Proyecto" value={`${proyecto.avances.desfaseDias} días`} updated="4/7/2025" />
-        </div>
+        {/* Desfase */}
+        {projectData.progressSummary.some(p => p.hasDelay) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <SmallMetricCard 
+              icon={<AlertTriangle size={16} />} 
+              title="Desfase del Proyecto" 
+              value={`${projectData.progressSummary.find(p => p.hasDelay)?.delayDays || 0} días`} 
+              updated={projectData.progressSummary.find(p => p.hasDelay)?.updated} 
+            />
+            <SmallMetricCard 
+              icon={<AlertTriangle size={16} />} 
+              title="Desfase Crítico" 
+              value={`${projectData.progressSummary.find(p => p.hasDelay)?.delayDays || 0} días`} 
+              updated={projectData.progressSummary.find(p => p.hasDelay)?.updated} 
+            />
+          </div>
+        )}
 
         {/* Tramos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-          {proyecto.tramos.map((t, i) => (
-            <ProgressCard key={i} title={t.titulo} bars={t.barras} />
-          ))}
-        </div>
+        {projectData.tramos.length > 0 && (
+          <>
+            <h3 className="text-xl font-semibold mt-7 mb-3" style={{ color: COLORS.heading }}>Tramos</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              {projectData.tramos.map((tramo, i) => (
+                <ProgressCard key={i} title={tramo.title} bars={tramo.barras} />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Subestaciones */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {proyecto.subestaciones.map((s, i) => (
-            <ProgressCard key={i} title={s.titulo} bars={s.barras} />
-          ))}
-        </div>
-      </div>
+        {projectData.subestaciones.length > 0 && (
+          <>
+            <h3 className="text-xl font-semibold mt-7 mb-3" style={{ color: COLORS.heading }}>Subestaciones</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              {projectData.subestaciones.map((subestacion, i) => (
+                <ProgressCard key={i} title={subestacion.title} bars={subestacion.barras} />
+              ))}
+            </div>
+          </>
+        )}
 
-      {/* ===== Ubicación y detalles ===== */}
-      <div className="max-w-7xl mx-auto px-4 mt-10">
-        <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2>
+        {/* Ubicación */}
+        <div className="max-w-7xl mx-auto px-4 mt-10">
+          <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Mapa ilustrativo (imagen para el mock) */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
-            <img src={imgmapaInterno} alt="Mapa" className="w-full h-[300px] object-cover rounded-lg" />
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
+              <img 
+                src={imgMapaInterno} 
+                alt="Mapa" 
+                className="w-full object-cover rounded-lg" 
+              />
+            </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-              <div className="flex items-center gap-2" style={{ color: COLORS.label }}>
-                <IconPill><MapPin size={16} /></IconPill> Departamento
+            <div className="grid grid-cols-1 gap-4">
+              <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+                <div className="flex items-center gap-2" style={{ color: COLORS.label }}>
+                  <IconPill><MapPin size={16} /></IconPill> Departamento
+                </div>
+                <div className="mt-2 text-white">{projectData.header.location}</div>
               </div>
-              <div className="mt-2 text-white">Santander, Boyacá y Cundinamarca</div>
-            </div>
 
+              {projectData.tramos.map((tramo, i) => (
+                <div key={i} className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+                  <DotLabel text={`Tramo ${i + 1}`} />
+                  <div className="mt-2 text-white">{tramo.title}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* KPIs generación */}
+          <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>
+            Proyectos de generación que se conectarán
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-              <DotLabel text="Tramo y nivel de tensión" />
-              <div className="mt-2 text-white">Sogamoso – Norte 500 kV</div>
+              <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
+                <IconPill><Gauge size={16} /></IconPill> Número total
+              </div>
+              <div className="text-white text-lg font-semibold">{projectData.generacion.totalProyectos} proyectos</div>
             </div>
-
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-              <DotLabel text="Tramo y nivel de tensión" />
-              <div className="mt-2 text-white">Norte – Nueva Esperanza (Tequendama) 500 kV</div>
+              <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
+                <IconPill><Zap size={16} /></IconPill> Total en MW
+              </div>
+              <div className="text-white text-lg font-semibold">{projectData.generacion.totalMW} MW</div>
+            </div>
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
+                <IconPill><Sun size={16} /></IconPill> Solares
+              </div>
+              <div className="text-white text-lg font-semibold">{projectData.generacion.solares} proyectos</div>
+            </div>
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
+                <IconPill><Wind size={16} /></IconPill> Eólicos
+              </div>
+              <div className="text-white text-lg font-semibold">{projectData.generacion.eolicos} proyectos</div>
             </div>
           </div>
-        </div>
 
-        {/* KPIs generación */}
-        <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>
-          Proyectos de generación que se conectarán
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
-              <IconPill><Gauge size={16} /></IconPill> Número total
-            </div>
-            <div className="text-white text-lg font-semibold">{proyecto.generacion.totalProyectos} proyectos</div>
-          </div>
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
-              <IconPill><Zap size={16} /></IconPill> Total en MW
-            </div>
-            <div className="text-white text-lg font-semibold">{proyecto.generacion.totalMW} MW</div>
-          </div>
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
-              <IconPill><Sun size={16} /></IconPill> Solares
-            </div>
-            <div className="text-white text-lg font-semibold">{proyecto.generacion.solares} proyectos</div>
-          </div>
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
-              <IconPill><Wind size={16} /></IconPill> Eólicos
-            </div>
-            <div className="text-white text-lg font-semibold">{proyecto.generacion.eolicos} proyectos</div>
-          </div>
+          <div className="h-8" />
         </div>
-
-        <div className="h-8" />
       </div>
     </div>
   );
-}
+};
 
+export default PageProjectTransmision;
