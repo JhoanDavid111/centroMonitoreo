@@ -9,25 +9,16 @@ import { TRANSMISION_CONFIG } from '../config/transmision';
 //componentes especificos de la página
 import MapaProyectosTransmision from '../components/MapaProyectosTransmision';
 import TransmisionGrid from '../components/transmision/TransmisionGrid';
-import CapacidadInstalada from '../components/CapacidadInstalada';
-import ResumenCharts from '../components/ResumenCharts';
-//import CapacidadHistorica from '../components/CapacidadHistorica';
-//import ComunidadesResumen from '../components/ComunidadesResumen';
+
 
 //Assets
 import bannerImage from '../assets/bannerCentroMonitoreoTransmision.png';
 
 
 /* Iconos */
-import InfraElectricaAmarillo from '../assets/svg-icons/InfraElectrica-Amarillo.svg';
 
-
-import { HelpCircle } from 'lucide-react'
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
-import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
-import ProcessOn from '../assets/svg-icons/Process-On.svg'
-import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg'
-import AutoGeneracionOn from '../assets/svg-icons/AutoGeneracion-On.svg'
+
 
 
 
@@ -49,15 +40,11 @@ export default function Transmision() {
   return (
     <div className="space-y-8">
       <Banner />
-
       <TotalProyectos total={data.total_proyectos} />
-
       <div className="px-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          {TRANSMISION_CONFIG.indicators.map(( indicator, i ) => (
-            
 
+          {TRANSMISION_CONFIG.indicators.map((indicator, i) => (
             <IndicatorCard
               key={i}
               icon={<img src={indicator.icon} alt={indicator.label} className="h-6 w-6" />}
@@ -68,15 +55,10 @@ export default function Transmision() {
           ))}
         </div>
       </div>
-      {/* <h2 className="text-2xl font-semibold text-gray-200 mb-4">
-        Proyectos de Transmisión en ejecución
-      </h2> */}
 
-      <TransmisionGrid /> 
-     {/*  <div className="px-2">
-        <CapacidadInstalada />
-      </div>
-      <ResumenCharts /> */}
+
+      <TransmisionGrid />
+
       <MapaProyectosTransmision />
 
     </div>
@@ -101,5 +83,5 @@ function Banner() {
       </div>
 
     </div>
-    );
+  );
 }

@@ -123,15 +123,16 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           roles: [ROLES.ADMIN],
           external: true
         },
-        /* {
+        /*
+        {
           title: 'Transmisión Pages',
-          path: '/transmision_pages?projectId=norte-nueva-esperanza',
-          //path: '/UPME01',
+          path: '/transmision_pages?projectId=UPME%2004-2014',
+          
           icon: ProyectosTransmisionOff,
           activeIcon: ProyectosTransmisionOn,
           roles: [ROLES.ADMIN, ROLES.CONSULTOR_1] // Solo para Administrador y Consultor 1
-        }, */
-        /*
+        }, 
+        
         {
           title: 'Autogeneración y GD',
           path: '/en_construccion',
