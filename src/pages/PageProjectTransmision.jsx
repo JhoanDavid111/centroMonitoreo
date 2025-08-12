@@ -352,7 +352,7 @@ const PageProjectTransmision = () => {
               <img 
                 src={imgMapaInterno} 
                 alt="Mapa" 
-                className="w-full h-[300px] object-cover rounded-lg" 
+                className="w-full object-cover rounded-lg" 
               />
             </div>
 
