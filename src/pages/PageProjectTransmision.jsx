@@ -1,5 +1,14 @@
 // src/pages/TransmisionDetalle.jsx
 import React, { useState } from 'react';
+import imgsubestacion from '../assets/images/subestacion.jpg';
+import imgmapaInterno from '../assets/images/mapa_interno.png';
+import imgSliderTransm1 from '../assets/images/Slider_transmision1.png';
+import imgSliderTransm2 from '../assets/images/Slider_transmision2.png';
+import imgSliderTransm3 from '../assets/images/Slider_transmision3.png';
+
+
+
+
 import {
   ChevronLeft, CalendarDays, CalendarClock, CalendarRange, FileText,
   AlertTriangle, Gauge, Zap, Cable, MapPin, Circle, Sun, Wind, Factory, Clock, ChevronRight, ChevronLeft as ArrowLeft
@@ -162,9 +171,9 @@ const proyecto = {
 };
 
 const carouselImgs = [
-  '../src/assets/images/Slider_transmision1.png',
-  '../src/assets/images/Slider_transmision2.png',
-  '../src/assets/images/Slider_transmision3.png',
+  imgSliderTransm1,
+  imgSliderTransm2,
+  imgSliderTransm3
   
 ];
 
@@ -205,7 +214,7 @@ export default function TransmisionDetalle() {
             <div className="overflow-hidden rounded-lg">
               <img
               
-                src="../src/assets/images/subestacion.jpg"
+                src={imgsubestacion}
                 alt="Subestación_"
                 className="w-full h-56 md:h-72 object-cover"
               />
@@ -296,7 +305,7 @@ export default function TransmisionDetalle() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Mapa ilustrativo (imagen para el mock) */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
-            <img src="../src/assets/images/mapa_interno.png" alt="Mapa" className="w-full h-[300px] object-cover rounded-lg" />
+            <img src={imgmapaInterno} alt="Mapa" className="w-full h-[300px] object-cover rounded-lg" />
           </div>
 
           <div className="grid grid-cols-1 gap-4">
