@@ -19,7 +19,8 @@ import bannerImage from '../assets/bannerCentroMonitoreoTransmision.png';
 
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg'
 
-
+// URL del mapa fija
+const MAPA_URL = "https://sig.upme.gov.co/portal/apps/experiencebuilder/experience/?id=75a09b50640c461a9d32ff4aa9eb4028";
 
 
 export default function Transmision() {
@@ -59,7 +60,10 @@ export default function Transmision() {
 
       <TransmisionGrid />
 
-      <MapaProyectosTransmision />
+      <MapaProyectosTransmision
+      mapUrl={MAPA_URL}
+      title="Mapa de Proyectos de Transmisión"
+      />
 
     </div>
   );

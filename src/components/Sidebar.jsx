@@ -77,13 +77,13 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
 
   // --- Definición de secciones y ítems con sus permisos/roles ---
   const sections = [
-    {
+   /*  {
       title: 'Inicio',
       path: '/',
       icon: DashboardOff,
       activeIcon: DashboardOn,
       permission: 'dashboard' // Asumimos que la ruta de inicio también requiere el permiso de dashboard
-    },
+    }, */
     {
       title: 'ESTRATEGIA 6GW+',
       items: [
