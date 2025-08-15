@@ -10,6 +10,7 @@ import EolicaOn from '../assets/svg-icons/Eolica-On.svg';
 import HidrologiaOn from '../assets/svg-icons/Hidrologia-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
+import { API } from '../config/api';
 
 const LABEL_MAP = {
   'EN OPERACIÓN': { label: 'Capacidad instalada en operación', icon: DemandaOn },
@@ -35,7 +36,7 @@ const formatMW = n =>
   n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function fetchIndicadores6GW() {
-  const resp = await fetch('http://192.168.8.138:8002/v1/indicadores/6g_proyecto', { method: 'POST' });
+  const resp = await fetch(`${API}/v1/indicadores/6g_proyecto`, { method: 'POST' });
   if (!resp.ok) throw new Error('Error al consultar indicadores 6GW+');
   return resp.json();
 }
