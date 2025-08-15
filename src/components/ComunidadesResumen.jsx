@@ -29,7 +29,7 @@ export function ComunidadesResumen() {
           onClick={() => setExpanded(true)}
           className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-3 rounded transition"
         >
-          Ver Comunidades energéticas y Colombia Solar
+          Ver Comunidades energéticas
         </button>
       ) : (
         <div className="space-y-6">
@@ -41,40 +41,6 @@ export function ComunidadesResumen() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {datosComunidades.map((d, i) => {
-                  return (
-                    <div
-                      key={i}
-                      className="bg-[#262626] p-4 rounded-lg border border-[#666666]"
-                    >
-                      <div className="flex items-center mb-2">
-                        {d.icon}
-                        <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">{d.label}</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <div className="text-white font-bold text-xl">
-                          No. {d.number} – {d.value}
-                        </div>
-                        <HelpCircle
-                          className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
-                          title="Ayuda"
-                        />
-                      </div>
-                      <div className="text-xs text-[#B0B0B0] mt-1">
-                        Actualizado el: {d.updated}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Sección Colombia Solar */}
-            <div className="bg-[#262626] p-4 rounded-lg border border-[#666666]">
-              <h3 className="text-2xl font-semibold text-[#B0B0B0] mb-4">
-                Colombia Solar
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {datosSolar.map((d, i) => {
                   return (
                     <div
                       key={i}

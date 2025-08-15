@@ -316,11 +316,6 @@ export default function ProyectoDetalle() {
                 className="w-full h-56 md:h-72 object-cover"
               />
             </div>
-            <div className="mt-3">
-              <button className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-black font-medium hover:brightness-95" style={{ background: YELLOW }}>
-                <FileText size={16} /> Documentos del proyectos
-              </button>
-            </div>
           </div>
 
           {/* 4 stats */}
