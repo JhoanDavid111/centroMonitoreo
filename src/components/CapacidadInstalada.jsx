@@ -6,7 +6,7 @@ import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
-import { CACHE_CONFIG } from '../config/cacheConfig'; 
+import { CACHE_CONFIG } from '../config/cacheConfig';
 
 // Configuración de caché
 const CACHE_PREFIX = 'chart-cache-';
@@ -28,7 +28,7 @@ const getFromCache = (key) => {
 
   try {
     const { data, timestamp } = JSON.parse(cachedItem);
-    
+
     // Verificar si el caché ha expirado
     if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
       localStorage.removeItem(`${CACHE_PREFIX}${key}`);
@@ -49,10 +49,10 @@ const getFromCache = (key) => {
 const setToCache = (key, data) => {
   const timestamp = Date.now();
   const cacheItem = JSON.stringify({ data, timestamp });
-  
+
   // Almacenar en ambos niveles de caché
   memoryCache.set(key, data);
-  
+
   try {
     localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
   } catch (e) {
@@ -65,11 +65,11 @@ const setToCache = (key, data) => {
         timestamp: JSON.parse(localStorage.getItem(k)).timestamp
       }))
       .sort((a, b) => b.timestamp - a.timestamp);
-    
+
     keys.slice(50).forEach(item => {
       localStorage.removeItem(item.key);
     });
-    
+
     // Intentar nuevamente
     localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
   }
@@ -111,11 +111,11 @@ export function CapacidadInstalada() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
-        
+
         if (!response.ok) throw new Error('Error en la respuesta del servidor');
-        
+
         const data = await response.json();
-        
+
         if (!data || !Array.isArray(data) || data.length === 0) {
           throw new Error('No hay datos disponibles');
         }
@@ -167,9 +167,9 @@ export function CapacidadInstalada() {
             align: 'left',
             style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', textAlign: 'left'}
           },
-          subtitle: { 
-            text: isCached ? '(Datos en caché)' : '', 
-            style: { color: '#AAA', fontSize: '12px' } 
+          subtitle: {
+            text: isCached ? '(Datos en caché)' : '',
+            style: { color: '#AAA', fontSize: '12px' }
           },
           xAxis: {
             type: 'datetime',
@@ -311,7 +311,7 @@ export function CapacidadInstalada() {
           </svg>
         </div>
         <p className="text-gray-300 text-center">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
         >

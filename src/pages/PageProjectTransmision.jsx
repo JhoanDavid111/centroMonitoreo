@@ -14,6 +14,7 @@ import imgSliderTransm1 from '../assets/images/Slider_transmision1.png';
 import imgSliderTransm2 from '../assets/images/Slider_transmision2.png';
 import imgSliderTransm3 from '../assets/images/Slider_transmision3.png';
 import imgMapaInterno from '../assets/images/mapa_interno.png';
+import MapaProyectosTransmision from '../components/MapaProyectosTransmision';
 
 /* ===== Design tokens ===== */
 const COLORS = {
@@ -135,6 +136,7 @@ const PageProjectTransmision = () => {
         }
 
         const data = await fetchProjectData(projectId);
+        
 
         setState({
           projectData: data,
@@ -236,7 +238,9 @@ const PageProjectTransmision = () => {
               />
             </div>
             <div className="mt-3">
-              <button className="inline-flex items-center gap-2 font-medium px-3 py-2 rounded-md hover:brightness-95"
+              <button 
+                onClick={() => window.open(projectData.documents, '_blank')}
+                className="inline-flex items-center gap-2 font-medium px-3 py-2 rounded-md hover:brightness-95"
                 style={{ background: COLORS.yellow, color: '#000' }}>
                 <FileText size={16} /> Documentos del proyecto
               </button>
@@ -347,7 +351,24 @@ const PageProjectTransmision = () => {
         <div className="max-w-7xl mx-auto px-4 mt-10">
           <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          {projectData.mapEmbedUrl ? (
+            //console.log("Juan Agreda: Mapa URL:", projectData.map),
+            <MapaProyectosTransmision 
+              mapUrl={projectData.mapEmbedUrl}
+              title={`Ubicación del proyecto: ${projectData.header.title}`}
+            />
+          ) : (
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+              <img
+                src={imgMapaInterno}
+                alt="Mapa"
+                className="w-full object-cover rounded-lg"
+              />
+            </div>
+          )}
+
+         {/*  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
               <img 
                 src={imgMapaInterno} 
@@ -371,7 +392,7 @@ const PageProjectTransmision = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* KPIs generación */}
           <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>

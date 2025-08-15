@@ -201,11 +201,12 @@ const DataGridTable = ({
   const finalColumns = showActionsColumn 
     ? [
         {
-          name: (
+          /* name: (
             <div className="relative inline-block pb-0">
               Acciones
             </div>
-          ),
+          ), */
+          name: 'Acciones',
           cell: row => (
             <div className="flex space-x-2">
               <Link 
@@ -235,8 +236,10 @@ const DataGridTable = ({
             </div>
           ),
           ignoreRowClick: true,
-          width: showCurveButton ? '120px' : '80px',
-          button: true
+          //width: showCurveButton ? '120px' : '80px',
+          width:'100px',
+          button: true,
+          compact: true
         },
         ...processedColumns
       ]
@@ -275,7 +278,7 @@ const DataGridTable = ({
         paginationIconFirstPage={<ChevronLeft size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
         paginationIconLastPage={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
         highlightOnHover
-        onRowClicked={onViewChart}
+        onRowClicked={undefined}
         striped
         pointerOnHover
       />
