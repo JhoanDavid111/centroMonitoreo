@@ -28,6 +28,7 @@ import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import PageProjectTransmision from './pages/PageProjectTransmision';
 import ProyectoDetalle from './pages/ProyectoDetalle';
+import ComunidadesEnergeticasReplica from './pages/ComunidadesEnergeticasReplica';
 
 
 
@@ -135,12 +136,6 @@ function AppContent() {
           </PrivateRoute>
         } />
 
-        <Route path="/comunidades_energeticas" element={
-          <PrivateRoute requiredPermission="comunidades">
-            <ComunidadesEnergeticas />
-          </PrivateRoute>
-        } />
-
         <Route path="/Transmision" element={
           <PrivateRoute requiredPermission="transmision" allowedRoles={[ROLES.ADMIN, ROLES.CONSULTOR_1]}>
             <Transmision/>
@@ -158,6 +153,15 @@ function AppContent() {
             <EnConstruccion />
           </PrivateRoute>
         } />
+
+        <Route
+          path="/comunidades_energeticas"
+          element={
+            <PrivateRoute requiredPermission="comunidades">
+              <ComunidadesEnergeticasReplica />
+            </PrivateRoute>
+          }
+        />
         
         <Route
           path="/estrategia-6gw"
