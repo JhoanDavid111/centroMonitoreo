@@ -18,6 +18,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthButton } from './components/auth';
 import { ALLOWED_DOMAINS } from './config/allowedDomains'; // Importación añadida
 import Login from '../src/assets/Login.png'
+import ProyectoDetalle from './pages/ProyectoDetalle';
 
 function AppContent() {
   const { currentUser, loading } = useAuth();
@@ -96,6 +97,7 @@ function AppContent() {
             
             <Route path="/6GW+" element={<Resumen />} />
             <Route path="/proyectos075" element={<Proyectos />} />
+            <Route path="/proyectos075/:id" element={<ProyectoDetalle />} />
             <Route path="/comunidades_energeticas" element={<ComunidadesEnergeticas />} />
             <Route path="/Transmision" element={<TransmisionDetalle />} />
             <Route path="/en_construccion" element={<EnConstruccion />} />
