@@ -45,13 +45,16 @@ export function Sidebar({ open, toggle, userRole }) {
 
   // -------- estructura de secciones/ítems --------
   const sections = [
-    {
+   /*  {
       title: 'Inicio',
       path: '/',
       icon: DashboardOff,
       activeIcon: DashboardOn,
       permission: 'dashboard',
     },
+      permission: 'dashboard' // Asumimos que la ruta de inicio también requiere el permiso de dashboard
+    }, */
+
     {
       title: 'ESTRATEGIA 6GW+',
       items: [
