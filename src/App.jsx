@@ -29,6 +29,7 @@ import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
 import PageProjectTransmision from './pages/PageProjectTransmision';
 import ProyectoDetalle from './pages/ProyectoDetalle';
 import ComunidadesEnergeticasReplica from './pages/ComunidadesEnergeticasReplica';
+import Hidrologia from './pages/Hidrologia';
 
 
 
@@ -171,6 +172,15 @@ function AppContent() {
                 <h2 className="text-2xl font-bold mb-4">Estrategia 6GW</h2>
                 <p>Aquí iría el contenido detallado de tu estrategia…</p>
               </div>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/hidrologia"
+          element={
+            <PrivateRoute requiredPermission="dashboard">
+              <Hidrologia />
             </PrivateRoute>
           }
         />

@@ -2,9 +2,9 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { ROLES, ROLE_PERMISSIONS } from '../config/roles'; // Importa tus roles y permisos
+import { ROLES, ROLE_PERMISSIONS } from '../config/roles';
 
-// Estas importaciones devuelven URLs al SVG en Vite
+// Iconos (Vite devuelve la URL del SVG)
 import DashboardOff from '../assets/svg-icons/Dashboard-Off.svg';
 import DashboardOn from '../assets/svg-icons/Dashboard-On.svg';
 import GWOff from '../assets/svg-icons/6GW-off.svg';
@@ -17,72 +17,40 @@ import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Of
 import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg';
 import ProyectosTransmisionOn from '../assets/svg-icons/Transmision-On.svg';
 import ProyectosTransmisionOff from '../assets/svg-icons/Transmision-Off.svg';
-// Importaciones que no usabas, pero las mantengo por si las necesitas:
-// import AutogeneracionOff from '../assets/svg-icons/Autogeneracion-Off.svg'
-// import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg'
-// import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg'
-// import HidroOn from '../assets/svg-icons/Hidrologia-On.svg'
-// import EnergiaOff from '../assets/svg-icons/EnergiaElectrica-Off.svg'
-// import EnergiaOn from '../assets/svg-icons/EnergiaElectrica-On.svg'
-// import PreciosOff from '../assets/svg-icons/Precios-Off.svg'
-// import PreciosOn from '../assets/svg-icons/Precios-On.svg'
-// import GeneracionTermicaOff from '../assets/svg-icons/GeneracionTermica-Off.svg'
-// import GeneracionTermicaOn from '../assets/svg-icons/GeneracionTermica-On.svg'
-// import DemandaOff from '../assets/svg-icons/Demanda-Off.svg'
-// import DemandaOn from '../assets/svg-icons/Demanda-On.svg'
-// import TransmisionOff from '../assets/svg-icons/Transmision-Off.svg'
-// import TransmisionOn from '../assets/svg-icons/Transmision-On.svg'
 
+// NUEVOS: Hidrología y Energía firme (usa tus propios SVG si los tienes)
+import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
+import HidroOn  from '../assets/svg-icons/Hidrologia-On.svg';
+// Placeholder para Energía firme usando los de energía eléctrica:
+import EnergiaFirmeOff from '../assets/svg-icons/EnergiaElectrica-Off.svg';
+import EnergiaFirmeOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 
-export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás recibiendo, ¡perfecto!
+export function Sidebar({ open, toggle, userRole }) {
   const { pathname } = useLocation();
 
-  // --- Funciones auxiliares para verificar permisos/roles ---
-  /**
-   * Verifica si el rol del usuario tiene un permiso específico.
-   * @param {string} permission - El nombre del permiso a verificar.
-   * @returns {boolean}
-   */
+  // -------- helpers de permisos/roles --------
   const hasPermission = (permission) => {
-    // Si no hay rol o si los permisos para ese rol no están definidos, deniega el acceso.
-    if (!userRole || !ROLE_PERMISSIONS[userRole]) {
-      return false;
-    }
-
+    if (!userRole || !ROLE_PERMISSIONS[userRole]) return false;
     const userPermissions = ROLE_PERMISSIONS[userRole];
-
-    // Si el rol tiene el permiso de acceso total ('*'), siempre tiene el permiso.
-    if (userPermissions.includes('*')) {
-      return true;
-    }
-
-    // Verifica si el rol tiene el permiso específico que se le pide.
+    if (userPermissions.includes('*')) return true;
     return userPermissions.includes(permission);
   };
 
-  /**
-   * Verifica si el rol del usuario está en una lista de roles permitidos.
-   * @param {string[]} allowedRolesArray - Un array de roles que están permitidos.
-   * @returns {boolean}
-   */
   const isInAllowedRoles = (allowedRolesArray) => {
-    // Si no hay rol, o si no se especifican roles permitidos (significa que cualquier logueado puede verlo),
-    // o si el rol del usuario está en la lista.
     if (!userRole) return false;
-    if (!allowedRolesArray || allowedRolesArray.length === 0) return true; // Si no se restringe por rol, se muestra.
+    if (!allowedRolesArray || allowedRolesArray.length === 0) return true;
     return allowedRolesArray.includes(userRole);
   };
-  // --- Fin funciones auxiliares ---
+  // ------------------------------------------
 
-
-  // --- Definición de secciones y ítems con sus permisos/roles ---
+  // -------- estructura de secciones/ítems --------
   const sections = [
     {
       title: 'Inicio',
       path: '/',
       icon: DashboardOff,
       activeIcon: DashboardOn,
-      permission: 'dashboard' // Asumimos que la ruta de inicio también requiere el permiso de dashboard
+      permission: 'dashboard',
     },
     {
       title: 'ESTRATEGIA 6GW+',
@@ -92,28 +60,28 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           path: '/6GW+',
           icon: GWOff,
           activeIcon: GWOn,
-          permission: 'dashboard' // Requiere el permiso 'dashboard'
+          permission: 'dashboard',
         },
         {
           title: 'Proyectos 075',
           path: '/proyectos075',
           icon: Proyecto075Off,
           activeIcon: Proyecto075On,
-          permission: 'proyectos' // Requiere el permiso 'proyectos'
+          permission: 'proyectos',
         },
         {
           title: 'Transmisión',
           path: '/Transmision',
           icon: ProyectosTransmisionOff,
           activeIcon: ProyectosTransmisionOn,
-          roles: [ROLES.ADMIN] // Solo para Administrador y Consultor 1
+          roles: [ROLES.ADMIN],
         },
         {
           title: 'Comunidades energéticas',
           path: '/comunidades_energeticas',
           icon: ComunidadesEnergOff,
           activeIcon: ComunidadesEnergOn,
-          permission: 'comunidades' // Requiere el permiso 'comunidades'
+          permission: 'comunidades',
         },
         {
           title: 'Acciones estratégicas',
@@ -121,101 +89,32 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn,
           roles: [ROLES.ADMIN],
-          external: true
+          external: true,
         },
-        /*
-        {
-          title: 'Transmisión Pages',
-          path: '/transmision_pages?projectId=UPME%2004-2014',
-          
-          icon: ProyectosTransmisionOff,
-          activeIcon: ProyectosTransmisionOn,
-          roles: [ROLES.ADMIN, ROLES.CONSULTOR_1] // Solo para Administrador y Consultor 1
-        }, 
-        
-        {
-          title: 'Autogeneración y GD',
-          path: '/en_construccion',
-          icon: AutogeneracionOff,
-          activeIcon: AutogeneracionOn,
-          // Si no se especifica permiso ni rol, se muestra a cualquier autenticado
-        },
-        */
-      ]
+      ],
     },
-    /* Puedes descomentar y agregar permisos/roles a estas secciones si las usas
+    // ---- NUEVA SECCIÓN: ABASTECIMIENTO ----
     {
       title: 'ABASTECIMIENTO',
       items: [
         {
           title: 'Hidrología',
-          path: '/en_construccion',
+          path: '/hidrologia',
           icon: HidroOff,
           activeIcon: HidroOn,
-          permission: 'hidrologia' // Ejemplo de permiso
+          permission: 'dashboard', // cambia a 'hidrologia' si defines ese permiso
         },
         {
-          title: 'Suficiencia energética',
-          path: '/en_construccion',
-          icon: EnergiaOff,
-          activeIcon: EnergiaOn,
-          permission: 'suficiencia'
-
+          title: 'Energía firme',
+          path: '/en_construccion', // cambia cuando tengas la página real
+          icon: EnergiaFirmeOff,
+          activeIcon: EnergiaFirmeOn,
+          permission: 'dashboard',
         },
-        {
-          title: 'Precios',
-          path: '/en_construccion',
-          icon: PreciosOff,
-          activeIcon: PreciosOn,
-          permission: 'precios' // Ejemplo de permiso
-        },
-        {
-          title: 'Generación térmica',
-          path: '/en_construccion',
-          icon: GeneracionTermicaOff,
-          activeIcon: GeneracionTermicaOn,
-          permission: 'termica
-        },
-        {
-          title: 'Demanda',
-          path: '/en_construccion',
-          icon: DemandaOff,
-          activeIcon: DemandaOn,
-          permission: 'demanda' // Ejemplo de demanda
-        }
-      ]
+      ],
     },
-    {
-      title: 'TARIFAS',
-      items: [
-        {
-          title: 'Combustibles líquidos',
-          path: '/combustibles',
-          icon: CombustiblesOff,
-          activeIcon: CombustiblesOn,
-          permission: 'combustibles' // Ejemplo de permiso
-        },
-         {
-          title: 'Gas Natural',
-          path: '/gas-natural',
-          icon: GasOff,
-          activeIcon: GasOn,
-          permission: 'combustibles'
-        },
-        {
-          title: 'GLP',
-          path: '/GLP',
-          icon: GLPOff,
-          activeIcon: GLPOn,
-          permission: 'combustibles'
-        }
-
-      ]
-    }
-    */
   ];
-  // --- Fin definición de secciones y ítems ---
-
+  // -----------------------------------------------
 
   return (
     <aside
@@ -223,44 +122,37 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
         open ? 'w-1/6 p-4' : 'w-16 p-2'
       }`}
     >
-      {/* Toggle button */}
+      {/* Botón toggle */}
       <div className="flex justify-end mb-4">
-        <button
-          onClick={toggle}
-          className="text-white focus:outline-none"
-          title="Expandir/Contraer"
-        >
+        <button onClick={toggle} className="text-white focus:outline-none" title="Expandir/Contraer">
           {open ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
         </button>
       </div>
 
       <nav className="flex-1 space-y-6">
         {sections.map((section, si) => {
-          // Determina si la sección completa debe ser visible
           let showSection = false;
+
           if (section.items) {
-            // Si tiene sub-ítems, la sección se muestra si al menos un sub-ítem es visible
-            showSection = section.items.some(item =>
+            showSection = section.items.some((item) =>
               (item.permission && hasPermission(item.permission)) ||
               (item.roles && isInAllowedRoles(item.roles)) ||
-              (!item.permission && !item.roles) // Si no hay permiso/rol específico, se muestra por defecto (asume autenticado)
+              (!item.permission && !item.roles)
             );
           } else {
-            // Si es un ítem de nivel superior (como 'Inicio'), verifica sus propios permisos/roles
             showSection =
               (section.permission && hasPermission(section.permission)) ||
               (section.roles && isInAllowedRoles(section.roles)) ||
-              (!section.permission && !section.roles); // Si no hay permiso/rol específico, se muestra por defecto
+              (!section.permission && !section.roles);
           }
 
-          // Solo renderiza la sección si showSection es true
           return (
             showSection && (
               <div key={si}>
                 {section.items ? (
                   <>
                     <h4
-                      className={`text-sm font-semibold text-texto-secundario mb-2 text-[#D1D1D0] ${
+                      className={`text-sm font-semibold text-[#D1D1D0] mb-2 ${
                         open ? '' : 'sr-only'
                       }`}
                     >
@@ -268,29 +160,25 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
                     </h4>
                     <ul className="space-y-1">
                       {section.items.map((item, i) => {
-                        // Decide si mostrar el item del sub-menú
                         const showItem =
                           (item.permission && hasPermission(item.permission)) ||
                           (item.roles && isInAllowedRoles(item.roles)) ||
-                          (!item.permission && !item.roles); // Si no requiere permiso ni rol, se muestra por defecto
+                          (!item.permission && !item.roles);
 
                         const isActive = pathname === item.path;
                         const IconSVG = isActive ? item.activeIcon : item.icon;
 
                         return (
-                          showItem && ( // Solo renderiza el <li> si showItem es true
+                          showItem && (
                             <li key={i}>
+                              {/* Si algún día usas enlaces externos en subitems, podrías manejar item.external aquí */}
                               <Link
                                 to={item.path}
                                 className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
-                                  isActive ? 'bg-[#333333]' : '' // Agregué un fondo sutil para el activo
+                                  isActive ? 'bg-[#333333]' : ''
                                 }`}
                               >
-                                <img
-                                  src={IconSVG}
-                                  alt={item.title}
-                                  className="w-6 h-6 flex-shrink-0"
-                                />
+                                <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
                                 {open && (
                                   <span
                                     className={`ml-3 text-base whitespace-nowrap ${
@@ -308,7 +196,6 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
                     </ul>
                   </>
                 ) : (
-                  // Si es un ítem de nivel superior sin sub-ítems
                   <Link
                     to={section.path}
                     className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
@@ -316,7 +203,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
                     }`}
                   >
                     <img
-                      src={section.activeIcon || section.icon} // Usa activeIcon si existe, si no, el normal
+                      src={section.activeIcon || section.icon}
                       alt={section.title}
                       className="w-5 h-5 flex-shrink-0"
                     />
@@ -328,7 +215,7 @@ export function Sidebar({ open, toggle, userRole }) { // userRole ya lo estás r
           );
         })}
       </nav>
-
     </aside>
   );
 }
+

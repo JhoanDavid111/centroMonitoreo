@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gráfico en Modo Oscuro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        body {
+            background-color: #262626;
+            font-family: 'Nunito', sans-serif;
+        }
+        #container1 {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container1"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    Highcharts.chart('container1', {
+        chart: {
+            zoomType: 'xy',
+            marginTop: 80, // Reducido para acercar el título
+            marginBottom: 100, // Aumentado para dar más espacio a la leyenda
+            backgroundColor: '#262626' // Color de fondo del gráfico
+        },
+        title: {
+            text: 'Aportes y nivel útil de embalses',
+            align: 'left',
+            style: {
+                fontFamily: 'Nunito, sans-serif',
+                fontSize: '1.65em',
+                color: '#FFFFFF' // Color del título
+            }
+        },
+        subtitle: {
+            text: 'Fuente: XM - SINERGOX',
+            align: 'left',
+            style: {
+                fontSize: '14px',
+                color: '#CCCCCC' // Color del subtítulo
+            }
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m',
+                year: '%Y'
+            },
+            title: {
+                text: 'Fecha',
+                style: {
+                    fontFamily: 'Nunito, sans-serif',
+                    fontSize: '18px',
+                    fontWeight: 'Semi bold',
+                    color: '#CCCCCC' // Color del título del eje X
+                }
+            },
+            labels: {
+                style: {
+                    fontSize: '14px',
+                    fontWeight: 'Semi bold',
+                    color: '#CCCCCC' // Color de las etiquetas del eje X
+                }
+            },
+            gridLineWidth: 1,
+            gridLineColor: '#444444' // Color de la cuadrícula del eje X
+        },
+        yAxis: [{ // Eje Y primario
+            title: {
+                text: 'Aportes (GWh-dia)',
+                style: {
+                    fontFamily: 'Nunito, sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 'Semi bold',
+                    color: '#CCCCCC' // Color del título del eje Y
+                }
+            },
+            labels: {
+                format: '{value}',
+                style: {
+                    fontSize: '14px',
+                    color: '#CCCCCC' // Color de las etiquetas del eje Y
+                }
+            },
+            opposite: false,
+            gridLineWidth: 1,
+            gridLineColor: '#444444' // Color de la cuadrícula del eje Y
+        }, { // Eje Y secundario
+            title: {
+                text: 'Nivel de Embalse Util (%)',
+                style: {
+                    fontFamily: 'Nunito, sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 'Semi bold',
+                    color: '#CCCCCC' // Color del título del eje Y secundario
+                }
+            },
+            labels: {
+                format: '{value}%',
+                style: {
+                    fontSize: '14px',
+                    color: '#CCCCCC' // Color de las etiquetas del eje Y secundario
+                }
+            },
+            opposite: true,
+            min: 0,
+            max: 100,
+            gridLineColor: '#444444' // Color de la cuadrícula del eje Y secundario
+        }],
+        tooltip: {
+            shared: true,
+            xDateFormat: '%Y-%m',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)', // Fondo del tooltip
+            style: {
+                color: '#F0F0F0' // Color del texto del tooltip
+            }
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'bottom', // Movido a la parte inferior
+            y: 25, // Añadido para bajar la leyenda
+            borderWidth: 0,
+            itemStyle: {
+                fontSize: '16px',
+                color: '#FFFFFF' // Color del texto de la leyenda
+            },
+            itemHoverStyle: {
+                color: '#CCCCCC' // Color al pasar el mouse
+            }
+        },
+        series: [{
+            name: 'Aportes (GWh-dia)',
+            type: 'line',
+            data: [
+                [Date.UTC(2024, 0, 31), 73.643770],
+                [Date.UTC(2024, 1, 29), 80.197034],
+                [Date.UTC(2024, 2, 31), 70.276948],
+                [Date.UTC(2024, 3, 30), 132.965653],
+                [Date.UTC(2024, 4, 31), 281.684961],
+                [Date.UTC(2024, 5, 30), 328.940877],
+                [Date.UTC(2024, 6, 31), 234.574039],
+                [Date.UTC(2024, 7, 31), 145.748100],
+                [Date.UTC(2024, 8, 30), 123.385577],
+                [Date.UTC(2024, 9, 31), 154.621058],
+                [Date.UTC(2024, 10, 30), 246.574297],
+                [Date.UTC(2024, 11, 31), 146.714281],
+                [Date.UTC(2025, 0, 31), 131.583445],
+                [Date.UTC(2025, 1, 28), 167.069704],
+                [Date.UTC(2025, 2, 31), 204.705532],
+                [Date.UTC(2025, 3, 30), 323.745023],
+                [Date.UTC(2025, 4, 31), 404.553690],
+                [Date.UTC(2025, 5, 30), 382.960603],
+                [Date.UTC(2025, 6, 31), 311.546124]
+            ],
+            color: '#05d80a',
+            marker: {
+                radius: 3
+            },
+            tooltip: {
+                valueSuffix: ' GWh-dia'
+            },
+            lineWidth: 2
+        }, {
+            name: 'Aportes Media Histórica (GWh-dia)',
+            type: 'line',
+            data: [
+                [Date.UTC(2024, 0, 31), 140.71],
+                [Date.UTC(2024, 1, 29), 128.80],
+                [Date.UTC(2024, 2, 31), 154.20],
+                [Date.UTC(2024, 3, 30), 222.79],
+                [Date.UTC(2024, 4, 31), 288.05],
+                [Date.UTC(2024, 5, 30), 281.45],
+                [Date.UTC(2024, 6, 31), 254.60],
+                [Date.UTC(2024, 7, 31), 223.39],
+                [Date.UTC(2024, 8, 30), 211.91],
+                [Date.UTC(2024, 9, 31), 250.30],
+                [Date.UTC(2024, 10, 30), 274.25],
+                [Date.UTC(2024, 11, 31), 201.01],
+                [Date.UTC(2025, 0, 31), 139.55],
+                [Date.UTC(2025, 1, 28), 128.02],
+                [Date.UTC(2025, 2, 31), 152.98],
+                [Date.UTC(2025, 3, 30), 221.31],
+                [Date.UTC(2025, 4, 31), 287.12],
+                [Date.UTC(2025, 5, 30), 281.07],
+                [Date.UTC(2025, 6, 31), 254.48]
+            ],
+            color: '#ffc800',
+            marker: {
+                radius: 3
+            },
+            tooltip: {
+                valueSuffix: ' GWh-dia'
+            },
+            dashStyle: 'Dash',
+            lineWidth: 2
+        }, {
+            name: 'Nivel de Embalse Util (%)',
+            type: 'area',
+            yAxis: 1,
+            data: [
+                [Date.UTC(2024, 0, 31), 63.4492],
+                [Date.UTC(2024, 1, 29), 50.1787],
+                [Date.UTC(2024, 2, 31), 36.7905],
+                [Date.UTC(2024, 3, 30), 30.6643],
+                [Date.UTC(2024, 4, 31), 38.0780],
+                [Date.UTC(2024, 5, 30), 51.4640],
+                [Date.UTC(2024, 6, 31), 59.3173],
+                [Date.UTC(2024, 7, 31), 57.3229],
+                [Date.UTC(2024, 8, 30), 51.5869],
+                [Date.UTC(2024, 9, 31), 53.0680],
+                [Date.UTC(2024, 10, 30), 62.6385],
+                [Date.UTC(2024, 11, 31), 66.3917],
+                [Date.UTC(2025, 0, 31), 65.7450],
+                [Date.UTC(2025, 1, 28), 56.8199],
+                [Date.UTC(2025, 2, 31), 51.5903],
+                [Date.UTC(2025, 3, 30), 53.6419],
+                [Date.UTC(2025, 4, 31), 67.5202],
+                [Date.UTC(2025, 5, 30), 78.6367],
+                [Date.UTC(2025, 6, 31), 82.4262]
+            ],
+            color: '#3b82f6',
+            marker: {
+                radius: 3
+            },
+            tooltip: {
+                valueSuffix: '%'
+            },
+            fillOpacity: 0.3,
+            lineWidth: 1
+        }],
+        plotOptions: {
+            series: {
+                label: {
+                    connectorAllowed: false
+                },
+                pointStart: Date.UTC(2024, 0, 31)
+            }
+        },
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    legend: {
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom'
+                    }
+                }
+            }]
+        }
+    });
+});
+</script>
+
+</body>
+</html>
