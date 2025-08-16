@@ -13,6 +13,7 @@ import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ——— Tema oscuro para DataTable ———
 createTheme('customDark', {
@@ -153,33 +154,58 @@ const LoadingSpinner = ({ message = "Cargando datos..." }) => (
   </div>
 );
 
-// ——— Opciones base de la Curva S ———
+// ——— Opciones base de la Curva S (2 series) ———
 const baseChartOptions = {
-  chart:    { type: 'spline', height: 300 },
-  title:    { text: 'Curva S – Proyecto', style: { color: '#fff' } },
-  xAxis:    {
+  chart: { type: 'spline', height: 300 },
+  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  xAxis: {
     categories: [],
-    title:      { text: 'Fecha', style: { color: '#ccc' } },
-    labels:     { style: { color: '#ccc', fontSize: '10px' } },
-    gridLineColor: '#333',
+    title: { text: 'Fecha', style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    gridLineColor: '#333'
   },
-  yAxis:    { title: { text: 'Curva de Referencia', style: { color: '#ccc' } }, min: 0, max: 100 },
-  tooltip:  {
+  yAxis: {
+    title: { text: 'Avance (%)', style: { color: '#ccc' } },
+    min: 0,
+    max: 100
+  },
+  tooltip: {
+    shared: true,
+    useHTML: true,
     backgroundColor: '#1f2937',
-    style:           { color: '#fff', fontSize: '12px' },
+    borderColor: '#666',
+    style: { color: '#fff', fontSize: '12px' },
     formatter() {
-      return `<b>${this.x}</b><br/>Avance: ${this.y}%<br/>Hito: ${this.point.hito_nombre}`;
-    },
+      const rows = (this.points || []).map(p => {
+        const hito = p.point?.hito_nombre ?? '';
+        return `
+          <tr>
+            <td style="padding-right:8px;white-space:nowrap;">
+              <span style="color:${p.color}">●</span> ${Highcharts.escapeHTML(p.series.name)}:
+            </td>
+            <td style="text-align:right;"><b>${Highcharts.numberFormat(p.y ?? 0, 1)} %</b></td>
+          </tr>
+          ${hito ? `<tr><td colspan="2" style="font-size:11px;color:#aaa;padding:2px 0 6px">${Highcharts.escapeHTML(hito)}</td></tr>` : ''}
+        `;
+      }).join('');
+      return `<b>${this.x}</b><br/><table>${rows}</table>`;
+    }
   },
-  plotOptions: { spline: { marker: { enabled: true } } },
-  series:      [{ name: 'Curva de Referencia', data: [] }],
-  exporting:   {
+  plotOptions: {
+    spline: { marker: { enabled: true } }
+  },
+  series: [
+    { name: 'Programado', data: [], color: '#60A5FA' }, // referencia
+    { name: 'Cumplido',   data: [], color: '#A3E635' }  // seguimiento
+  ],
+  exporting: {
     enabled: true,
     buttons: {
       contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] },
     }
   },
 };
+
 
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
@@ -192,6 +218,7 @@ export default function ProyectoDetalle() {
   const [chartOptions, setChartOptions]   = useState(baseChartOptions);
   const [loadingCurve, setLoadingCurve]   = useState(false);
   const [errorCurve, setErrorCurve]       = useState(null);
+  const navigate = useNavigate();
 
   // **Estados de filtros por columna**
   const [columnFilters, setColumnFilters] = useState({
@@ -216,7 +243,7 @@ export default function ProyectoDetalle() {
       setErrorList(null);
       try {
         const res  = await fetch(
-          `${API}/v1/graficas/6g_proyecto/listado_proyectos_curva_s`,
+          `http://192.168.8.138:8002/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -237,52 +264,79 @@ export default function ProyectoDetalle() {
     fetchList();
   }, []);
 
-  // ——— Al hacer clic en Curva S ———
-  const handleViewCurve = async row => {
-    setLoadingCurve(true);
-    setErrorCurve(null);
-    try {
-      const res  = await fetch(
-        `${API}/v1/graficas/6g_proyecto/grafica_curva_s/${row.id}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const title = `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}`;
-      if (!Array.isArray(data) || data.length === 0) {
-        setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
-        setChartOptions({ ...baseChartOptions, title: { ...baseChartOptions.title, text: title } });
-      } else {
-        const curve = data.map(pt => ({
-          fecha:       pt.fecha.split('T')[0],
-          avance:      pt.avance,
-          hito_nombre: pt.hito_nombre
-        }));
-        setErrorCurve(null);
-        setChartOptions({
-          ...baseChartOptions,
-          title: { ...baseChartOptions.title, text: title },
-          xAxis: {
-            ...baseChartOptions.xAxis,
-            categories: curve.map(pt => pt.fecha),
-            tickInterval: 1,
-            labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false },
-          },
-          series: [{ name: 'Curva de Referencia', data: curve.map(pt => ({ y: pt.avance, hito_nombre: pt.hito_nombre })) }],
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setErrorCurve('No fue posible cargar la curva S.');
-    } finally {
-      setLoadingCurve(false);
-      // Scroll automático al contenedor de la curva S
-      chartContainerRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-      });
+// ——— Al hacer clic en Curva S (usa el nuevo endpoint y dibuja 2 series) ———
+const handleViewCurve = async (row) => {
+  setLoadingCurve(true);
+  setErrorCurve(null);
+  try {
+    const res = await fetch(
+      `http://192.168.8.138:8002/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+
+    const refArr = payload?.referencia?.curva ?? [];
+    const segArr = payload?.seguimiento?.curva ?? [];
+
+    if (!Array.isArray(refArr) && !Array.isArray(segArr)) {
+      throw new Error('Formato no válido');
     }
-  };
+
+    const parse = (arr) =>
+      (arr ?? [])
+        .map(pt => ({
+          fecha: (pt.fecha || '').split('T')[0],
+          avance: Number(pt.avance),
+          hito_nombre: pt.hito_nombre ?? ''
+        }))
+        .filter(d => d.fecha) // evita vacíos
+        .sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+    const refData = parse(refArr);
+    const segData = parse(segArr);
+
+    if (refData.length === 0 && segData.length === 0) {
+      setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
+      setChartOptions({
+        ...baseChartOptions,
+        title: { ...baseChartOptions.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` }
+      });
+      return;
+    }
+
+    // Categorías = unión ordenada de fechas de ambas curvas
+    const cats = Array.from(new Set([...refData, ...segData].map(d => d.fecha))).sort();
+
+    const toSeriesData = (arr) =>
+      cats.map(fecha => {
+        const f = arr.find(d => d.fecha === fecha);
+        return f ? { y: f.avance, hito_nombre: f.hito_nombre } : { y: null, hito_nombre: '' };
+      });
+
+    setChartOptions({
+      ...baseChartOptions,
+      title: { ...baseChartOptions.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
+      xAxis: {
+        ...baseChartOptions.xAxis,
+        categories: cats,
+        tickInterval: 1,
+        labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false },
+      },
+      series: [
+        { name: 'Programado', data: toSeriesData(refData), color: '#60A5FA' },
+        { name: 'Cumplido',   data: toSeriesData(segData), color: '#A3E635' },
+      ],
+    });
+  } catch (err) {
+    console.error(err);
+    setErrorCurve('No fue posible cargar la curva S.');
+  } finally {
+    setLoadingCurve(false);
+    chartContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
+
 
   function applyGlobal(row) {
   if (!globalFilter) return true;
@@ -700,7 +754,15 @@ const columnsSeguimiento = [
     ),
     cell: row => (
       <div className="flex space-x-2">
-        <img src={ojoAmarillo} alt="Ver proyecto" title="Ver proyecto" className="w-5 h-5 cursor-pointer"/>
+        <img
+            src={ojoAmarillo}
+            alt="Ver proyecto"
+            title="Ver proyecto"
+            className="w-5 h-5 cursor-pointer"
+            onClick={() =>
+              navigate(`/proyectos075/${row.id}`, { state: { nombre: row.nombre_proyecto } })
+            }
+          />
         <img
           src={curvaSAmarillo}
           alt="Ver curva S"
