@@ -136,8 +136,7 @@ const PageProjectTransmision = () => {
         }
 
         const data = await fetchProjectData(projectId);
-        
-
+        //console.log("Jagreda Datos del proyecto:", data);
         setState({
           projectData: data,
           loading: false,
@@ -205,7 +204,8 @@ const PageProjectTransmision = () => {
           <button
             onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg"
-            style={{ background: '#2d2d2d', border: `1px solid ${COLORS.border}` }}
+            style={{ background: COLORS.yellow, color: '#000' }}
+            
           >
             <ChevronLeft size={18} /> Volver
           </button>
@@ -349,11 +349,11 @@ const PageProjectTransmision = () => {
 
         {/* Ubicación */}
         <div className="max-w-7xl mx-auto px-4 mt-10">
-          <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2>
+          {/* <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2> */}
 
 
           {projectData.mapEmbedUrl ? (
-            //console.log("Juan Agreda: Mapa URL:", projectData.map),
+            
             <MapaProyectosTransmision 
               mapUrl={projectData.mapEmbedUrl}
               title={`Ubicación del proyecto: ${projectData.header.title}`}
@@ -403,25 +403,25 @@ const PageProjectTransmision = () => {
               <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
                 <IconPill><Gauge size={16} /></IconPill> Número total
               </div>
-              <div className="text-white text-lg font-semibold">{projectData.generacion.totalProyectos} proyectos</div>
+              <div className="text-white text-lg font-semibold">{projectData.connections.totalProyectos} proyectos</div>
             </div>
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
                 <IconPill><Zap size={16} /></IconPill> Total en MW
               </div>
-              <div className="text-white text-lg font-semibold">{projectData.generacion.totalMW} MW</div>
+              <div className="text-white text-lg font-semibold">{projectData.connections.totalMW} MW</div>
             </div>
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
                 <IconPill><Sun size={16} /></IconPill> Solares
               </div>
-              <div className="text-white text-lg font-semibold">{projectData.generacion.solares} proyectos</div>
+              <div className="text-white text-lg font-semibold">{projectData.connections.solares} proyectos</div>
             </div>
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1" style={{ color: COLORS.label }}>
                 <IconPill><Wind size={16} /></IconPill> Eólicos
               </div>
-              <div className="text-white text-lg font-semibold">{projectData.generacion.eolicos} proyectos</div>
+              <div className="text-white text-lg font-semibold">{projectData.connections.eolicos} proyectos</div>
             </div>
           </div>
 
