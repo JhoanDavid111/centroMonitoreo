@@ -111,7 +111,7 @@ export default function ProyectoDetalle() {
         setLoading(true);
         setErr('');
         const res = await fetch(
-          `http://192.168.8.138:8002/v1/graficas/proyectos_075/informacion_proyecto/${id}`,
+          `${API}/v1/graficas/proyectos_075/informacion_proyecto/${id}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -136,7 +136,7 @@ export default function ProyectoDetalle() {
         setCurveError('');
 
         const res = await fetch(
-          `http://192.168.8.138:8002/v1/graficas/proyectos_075/grafica_curva_s/${id}`,
+          `${API}/v1/graficas/proyectos_075/grafica_curva_s/${id}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

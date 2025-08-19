@@ -1,24 +1,28 @@
 // src/pages/Hidrologia.jsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
-// ⬇️ Ajusta estas rutas si tus HTML viven en otra carpeta
+// HTML embebidos
 import chart1Html from '../data/Chart1.html?raw';
 import chart2Html from '../data/Chart2.html?raw';
+import chart3Html from '../data/Chart3.html?raw'; // Información general
+import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
 import bannerHidrologia from '../assets/bannerHidrologia.png';
 
-// ===== Paleta (según tu guía de colores) =====
 const COLORS = {
-  down: '#EF4444',   // chip rojo (↓)
-  up: '#86EFAC',     // chip verde (↑)
-  blue: '#3B82F6',   // barras/áreas azules
-  gray: '#D1D1D0',   // textos grises
+  down: '#EF4444',
+  up: '#22C55E',
+  blue: '#3B82F6',
+  gray: '#D1D1D0',
   yellow: '#FFC800',
   chipText: '#111827',
+  darkBg: '#262626',
+  darkBg2: '#1f1f1f',
+  border: '#3a3a3a',
 };
 
-// =========== Utilidades de parseo para leer datos del HTML ===========
+/* ==================== helpers para parsear charts html ==================== */
 const extractCategories = (html) => {
   const m = html.match(/xAxis:\s*\{\s*categories:\s*\[([\s\S]*?)\]\s*,/);
   if (!m) return [];
@@ -62,7 +66,7 @@ const extractSeriesByNameUTC = (html, seriesName) => {
   return extractUtcPairs(block);
 };
 
-// ======================= Índices (mock visual) =======================
+/* ======================= Índices (mock visual) ======================= */
 const indices = [
   {
     title: 'Nivel de embalse actual',
@@ -110,7 +114,6 @@ const indices = [
   },
 ];
 
-// Chip visual ↑/↓
 function TrendChip({ dir = 'up', children }) {
   const isUp = dir === 'up';
   const bg = isUp ? COLORS.up : COLORS.down;
@@ -126,19 +129,7 @@ function TrendChip({ dir = 'up', children }) {
   );
 }
 
-// Tabla mock
-const regiones = [
-  { region: 'ANTIOQUIA', embalses: 10, volumen: 57 },
-  { region: 'CALDAS', embalses: 1, volumen: 13 },
-  { region: 'CARIBE', embalses: 1, volumen: 12 },
-  { region: 'CENTRO', embalses: 6, volumen: 48 },
-  { region: 'ORIENTE', embalses: 3, volumen: 32 },
-  { region: 'VALLE', embalses: 3, volumen: 68 },
-];
-
-// =================== Opciones Highcharts con datos de tus HTML ===================
-
-// Chart2 – “Aportes y nivel útil…”
+/* =================== Highcharts (desde HTML) =================== */
 function useAportesOptionsFromHtml() {
   const aportes = useMemo(() => {
     const s1 = extractSeriesByNameUTC(chart2Html, 'Aportes (GWh-dia)');
@@ -149,73 +140,55 @@ function useAportesOptionsFromHtml() {
 
   return useMemo(() => ({
     chart: {
-    zoomType: 'xy',
-    backgroundColor: '#262626',
-    height: 500,         // ↑ Aumenta altura total
-    marginTop: 80,
-    marginBottom: 180,   // ↑ Más espacio para eje X y leyenda
-    spacingBottom: 40    // ↑ Colchón extra
+      zoomType: 'xy',
+      backgroundColor: COLORS.darkBg,
+      height: 500,
+      marginTop: 80,
+      marginBottom: 180,
+      spacingBottom: 40
     },
     title: { text: 'Aportes y nivel útil de embalses', align: 'left', style: { color: '#fff', fontSize: '1.65em' } },
     subtitle: { text: 'Fuente: XM - SINERGOX', align: 'left', style: { color: COLORS.gray } },
-
-    // ⬇️ Ajustes clave del eje X
     xAxis: {
       type: 'datetime',
       gridLineWidth: 1,
       gridLineColor: '#444',
-      tickPixelInterval: 130, // ← menos marcas (ajusta 110–160 según ancho)
-      // Si prefieres exactamente una por mes, usa: tickInterval: 30 * 24 * 3600 * 1000,
+      tickPixelInterval: 130,
       labels: {
         rotation: -45,
         align: 'right',
-        autoRotation: undefined,                // evita re-rotaciones automáticas
-        formatter() {                           // etiqueta compacta AAAA-MM
-          return Highcharts.dateFormat('%Y-%m', this.value);
-        },
+        autoRotation: undefined,
+        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); },
         style: { color: COLORS.gray, fontSize: '12px' }
       }
     },
-
     yAxis: [
-      { /* ... como ya lo tienes ... */ },
-      { /* ... como ya lo tienes ... */ },
+      { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
+      { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
     ],
-
-    // ⬇️ Mueve la leyenda un poco más abajo para que no pise el eje
-    legend: {
-    layout: 'horizontal',
-    align: 'center',
-    verticalAlign: 'bottom',
-    y: 20, // deja espacio entre leyenda y eje
-    itemStyle: { color: '#fff', fontSize: '16px' }
-    },
-
+    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
     tooltip: { shared: true, xDateFormat: '%Y-%m', backgroundColor: 'rgba(0,0,0,.85)', style: { color: '#f0f0f0' } },
     series: [
       { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', marker: { radius: 3 }, lineWidth: 2, data: aportes.s1, tooltip: { valueSuffix: ' GWh-dia' } },
-      { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: '#ffc800', dashStyle: 'Dash', marker: { radius: 3 }, lineWidth: 2, data: aportes.s2, tooltip: { valueSuffix: ' GWh-dia' } },
+      { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', marker: { radius: 3 }, lineWidth: 2, data: aportes.s2, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: aportes.s3, tooltip: { valueSuffix: '%' } },
     ],
   }), [aportes]);
 }
 
-
-// Chart1 – “Estatuto de desabastecimiento”
 function useDesabastecimientoOptionsFromHtml() {
   const parsed = useMemo(() => {
     const categories = extractCategories(chart1Html);
     const series = extractAllNumericSeries(chart1Html);
     return { categories, series };
   }, []);
-
   const s0 = parsed.series?.[0]?.data ?? [];
   const s1 = parsed.series?.[1]?.data ?? [];
   const s2 = parsed.series?.[2]?.data ?? [];
   const s3 = parsed.series?.[3]?.data ?? [];
 
   return useMemo(() => ({
-    chart: { zooming: { type: 'xy' }, backgroundColor: '#262626', marginTop: 130, marginBottom: 170, spacingBottom: 60 },
+    chart: { zooming: { type: 'xy' }, backgroundColor: COLORS.darkBg, marginTop: 130, marginBottom: 170, spacingBottom: 60 },
     title: { text: 'Estatuto de desabastecimiento', align: 'left', margin: 50, style: { color: '#fff', fontSize: '1.65em' } },
     subtitle: { text: 'Fuente: XM - SINERGOX', align: 'left', style: { color: COLORS.gray } },
     xAxis: {
@@ -239,29 +212,176 @@ function useDesabastecimientoOptionsFromHtml() {
   }), [parsed]);
 }
 
-// ========================= Componente =========================
+/* -----------------inyección de estilos para iframes embebidos---------------- */
+
+function injectStylesForGeneral(html) {
+  const CSS = `
+    :root, body { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
+    body { font-family: Nunito Sans, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    a, button { color: ${COLORS.gray}; }
+    .btn, .button, .dt-button { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; color: ${COLORS.gray} !important; }
+
+    .card, .panel, .container, .content, .dataTables_wrapper { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
+
+    /* Encabezado gris (neutraliza cualquier azul) */
+    table thead tr,
+    table thead th,
+    table thead td,
+    .table thead tr,
+    .table thead th,
+    .table thead td,
+    .thead,
+    .thead-dark,
+    .thead-light,
+    .dataTables_wrapper .dataTables_scrollHead,
+    .dataTables_wrapper .dataTables_scrollHeadInner {
+      background: #1f1f1f !important;
+      color: ${COLORS.gray} !important;
+      border-color: ${COLORS.border} !important;
+    }
+
+    /* Filas y celdas en oscuro */
+    table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
+    table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
+    table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+
+    /* Forzar override si el HTML trae estilos inline en blanco */
+    [style*="background:#fff"], [style*="background: #fff"], [style*="background-color:#fff"], [style*="background-color: #fff"], [style*="background: white"], [style*="background-color: white"] {
+      background-color: ${COLORS.darkBg} !important;
+      color: ${COLORS.gray} !important;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
+    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+
+    .text-muted, .muted, small { color: ${COLORS.gray} !important; }
+
+    .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
+    .progress .progress-bar { background: ${COLORS.blue} !important; }
+  `;
+  if (html.includes('</head>')) {
+    return html.replace('</head>', `<style>${CSS}</style></head>`);
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${CSS}</style></head><body>${html}</body></html>`;
+}
+
+function injectStylesForAportes(html) {
+  const CSS = `
+    :root, body { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
+    body { font-family: Nunito Sans, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    a, button { color: ${COLORS.gray}; }
+    .btn, .button, .dt-button { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; color: ${COLORS.gray} !important; }
+
+    .card, .panel, .container, .content, .dataTables_wrapper { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
+
+    /* Encabezado gris – NO azul */
+    table thead tr,
+    table thead th,
+    table thead td,
+    .table thead tr,
+    .table thead th,
+    .table thead td,
+    .thead,
+    .thead-dark,
+    .thead-light,
+    .dataTables_wrapper .dataTables_scrollHead,
+    .dataTables_wrapper .dataTables_scrollHeadInner {
+      background: #1f1f1f !important;
+      color: ${COLORS.gray} !important;
+      border-color: ${COLORS.border} !important;
+    }
+    .bg-primary, .bg-info, .bg-warning, .bg-success, .bg-danger { background-color: ${COLORS.gray} !important; }
+
+    /* Filas/celdas coherentes en oscuro */
+    table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
+    table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
+    table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+
+    /* Forzar override si hay inline blanco */
+    [style*="background:#fff"], [style*="background: #fff"], [style*="background-color:#fff"], [style*="background-color: #fff"], [style*="background: white"], [style*="background-color: white"] {
+      background-color: ${COLORS.darkBg} !important;
+      color: ${COLORS.gray} !important;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
+    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+
+    .text-muted, .muted, small { color: ${COLORS.gray} !important; }
+
+    /* Barra de progreso */
+    .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
+    .progress .progress-bar { transition: background-color .25s ease; }
+  `;
+
+  const SCRIPT = `
+  (function(){
+    function parsePercent(s){
+      if(!s) return NaN;
+      var m = String(s).match(/([0-9]+(?:[\\.,][0-9]+)?)/);
+      if(!m) return NaN;
+      return parseFloat(m[1].replace(',', '.'));
+    }
+    function colorFor(p){
+      if (p > 90) return '${COLORS.blue}';
+      if (p >= 60) return '${COLORS.up}';
+      if (p >= 30) return '#F59E0B';
+      return '${COLORS.down}';
+    }
+    var bars = document.querySelectorAll('.progress .progress-bar, .progress-bar');
+    bars.forEach(function(bar){
+      var p = NaN;
+      if (bar.style && bar.style.width) p = parsePercent(bar.style.width);
+      if (isNaN(p)) {
+        var txt = (bar.closest('td') && bar.closest('td').textContent) || bar.parentElement.textContent || '';
+        p = parsePercent(txt);
+      }
+      if (!isNaN(p)) bar.style.backgroundColor = colorFor(p);
+    });
+
+    /* Asegura que grupos/regiones no queden blancos */
+    var whitey = document.querySelectorAll('.bg-white, .card, .panel, .row, .col, .section, .container, .content');
+    whitey.forEach(function(n){
+      var styleBg = getComputedStyle(n).backgroundColor;
+      if (styleBg === 'rgb(255, 255, 255)') n.style.backgroundColor = '${COLORS.darkBg}';
+    });
+  })();
+  `;
+
+  if (html.includes('</head>') && html.includes('</body>')) {
+    return html
+      .replace('</head>', `<style>${CSS}</style></head>`)
+      .replace('</body>', `<script>${SCRIPT}</script></body>`);
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${CSS}</style></head><body>${html}<script>${SCRIPT}</script></body></html>`;
+}
+
+/* --------------------------------- Página --------------------------------- */
+
 export default function Hidrologia() {
   const aportesOptions = useAportesOptionsFromHtml();
   const desabOptions = useDesabastecimientoOptionsFromHtml();
+  const [tab, setTab] = useState('aportes'); // abre en la pestaña que estás ajustando
 
   return (
     <section className="space-y-6">
-        {/* Banner */}
-        <div
+      {/* Banner */}
+      <div
         className="rounded-2xl overflow-hidden h-24 md:h-28 lg:h-32 relative"
         style={{
-            backgroundImage: `url(${bannerHidrologia})`, // ahora usa la imagen importada
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+          backgroundImage: `url(${bannerHidrologia})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
-        >
+      >
         <div className="absolute inset-0 bg-black/30" />
         <h1 className="absolute left-6 top-1/2 -translate-y-1/2 text-white font-bold text-3xl md:text-4xl">
-            Seguimiento Hidrológico
+          Seguimiento Hidrológico
         </h1>
-        </div>
+      </div>
 
-      {/* ======== ÍNDICES (se mantiene) ======== */}
+      {/* ÍNDICES */}
       <h2 className="text-lg text-gray-300">Índices</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1 */}
@@ -270,12 +390,10 @@ export default function Hidrologia() {
             <span className="font-semibold text-white">{indices[0].title}</span>
             <span className="text-xs text-gray-400">Actualizado: {indices[0].updated}</span>
           </div>
-
           <div className="flex items-center gap-3">
             <p className="text-white text-xl">{indices[0].value}</p>
             <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
           </div>
-
           <div className="mt-4 flex items-center gap-3">
             <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#D1D1D0]">
               <div className="h-3" style={{ width: '81%', background: COLORS.blue }} />
@@ -358,42 +476,54 @@ export default function Hidrologia() {
 
       {/* Tabla + Gráfica Aportes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
-          <div className="text-white font-semibold mb-3">Región Hidrológica</div>
-          <div className="overflow-auto">
-            <table className="w-full text-left text-gray-300">
-              <thead className="text-gray-300 border-b border-[#3a3a3a]">
-                <tr>
-                  <th className="py-2">Región Hidrológica</th>
-                  <th className="py-2">Embalses</th>
-                  <th className="py-2">Volumen (%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {regiones.map((r) => (
-                  <tr key={r.region} className="border-b border-[#2e2e2e]">
-                    <td className="py-2">{r.region} <span className="text-yellow-400 ml-1">+</span></td>
-                    <td className="py-2">{r.embalses}</td>
-                    <td className="py-2">{r.volumen}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl">
+          {/* Tabs */}
+          <div className="px-3 pt-3 border-b border-[#3a3a3a]">
+            <div className="flex gap-6">
+              <button
+                onClick={() => setTab('general')}
+                className={`pb-2 text-sm ${tab==='general' ? 'text-white border-b-2 border-yellow-400' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                Información general
+              </button>
+              <button
+                onClick={() => setTab('aportes')}
+                className={`pb-2 text-sm ${tab==='aportes' ? 'text-white border-b-2 border-yellow-400' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                Aportes hídricos
+              </button>
+            </div>
+          </div>
+          {/* Iframe */}
+          <div className="p-3">
+            <iframe
+              title={tab === 'general' ? 'Tabla información general' : 'Tabla aportes hídricos'}
+              srcDoc={
+                tab === 'general'
+                  ? injectStylesForGeneral(chart3Html)
+                  : injectStylesForAportes(tablaHidrologiaCompleta)
+              }
+              className="w-full h-[560px] rounded-lg border border-[#3a3a3a] bg-[#1f1f1f]"
+            />
           </div>
         </div>
 
-        {/* Gráfica Aportes (datos reales de Chart2) */}
+        {/* Gráfica Aportes */}
         <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
           <HighchartsReact highcharts={Highcharts} options={useAportesOptionsFromHtml()} />
         </div>
       </div>
 
-      {/* Estatuto de desabastecimiento (datos reales de Chart1) */}
+      {/* Estatuto de desabastecimiento */}
       <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
         <HighchartsReact highcharts={Highcharts} options={useDesabastecimientoOptionsFromHtml()} />
       </div>
     </section>
   );
 }
+
+
+
+
 
 
