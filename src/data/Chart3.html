@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabla de Embalses - Modo Oscuro</title>
+  <style>
+    /* --- Estilos Generales --- */
+    body {
+      background-color: #1D1D1D; /* Color de fondo oscuro solicitado */
+      color: #f0f0f0; /* Color de texto claro para legibilidad */
+      font-family: -apple-system, BlinkMacSystemFont, "Nunito-sans", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* --- Estilos de la Tabla --- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border: 3px solid #575756; /* Borde añadido a la tabla */
+      background-color: #262626; /* Fondo ligeramente más claro para la tabla */
+      border-radius: 8px;
+      overflow: hidden; /* Asegura que los bordes redondeados se apliquen a las celdas */
+      border: 3px solid #575756; /* Borde añadido a la tabla */
+    }
+
+    /* --- Estilos de Encabezados y Celdas --- */
+    th, td {
+      padding: 12px 15px; /* Más espaciado para una mejor lectura */
+      text-align: left;
+      border-bottom: 1px solid #575756; /* Borde sutil entre filas */
+    }
+
+    th {
+      padding: 18px 15px; /* Padding aumentado para el encabezado */
+      background-color: #1D1D1D; /* Un azul más oscuro para el encabezado */
+      color: white;
+      font-weight: 500;
+    }
+
+    /* --- Estilos Específicos de Filas y Clases --- */
+    tr:last-child td {
+        border-bottom: none; /* Elimina el borde de la última fila */
+    }
+
+    .region {
+      background-color: #262626; /* Fondo distintivo para las filas de región */
+      font-weight: 400;
+      color: #ffffff;
+      cursor: pointer; /* Indica que la fila es clickeable */
+      user-select: none; /* Evita la selección de texto al hacer clic */
+    }
+
+    .region:hover {
+        background-color: #3D3D3C; /* Resaltado al pasar el mouse */
+    }
+
+    .region td {
+        border-bottom: 1px solid #575756;
+    }
+    
+    .toggle-icon {
+        display: inline-block;
+        margin-left: 8px;
+        font-size: 1.1em;
+        width: 1em;
+        text-align: center;
+    }
+
+    .positivo {
+      color: #22C55E; /* Verde más brillante para mejor contraste */
+      font-weight: 400;
+    }
+
+    .negativo {
+      color: #EF4444; /* Rojo más brillante para mejor contraste */
+      font-weight: 400;
+    }
+
+    /* --- Estilos para la Barra de Nivel --- */
+    .barra {
+      height: 12px;
+      background-color: #575756; /* Fondo más oscuro para la barra */
+      border-radius: 6px;
+      margin-top: 5px;
+      min-width: 100px; /* Ancho mínimo para la barra */
+    }
+
+    .nivel {
+      height: 100%;
+      background: linear-gradient(90deg, #22C55E, #86efac); /* Gradiente para un look más moderno */
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th>Región Hidrológica</th>
+        <th>Embalses</th>
+        <th>Volumen Total (GWh-día)</th>
+        <th>Cambio Promedio (GWh-día)</th>
+        <th>Nivel Promedio</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="region"><td colspan="5">ANTIOQUIA</td></tr>
+      <tr>
+        <td></td>
+        <td>ITUANGO</td>
+        <td>22.9974</td>
+        <td class="positivo">+2.5520</td>
+        <td>34.89%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>MIRAFLORES</td>
+        <td>148.1931</td>
+        <td class="positivo">+3.4090</td>
+        <td>32.34%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PEÑOL</td>
+        <td>3734.0700</td>
+        <td class="negativo">-0.9550</td>
+        <td>90.04%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PLAYAS</td>
+        <td>89.7788</td>
+        <td class="positivo">+29.4059</td>
+        <td>94.61%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PORCE II</td>
+        <td>84.9006</td>
+        <td class="positivo">+19.4776</td>
+        <td>68.17%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PORCE III</td>
+        <td>69.6982</td>
+        <td class="negativo">-5.9797</td>
+        <td>62.16%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PUNCHINA</td>
+        <td>26.0300</td>
+        <td class="negativo">-0.1648</td>
+        <td>39.54%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>RIOGRANDE2</td>
+        <td>507.9396</td>
+        <td class="positivo">+5.4187</td>
+        <td>93.32%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>SAN LORENZO</td>
+        <td>379.6318</td>
+        <td class="positivo">+2.6883</td>
+        <td>89.18%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>TRONERAS</td>
+        <td>71.6233</td>
+        <td class="positivo">+6.0493</td>
+        <td>111.62%</td>
+      </tr>
+      <tr class="region"><td colspan="5">CALDAS</td></tr>
+      <tr>
+        <td></td>
+        <td>AMANI</td>
+        <td>179.7088</td>
+        <td class="positivo">+0.2889</td>
+        <td>77.10%</td>
+      </tr>
+      <tr class="region"><td colspan="5">CARIBE</td></tr>
+      <tr>
+        <td></td>
+        <td>URRA1</td>
+        <td>129.6747</td>
+        <td class="negativo">-1.8869</td>
+        <td>81.33%</td>
+      </tr>
+      <tr class="region"><td colspan="5">CENTRO</td></tr>
+      <tr>
+        <td></td>
+        <td>AGREGADO BOGOTA</td>
+        <td>2523.5819</td>
+        <td class="positivo">+4.2304</td>
+        <td>63.22%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>BETANIA</td>
+        <td>102.3519</td>
+        <td class="positivo">+1.6101</td>
+        <td>84.86%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>EL QUIMBO</td>
+        <td>1019.8380</td>
+        <td class="positivo">+5.1658</td>
+        <td>94.37%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>MUNA</td>
+        <td>22.1448</td>
+        <td class="positivo">+0.2806</td>
+        <td>40.33%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PRADO</td>
+        <td>57.6949</td>
+        <td class="negativo">-0.2729</td>
+        <td>63.79%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>TOPOCORO</td>
+        <td>954.3979</td>
+        <td class="negativo">-3.1146</td>
+        <td>92.47%</td>
+      </tr>
+      <tr class="region"><td colspan="5">ORIENTE</td></tr>
+      <tr>
+        <td></td>
+        <td>CHUZA</td>
+        <td>890.8093</td>
+        <td class="positivo">+0.0000</td>
+        <td>91.72%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>ESMERALDA</td>
+        <td>980.6658</td>
+        <td class="positivo">+0.2219</td>
+        <td>87.20%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>GUAVIO</td>
+        <td>1372.8627</td>
+        <td class="positivo">+0.0000</td>
+        <td>94.72%</td>
+      </tr>
+      <tr class="region"><td colspan="5">VALLE</td></tr>
+      <tr>
+        <td></td>
+        <td>ALTOANCHICAYA</td>
+        <td>9.7587</td>
+        <td class="positivo">+2.3799</td>
+        <td>26.73%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>CALIMA1</td>
+        <td>191.9092</td>
+        <td class="positivo">+0.2113</td>
+        <td>87.62%</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>SALVAJINA</td>
+        <td>448.9951</td>
+        <td class="negativo">-3.5951</td>
+        <td>85.50%</td>
+      </tr>
+    </tbody>
+  </table>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tableBody = document.querySelector('table tbody');
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+    let currentRegionHeader = null;
+    let regionDataRows = [];
+
+    // Reverse iteration to avoid issues when modifying the DOM
+    for (let i = rows.length - 1; i >= 0; i--) {
+        const row = rows[i];
+        if (row.classList.contains('region')) {
+            // This is a header row, so process the collected data rows for it
+            processRegion(row, regionDataRows);
+            // Reset for the next region
+            regionDataRows = [];
+        } else {
+            // This is a data row, add it to the front of the list for the current region
+            row.classList.add('region-data-row');
+            regionDataRows.unshift(row);
+        }
+    }
+});
+
+function setupRegionHeader(headerRow, reservoirCount) {
+    const regionName = headerRow.cells[0].textContent;
+    headerRow.innerHTML = `
+        <td>${regionName} <span class="toggle-icon">+</span></td>
+        <td class="embalse-count">${reservoirCount}</td>
+        <td class="volumen-sum"></td>
+        <td class="cambio-avg"></td>
+        <td class="nivel-avg"></td>
+    `;
+
+    headerRow.addEventListener('click', () => {
+        const icon = headerRow.querySelector('.toggle-icon');
+        const isCollapsed = icon.textContent === '+';
+        icon.textContent = isCollapsed ? '−' : '+';
+        
+        let nextRow = headerRow.nextElementSibling;
+        while(nextRow && nextRow.classList.contains('region-data-row')) {
+            nextRow.style.display = isCollapsed ? 'table-row' : 'none';
+            nextRow = nextRow.nextElementSibling;
+        }
+    });
+}
+
+function processRegion(headerRow, dataRows) {
+    const reservoirCount = dataRows.length;
+    
+    // Setup the header row with its new cells and click listener
+    setupRegionHeader(headerRow, reservoirCount);
+
+    if (reservoirCount === 0) return;
+
+    let totalVolume = 0;
+    let totalChange = 0;
+    let totalLevel = 0;
+
+    dataRows.forEach(row => {
+        // Hide the original progress bar in data rows to avoid duplication
+        const levelCell = row.cells[4];
+        levelCell.innerHTML = levelCell.textContent; // Keep only the percentage text
+
+        totalVolume += parseFloat(row.cells[2].textContent) || 0;
+        totalChange += parseFloat(row.cells[3].textContent) || 0;
+        totalLevel += parseFloat(levelCell.textContent) || 0;
+        
+        // Hide row initially
+        row.style.display = 'none';
+    });
+
+    const avgChange = totalChange / reservoirCount;
+    const avgLevel = totalLevel / reservoirCount;
+
+    // Update header row with calculated data
+    headerRow.querySelector('.volumen-sum').textContent = totalVolume.toFixed(4);
+    
+    const avgChangeCell = headerRow.querySelector('.cambio-avg');
+    avgChangeCell.textContent = `${avgChange >= 0 ? '+' : ''}${avgChange.toFixed(4)}`;
+    avgChangeCell.classList.add(avgChange >= 0 ? 'positivo' : 'negativo');
+
+    const avgLevelCell = headerRow.querySelector('.nivel-avg');
+    avgLevelCell.innerHTML = `
+        ${avgLevel.toFixed(2)}%
+        <div class="barra"><div class="nivel" style="width:${avgLevel > 100 ? 100 : avgLevel.toFixed(2)}%;"></div></div>
+    `;
+}
+</script>
+
+</body>
+</html>
