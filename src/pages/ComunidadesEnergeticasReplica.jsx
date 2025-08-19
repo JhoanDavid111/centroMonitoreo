@@ -1,97 +1,87 @@
 // src/pages/ComunidadesEnergeticasReplica.jsx
-import React from 'react';
-import { Info } from 'lucide-react';
-import bannerImg from '../assets/bannerComunidadesEnergeticas.png';
-import iconCE from '../assets/svg-icons/ComunidadesEnerg-On.svg';
+import React from "react";
+import bannerImg from "../assets/bannerComunidadesEnergeticas.png";
+import iconCE from "../assets/svg-icons/ComunidadesEnerg-On.svg";
 
-const updated = '8/5/2025';
+const ComunidadesEnergeticasReplica = () => {
+  const dataCards = [
+    { id: 1, title: "No. de comunidades postuladas", value: 20, icon: iconCE, date: "8/5/2025" },
+    { id: 2, title: "No. de comunidades registradas", value: 97, icon: iconCE, date: "8/5/2025" },
+    { id: 3, title: "No. de comunidades focalizadas", value: 97, icon: iconCE, date: "8/5/2025" },
+    { id: 4, title: "No. de comunidades priorizadas", value: 8,  icon: iconCE, date: "8/5/2025" },
+    { id: 5, title: "No. de comunidades postuladas", value: 20, icon: iconCE, date: "8/5/2025" },
+    { id: 6, title: "No. de comunidades registradas", value: 97, icon: iconCE, date: "8/5/2025" },
+    { id: 7, title: "No. de comunidades focalizadas", value: 97, icon: iconCE, date: "8/5/2025" },
+    { id: 8, title: "No. de comunidades priorizadas", value: 8,  icon: iconCE, date: "8/5/2025" },
+  ];
 
-// Datos quemados tal cual en la imagen
-const CARDS = [
-  { title: 'No. de comunidades postuladas', value: '20', icon: iconCE },
-  { title: 'No. de comunidades registradas', value: '97', icon: iconCE },
-  { title: 'No. de comunidades focalizadas', value: '97', icon: iconCE },
-  { title: 'No. de comunidades priorizadas', value: '8', icon: iconCE },
-];
-// Duplicamos para formar las dos filas que aparecen en la imagen
-const ALL_CARDS = [...CARDS, ...CARDS];
-
-export default function ComunidadesEnergeticasReplica() {
   return (
-    <div className="min-h-screen bg-[#1d1d1d] text-white">
-      {/* Banner con imagen y título */}
-      <div className="relative rounded-b-xl overflow-hidden">
+    <div className="bg-[#1d1d1d] min-h-screen text-white">
+      {/* Banner MÁS BAJO */}
+      <div className="relative w-full rounded-b-xl overflow-hidden">
         <img
           src={bannerImg}
-          alt="Banner Comunidades Energéticas"
-          className="h-40 sm:h-52 w-full object-cover"
+          alt="Comunidades Energéticas"
+          className="w-full h-32 sm:h-40 object-cover" /* altura reducida */
         />
-        {/* Oscurecido sobre la imagen */}
-        <div className="absolute inset-0 bg-black/40" />
-        {/* Texto y logotipo */}
-        <div className="absolute inset-0 flex items-center justify-between px-6">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+        {/* Oscurecido suave para contraste del título */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-between px-6 sm:px-8">
+          <h1 className="text-3xl sm:text-6xl font-semibold tracking-tight">
             Comunidades energéticas
           </h1>
-          <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-[#FFC800]">
-            <img src={iconCE} alt="Icono Comunidades" className="w-6 h-6" />
+          <div className="hidden sm:flex items-center justify-center">
+            <img src={iconCE} alt="Icono Comunidades" className="w-10 h-10" />
           </div>
         </div>
       </div>
 
-      {/* Total de proyectos */}
-      <section className="bg-[#262626] mt-6 mx-4 sm:mx-6 rounded-lg border border-[#3a3a3a]">
-        <div className="px-6 py-5 flex items-center justify-center gap-4">
-          <p className="text-gray-200 text-lg sm:text-xl font-semibold">Total de proyectos</p>
-          <span className="inline-flex items-center gap-2">
-            <span
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full"
-              style={{ backgroundColor: '#FFC800' }}
-              title="Proyectos"
-            >
-              <img src={iconCE} alt="Icono Comunidades" className="w-5 h-5" />
-            </span>
-            <span className="text-4xl sm:text-5xl font-extrabold" style={{ color: '#FFC800' }}>
-              125
-            </span>
-          </span>
-        </div>
-      </section>
+      {/* TOTAL DE PROYECTOS FUERA DE CONTENEDOR */}
+      <div className="mt-4 sm:mt-6 flex items-center justify-center gap-3">
+        <p className="text-lg sm:text-xl font-semibold text-gray-200">
+          Total de proyectos
+        </p>
+        <img src={iconCE} alt="Icono Comunidades" className="w-6 h-6" />
+        <span className="text-4xl sm:text-5xl font-extrabold" style={{ color: "#FFC800" }}>
+          125
+        </span>
+      </div>
 
-      {/* Tarjetas */}
-      <section className="px-4 sm:px-6 mt-6 pb-10">
+      {/* TARJETAS */}
+      <div className="px-4 sm:px-6 lg:px-8 mt-6 pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {ALL_CARDS.map(({ title, value, icon }, idx) => (
+          {dataCards.map((card) => (
             <div
-              key={`${title}-${idx}`}
+              key={card.id}
               className="bg-[#262626] rounded-lg border border-[#3a3a3a] shadow p-5"
             >
               <div className="flex items-center gap-2 mb-3">
-                <div
-                  className="w-6 h-6 rounded-sm flex items-center justify-center"
-                  style={{ backgroundColor: '#FFC800' }}
-                >
-                  <img src={icon} alt="icono" className="w-4 h-4" />
-                </div>
-                <span className="text-[16px] text-[#D5D5D5]">{title}</span>
+                <img src={card.icon} alt="icono" className="w-5 h-5" />
+                <span className="text-[16px] text-[#D5D5D5]">{card.title}</span>
               </div>
 
-              <div className="flex items-center text-white">
-                <span className="text-3xl font-bold">{value}</span>
-                <Info
-                  className="ml-2 w-5 h-5 text-gray-300 bg-neutral-700 rounded p-[2px]"
-                  title="Ayuda"
-                />
+              <div className="flex items-center">
+                <span className="text-3xl font-bold">{card.value}</span>
+                <span
+                  className="ml-2 w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] bg-neutral-700 text-gray-300"
+                  title="Información"
+                >
+                  i
+                </span>
               </div>
 
               <div className="text-xs text-[#B0B0B0] mt-2">
-                Actualizado el: {updated}
+                Actualizado el: {card.date}
               </div>
             </div>
           ))}
         </div>
-      </section>
+      </div>
     </div>
   );
-}
+};
+
+export default ComunidadesEnergeticasReplica;
+
+
 
