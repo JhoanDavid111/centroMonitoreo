@@ -8,6 +8,8 @@ import chart1Html from '../data/Chart1.html?raw';
 import chart2Html from '../data/Chart2.html?raw';
 import bannerHidrologia from '../assets/bannerHidrologia.png';
 
+import MapaHidrologia from '../components/MapaHidrologia';
+
 // ===== Paleta (según tu guía de colores) =====
 const COLORS = {
   down: '#EF4444',   // chip rojo (↓)
@@ -351,8 +353,8 @@ export default function Hidrologia() {
 
       {/* Mapa (placeholder) */}
       <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-2 md:p-3 lg:p-4">
-        <div className="h-[520px] rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
-          Mapa embebido (pendiente de integración)
+        <div className="py-4 rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
+          <MapaHidrologia/>
         </div>
       </div>
 
