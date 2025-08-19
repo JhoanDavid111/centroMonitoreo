@@ -10,6 +10,9 @@ import chart3Html from '../data/Chart3.html?raw'; // Información general
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
 import bannerHidrologia from '../assets/bannerHidrologia.png';
 
+import MapaHidrologia from '../components/MapaHidrologia';
+
+// ===== Paleta (según tu guía de colores) =====
 const COLORS = {
   down: '#EF4444',
   up: '#22C55E',
@@ -469,8 +472,8 @@ export default function Hidrologia() {
 
       {/* Mapa (placeholder) */}
       <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-2 md:p-3 lg:p-4">
-        <div className="h-[520px] rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
-          Mapa embebido (pendiente de integración)
+        <div className="py-4 rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
+          <MapaHidrologia/>
         </div>
       </div>
 
