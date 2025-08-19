@@ -71,7 +71,7 @@ const transformApiData = (apiData) => {
       title: apiData.header?.title || 'Proyecto sin nombre',
       status: apiData.header?.status || 'Estado desconocido',
       location: apiData.header?.location || 'Ubicación no especificada',
-      investor: 'Datos no disponibles',
+      investor: apiData.header?.investor || 'Datos no disponibles',
       stage: 'Datos no disponibles'
     },
     milestones: apiData.milestones?.map(milestone => ({
@@ -93,11 +93,12 @@ const transformApiData = (apiData) => {
     subestaciones: transformSections(apiData.sections?.filter(s => !s.title.includes('-'))) || [],
     chartData: apiData.chartData || [],
     documents: apiData.documents || [],
-    generacion: {
-      totalProyectos: 0,
-      totalMW: 0,
-      solares: 0,
-      eolicos: 0
+    mapEmbedUrl: apiData.mapEmbedUrl || null,
+    connections: {
+      totalProyectos: apiData.connections?.total_proyectos_a_conectar || 0,
+      totalMW: apiData.connections?.total_capacidad_proyectos_a_conectar || 0,
+      solares: apiData.connections?.total_proyectos_solares_a_conectar || 0,
+      eolicos: apiData.connections?.total_proyectos_eolicos_a_conectar || 0
     },
     sidebarInfo: apiData.sidebarInfo || {
       id: projectId,
