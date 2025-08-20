@@ -50,7 +50,7 @@ export default function Transmision() {
               key={i}
               icon={<img src={indicator.icon} alt={indicator.label} className="h-6 w-6" />}
               label={indicator.label}
-              value={data[indicator.key] || 'N/A'}
+              value={data[indicator.key] || 'No reporta'}
               updated={updatedDate}
             />
           ))}
