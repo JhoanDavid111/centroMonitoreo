@@ -10,6 +10,8 @@ import EolicaOn from '../assets/svg-icons/Eolica-On.svg';
 import HidrologiaOn from '../assets/svg-icons/Hidrologia-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
+import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -175,23 +177,40 @@ export default function Indicadores6GW() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card, i) => (
-            <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-              <div className="flex items-center mb-2">
-                <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                  {card.label}
-                </span>
-              </div>
-              <div className="flex text-white text-3xl font-bold">
-                {formatMW(card.value)} MW
-                <HelpCircle
-                  className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                  title="Ayuda"
-                />
-              </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-            </div>
-          ))}
+              card.label === 'Capacidad total' ?
+                // Card especial para Zonas no interconectadas (ZNI)
+                <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                  <div className="flex items-center mb-2">
+                    <i className="fas fa-bolt text-yellow-400 w-1 h-6 flex-shrink-0"></i>
+                    <img src={TerritorioOn} alt="Icono Territorio" className="w-6 h-6 flex-shrink-0" />
+                    <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                      Zonas no interconectadas (ZNI)
+                    </span>
+                  </div>
+                  <div className="flex text-white text-3xl font-bold">
+                    13,89 MW
+                    <i className="fas fa-question-circle help-icon self-center h-6 w-6 ml-4" title="Ayuda"></i>
+                  </div>
+                  <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: 8/5/2025</div>
+                </div>
+                :
+                <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                  <div className="flex items-center mb-2">
+                    <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
+                    <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                      {card.label}
+                    </span>
+                  </div>
+                  <div className="flex text-white text-3xl font-bold">
+                    {formatMW(card.value)} MW
+                    <HelpCircle
+                      className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                      title="Ayuda"
+                    />
+                  </div>
+                  <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
+                </div>
+            ))}
         </div>
       </div>
     </>
