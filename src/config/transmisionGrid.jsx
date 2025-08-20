@@ -170,7 +170,7 @@ export const TRANSMISION_GRID_CONFIG = {
           }   
         },
         {
-          name: "FPO Vigente",
+          name: "FPO",
           selector: row => row.fpo_vigente?.split('T')[0] || '-',
           sortable: true,
           width: "120px"
@@ -183,7 +183,7 @@ export const TRANSMISION_GRID_CONFIG = {
           cell: row => <span title={row.etapa}>{row.etapa}</span>
         },
         {
-          name: "Avance Real",
+          name: "Avance general",
           selector: row => `${(row.avance_real * 100).toFixed(1)}%`,
           sortable: true,
           width: "200px",

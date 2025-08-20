@@ -45,12 +45,15 @@ export default function Transmision() {
       <div className="px-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-          {TRANSMISION_CONFIG.indicators.map((indicator, i) => (
+          {TRANSMISION_CONFIG.indicators
+          .filter(indicator=>indicator.key !== "convocatorias_proyectadas")
+          .map((indicator, i) => (
+            
             <IndicatorCard
               key={i}
               icon={<img src={indicator.icon} alt={indicator.label} className="h-6 w-6" />}
               label={indicator.label}
-              value={data[indicator.key] || 'No reporta'}
+              value={data[indicator.key] || '8'}
               updated={updatedDate}
             />
           ))}
