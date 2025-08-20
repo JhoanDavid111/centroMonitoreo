@@ -10,37 +10,62 @@ import EolicaOn from '../assets/svg-icons/Eolica-On.svg';
 import HidrologiaOn from '../assets/svg-icons/Hidrologia-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
-import { API } from '../config/api';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Normalización y mapeo canónico
+// ─────────────────────────────────────────────────────────────────────────────
+function stripAccents(s = '') {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function canonicalKey(raw = '') {
+  const clean = stripAccents(String(raw).trim()).toUpperCase();
+  // Sinónimos -> clave canónica
+  if (clean === 'EN OPERACION') return 'EN OPERACIÓN';
+  if (clean === 'PRUEBAS') return 'PRUEBAS';
+  if (clean === 'AGGE') return 'AGGE';
+  if (clean === 'AGPE') return 'AGPE';
+  if (clean === 'FNCER GRAN ESCALA' || clean === 'FNCER' || clean === 'FNCER GRAN-ESCALA' || clean === 'FNCER A GRAN ESCALA' || clean === 'FNCER GRAN  ESCALA' || clean === 'FNCER  GRAN ESCALA' || clean === 'FNCER GRAN  ESCALA') return 'FNCER GRAN ESCALA';
+  if (clean === 'GENERAClON DlSTRlBUlDA'.replace(/[lI]/g, 'I')) return 'GENERACION DISTRIBUIDA'; // defensivo
+  if (clean === 'GENERACION DISTRIBUIDA') return 'GENERACION DISTRIBUIDA';
+  if (clean === 'CAPACIDAD A ENTRAR 075') return 'CAPACIDAD A ENTRAR 075';
+  return clean; // fallback para mostrar igualmente
+}
 
 const LABEL_MAP = {
   'EN OPERACIÓN': { label: 'Capacidad instalada en operación', icon: DemandaOn },
   'PRUEBAS': { label: 'Capacidad instalada en pruebas', icon: ProcessOn },
-  'Capacidad a entrar 075': { label: 'MW por entrar a Julio de 2026', icon: Proyecto075On },
-  'FNCER Gran Escala': { label: 'FNCER gran escala', icon: EolicaOn },
+  'CAPACIDAD A ENTRAR 075': { label: 'MW por entrar a julio de 2026', icon: Proyecto075On },
+  'FNCER GRAN ESCALA': { label: 'FNCER gran escala', icon: EolicaOn },
   'AGGE': { label: 'Autogeneración a gran escala (AGGE)', icon: HidrologiaOn },
-  'Generacion Distribuida': { label: 'Generación distribuida (GD)', icon: AutogeneracionOn },
+  'GENERACION DISTRIBUIDA': { label: 'Generación distribuida (GD)', icon: AutogeneracionOn },
   'AGPE': { label: 'Autogeneración a pequeña escala (AGPE)', icon: CasaOn },
 };
 
 const ORDER = [
   'EN OPERACIÓN',
   'PRUEBAS',
-  'Capacidad a entrar 075',
-  'FNCER Gran Escala',
+  'CAPACIDAD A ENTRAR 075',
+  'FNCER GRAN ESCALA',
   'AGGE',
-  'Generacion Distribuida',
+  'GENERACION DISTRIBUIDA',
   'AGPE',
 ];
 
-const formatMW = n =>
-  n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilidades
+// ─────────────────────────────────────────────────────────────────────────────
+const formatMW = (n) =>
+  Number(n ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function fetchIndicadores6GW() {
-  const resp = await fetch(`${API}/v1/indicadores/6g_proyecto`, { method: 'POST' });
+  const resp = await fetch(`http://192.168.8.138:8002/v1/indicadores/6g_proyecto`, { method: 'POST' });
   if (!resp.ok) throw new Error('Error al consultar indicadores 6GW+');
   return resp.json();
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Componente
+// ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -57,43 +82,54 @@ export default function Indicadores6GW() {
         }
       } catch (e) {
         if (alive) {
-          setError(e.message);
+          setError(e.message || 'Error al consultar indicadores 6GW+');
           setLoading(false);
         }
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  const normalized = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data.map((d) => ({
+      original: d.indicador,
+      key: canonicalKey(d.indicador),
+      mw: Number(d.capacidad_mw ?? 0),
+    }));
+  }, [data]);
+
   const totalMW = useMemo(() => {
-    if (!data) return 0;
-    const totalItem = data.find(d => d.indicador.toLowerCase().includes('total'));
-    if (totalItem) return totalItem.capacidad_mw;
+    if (!normalized.length) return 0;
+    const total = normalized.find((x) => x.key === 'CAPACIDAD TOTAL')?.mw;
+    if (total != null && !Number.isNaN(total)) return total;
+    // Respaldo: suma de todos
+    return normalized.reduce((acc, x) => acc + (x.mw || 0), 0);
+  }, [normalized]);
 
-    const op = data.find(d => d.indicador === 'EN OPERACIÓN')?.capacidad_mw || 0;
-    const pr = data.find(d => d.indicador === 'PRUEBAS')?.capacidad_mw || 0;
-    return op + pr;
-  }, [data]);
+  const updated = useMemo(() => new Date().toLocaleDateString('es-CO'), []);
 
-  const indices = useMemo(() => {
-    if (!data) return [];
-    const updated = new Date().toLocaleDateString('es-CO');
-
-    return data
-      .filter(item => LABEL_MAP[item.indicador])
-      .sort((a, b) => ORDER.indexOf(a.indicador) - ORDER.indexOf(b.indicador))
-      .map(item => ({
-        icon: LABEL_MAP[item.indicador].icon,
-        label: LABEL_MAP[item.indicador].label,
-        value: item.capacidad_mw,
-        updated,
-      }));
-  }, [data]);
+  const cards = useMemo(() => {
+    if (!normalized.length) return [];
+    // Construir todas las tarjetas (con fallback de icono/label si no está en LABEL_MAP)
+    const all = normalized.map((x) => {
+      const meta = LABEL_MAP[x.key];
+      return {
+        order: ORDER.indexOf(x.key) === -1 ? 999 : ORDER.indexOf(x.key),
+        icon: meta?.icon ?? DemandaOn,
+        label: meta?.label ?? x.original,
+        value: x.mw,
+      };
+    });
+    // Ordenar por ORDER (y por nombre si están fuera del ORDER)
+    return all.sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
+  }, [normalized]);
 
   if (loading) {
     return (
       <div className="px-4 py-6 text-white">
-        {/* Skeleton muy simple */}
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -114,7 +150,7 @@ export default function Indicadores6GW() {
 
   return (
     <>
-      {/* Total + botón (igual a como estaba) */}
+      {/* Encabezado total */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
         <div>
           <p style={{ color: '#FFC800' }} className="mb-1 text-2xl">
@@ -126,23 +162,20 @@ export default function Indicadores6GW() {
         </div>
 
         <button
-          onClick={() => (window.location.href = '/proyectos075')}
+          onClick={() => (window.location.href = '/CentroMonitoreo/proyectos075')}
           className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
         >
           Ver seguimiento de proyectos
         </button>
       </div>
 
-      {/* Índices */}
+      {/* Tarjetas */}
       <div className="px-2">
-        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices 6GW+</h2>
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índice plan 6gw plus</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {indices.map((card, i) => (
-            <div
-              key={i}
-              className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow"
-            >
+          {cards.map((card, i) => (
+            <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
               <div className="flex items-center mb-2">
                 <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
                 <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
@@ -156,9 +189,7 @@ export default function Indicadores6GW() {
                   title="Ayuda"
                 />
               </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">
-                Actualizado el: {card.updated}
-              </div>
+              <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
             </div>
           ))}
         </div>
@@ -166,3 +197,4 @@ export default function Indicadores6GW() {
     </>
   );
 }
+

@@ -36,11 +36,13 @@ export default function Resumen() {
           className="w-full object-cover h-[170px]"
         />
         <div className="absolute inset-0 flex justify-between items-center px-6">
+
             {/* Título + botón en columna */}
           <div className="flex flex-col">
             <h1 className="text-6xl font-semibold text-white mb-2">
-              Plan 6GW Plus
+              Seguimiento plan 6GW+
             </h1>
+            <br/>
             <button 
               onClick={handleDownload} 
               className="bg-yellow-400 text-black font-semibold px-4 py-2 rounded-md w-fit hover:bg-yellow-500"
@@ -57,7 +59,6 @@ export default function Resumen() {
       <Indicadores6GW />
 
       {/* Resto de secciones */}
-      <ComunidadesResumen />
       <div className="px-2">
         <CapacidadInstalada />
       </div>

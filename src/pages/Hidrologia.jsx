@@ -1,7 +1,9 @@
 // src/pages/Hidrologia.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 // HTML embebidos
 import chart1Html from '../data/Chart1.html?raw';
@@ -10,6 +12,9 @@ import chart3Html from '../data/Chart3.html?raw'; // Información general
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
 import bannerHidrologia from '../assets/bannerHidrologia.png';
 
+import MapaHidrologia from '../components/MapaHidrologia';
+
+// ===== Paleta (según tu guía de colores) =====
 const COLORS = {
   down: '#EF4444',
   up: '#22C55E',
@@ -116,15 +121,22 @@ const indices = [
 
 function TrendChip({ dir = 'up', children }) {
   const isUp = dir === 'up';
-  const bg = isUp ? COLORS.up : COLORS.down;
-  const arrow = isUp ? '↑' : '↓';
+  const bg = isUp ? '#22C55E' : '#EF4444';
   return (
     <span
-      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-2xl text-sm font-semibold"
-      style={{ background: bg, color: COLORS.chipText }}
+      className="
+        inline-flex items-center gap-2 px-3 py-1
+        rounded-full text-sm font-semibold
+        whitespace-nowrap leading-none
+      "
+      style={{
+        backgroundColor: bg,
+        color: '#fff',
+        border: '1px solid rgba(0,0,0,.15)',
+      }}
     >
-      <span className="text-base leading-none" style={{ color: '#111' }}>{arrow}</span>
-      <span className="tracking-tight">{children}</span>
+      <span aria-hidden className="text-base leading-none">{isUp ? '↑' : '↓'}</span>
+      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
     </span>
   );
 }
@@ -212,8 +224,7 @@ function useDesabastecimientoOptionsFromHtml() {
   }), [parsed]);
 }
 
-/* -----------------inyección de estilos para iframes embebidos---------------- */
-
+/* ----------------- inyección de estilos para iframes embebidos ---------------- */
 function injectStylesForGeneral(html) {
   const CSS = `
     :root, body { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
@@ -223,16 +234,9 @@ function injectStylesForGeneral(html) {
 
     .card, .panel, .container, .content, .dataTables_wrapper { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
 
-    /* Encabezado gris (neutraliza cualquier azul) */
-    table thead tr,
-    table thead th,
-    table thead td,
-    .table thead tr,
-    .table thead th,
-    .table thead td,
-    .thead,
-    .thead-dark,
-    .thead-light,
+    table thead tr, table thead th, table thead td,
+    .table thead tr, .table thead th, .table thead td,
+    .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
       background: #1f1f1f !important;
@@ -240,13 +244,11 @@ function injectStylesForGeneral(html) {
       border-color: ${COLORS.border} !important;
     }
 
-    /* Filas y celdas en oscuro */
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
     table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
 
-    /* Forzar override si el HTML trae estilos inline en blanco */
     [style*="background:#fff"], [style*="background: #fff"], [style*="background-color:#fff"], [style*="background-color: #fff"], [style*="background: white"], [style*="background-color: white"] {
       background-color: ${COLORS.darkBg} !important;
       color: ${COLORS.gray} !important;
@@ -275,16 +277,9 @@ function injectStylesForAportes(html) {
 
     .card, .panel, .container, .content, .dataTables_wrapper { background: ${COLORS.darkBg}; color: ${COLORS.gray}; }
 
-    /* Encabezado gris – NO azul */
-    table thead tr,
-    table thead th,
-    table thead td,
-    .table thead tr,
-    .table thead th,
-    .table thead td,
-    .thead,
-    .thead-dark,
-    .thead-light,
+    table thead tr, table thead th, table thead td,
+    .table thead tr, .table thead th, .table thead td,
+    .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
       background: #1f1f1f !important;
@@ -293,13 +288,11 @@ function injectStylesForAportes(html) {
     }
     .bg-primary, .bg-info, .bg-warning, .bg-success, .bg-danger { background-color: ${COLORS.gray} !important; }
 
-    /* Filas/celdas coherentes en oscuro */
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
     table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
 
-    /* Forzar override si hay inline blanco */
     [style*="background:#fff"], [style*="background: #fff"], [style*="background-color:#fff"], [style*="background-color: #fff"], [style*="background: white"], [style*="background-color: white"] {
       background-color: ${COLORS.darkBg} !important;
       color: ${COLORS.gray} !important;
@@ -310,7 +303,6 @@ function injectStylesForAportes(html) {
 
     .text-muted, .muted, small { color: ${COLORS.gray} !important; }
 
-    /* Barra de progreso */
     .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
     .progress .progress-bar { transition: background-color .25s ease; }
   `;
@@ -340,7 +332,6 @@ function injectStylesForAportes(html) {
       if (!isNaN(p)) bar.style.backgroundColor = colorFor(p);
     });
 
-    /* Asegura que grupos/regiones no queden blancos */
     var whitey = document.querySelectorAll('.bg-white, .card, .panel, .row, .col, .section, .container, .content');
     whitey.forEach(function(n){
       var styleBg = getComputedStyle(n).backgroundColor;
@@ -358,15 +349,132 @@ function injectStylesForAportes(html) {
 }
 
 /* --------------------------------- Página --------------------------------- */
-
 export default function Hidrologia() {
   const aportesOptions = useAportesOptionsFromHtml();
   const desabOptions = useDesabastecimientoOptionsFromHtml();
   const [tab, setTab] = useState('aportes'); // abre en la pestaña que estás ajustando
 
+  // Ref para capturar toda la página con html2canvas
+  const pageRef = useRef(null);
+
+  // Convierte cada iframe (srcDoc) en una imagen temporal para que salga en la captura
+  async function snapshotIframes(container) {
+    const iframes = Array.from(container.querySelectorAll('iframe'));
+    const cleanups = [];
+
+    await Promise.all(iframes.map(async (iframe) => {
+      try {
+        // esperar a que cargue su doc
+        await new Promise((resolve) => {
+          const doc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (doc && (doc.readyState === 'interactive' || doc.readyState === 'complete')) return resolve();
+          iframe.addEventListener('load', resolve, { once: true });
+          setTimeout(resolve, 120);
+        });
+
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) return;
+
+        // Asegura que las fuentes del documento estén listas
+        await document.fonts?.ready;
+
+        // Captura el DOM interno del iframe
+        const node = doc.documentElement; // raíz del documento
+        const canvas = await html2canvas(node, {
+          scale: 2,
+          backgroundColor: COLORS.darkBg,
+          useCORS: true,
+          windowWidth: node.scrollWidth,
+          windowHeight: node.scrollHeight,
+        });
+
+        const img = document.createElement('img');
+        img.className = 'snapshot-placeholder';
+        img.src = canvas.toDataURL('image/png', 1.0);
+        img.style.width  = iframe.offsetWidth + 'px';
+        img.style.height = iframe.offsetHeight + 'px';
+        img.style.display = 'block';
+
+        iframe.style.display = 'none';
+        iframe.parentNode.insertBefore(img, iframe.nextSibling);
+
+        cleanups.push(() => {
+          img.remove();
+          iframe.style.display = '';
+        });
+      } catch (e) {
+        console.error('No se pudo capturar un iframe:', e);
+      }
+    }));
+
+    return () => cleanups.forEach(fn => fn());
+  }
+
+  async function handleDownload(kind = 'png') {
+    const container = pageRef.current;
+    if (!container) return;
+
+    // Convierte iframes a imágenes para que salgan en la captura
+    const restore = await snapshotIframes(container);
+
+    try {
+      // Espera a que las fuentes estén listas (para que no “desaparezcan” textos)
+      await document.fonts?.ready;
+
+      // Render de toda la sección
+      const canvas = await html2canvas(container, {
+        backgroundColor: COLORS.darkBg,
+        scale: 2,
+        useCORS: true,
+        windowWidth: container.scrollWidth,
+        windowHeight: container.scrollHeight,
+      });
+
+      if (kind === 'png') {
+        const url = canvas.toDataURL('image/png', 1.0);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hidrologia.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else if (kind === 'pdf') {
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = -(imgHeight - heightLeft);
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save('hidrologia.pdf');
+      }
+    } catch (e) {
+      console.error('Error generando captura:', e);
+      alert('Ocurrió un error al generar la descarga.');
+    } finally {
+      // Restaurar iframes
+      restore?.();
+    }
+  }
+
   return (
-    <section className="space-y-6">
-      {/* Banner */}
+    <section className="space-y-6" ref={pageRef}>
+      {/* Banner + botones de descarga */}
       <div
         className="rounded-2xl overflow-hidden h-24 md:h-28 lg:h-32 relative"
         style={{
@@ -379,6 +487,23 @@ export default function Hidrologia() {
         <h1 className="absolute left-6 top-1/2 -translate-y-1/2 text-white font-bold text-3xl md:text-4xl">
           Seguimiento Hidrológico
         </h1>
+
+        <div className="absolute right-4 bottom-3 flex gap-2">
+          <button
+            onClick={() => handleDownload('png')}
+            className="px-3 py-1.5 rounded-md bg-white/90 hover:bg-white text-black text-sm font-semibold"
+            title="Descargar como imagen (PNG)"
+          >
+            Descargar PNG
+          </button>
+          <button
+            onClick={() => handleDownload('pdf')}
+            className="px-3 py-1.5 rounded-md bg-yellow-400 hover:brightness-95 text-black text-sm font-semibold"
+            title="Descargar como PDF"
+          >
+            Descargar PDF
+          </button>
+        </div>
       </div>
 
       {/* ÍNDICES */}
@@ -469,8 +594,8 @@ export default function Hidrologia() {
 
       {/* Mapa (placeholder) */}
       <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-2 md:p-3 lg:p-4">
-        <div className="h-[520px] rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
-          Mapa embebido (pendiente de integración)
+        <div className="py-4 rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
+          <MapaHidrologia/>
         </div>
       </div>
 
@@ -521,6 +646,9 @@ export default function Hidrologia() {
     </section>
   );
 }
+
+
+
 
 
 
