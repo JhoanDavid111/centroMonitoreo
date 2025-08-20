@@ -11,11 +11,20 @@ import MapaCreg075 from '../components/MapaCreg075';
 import MapaCreg174 from '../components/MapaCreg174';
 import { GeneracionDespacho } from '../components/GeneracionDespacho';
 import MapasCreg from '../components/MapasCreg';
+import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
+
 
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
+import { Import } from 'lucide-react';
 
 export default function Resumen() {
   const navigate = useNavigate();
+
+  const handleDownload = () => {
+    //Lógica para descargar el archivo 
+    window.open('https://app.upme.gov.co/Reportes_CentroMonitoreo/Reportes/Reporte_Resumen_CentroMonitoreo.pdf',  "resumenPdf");
+    //console.log("Descargar resumen");
+  };
 
   return (
     <div className="space-y-8">
@@ -23,13 +32,26 @@ export default function Resumen() {
       <div className="relative rounded-2xl overflow-hidden mb-6 mt-6">
         <img
           src={bannerImage}
-          alt="Estrategia 6GW Plus"
+          alt="Plan 6GW Plus"
           className="w-full object-cover h-[170px]"
         />
         <div className="absolute inset-0 flex justify-between items-center px-6">
-          <h1 className="text-6xl font-semibold text-white mb-4">Seguimiento plan 6GW+</h1>
+
+            {/* Título + botón en columna */}
+          <div className="flex flex-col">
+            <h1 className="text-6xl font-semibold text-white mb-2">
+              Seguimiento plan 6GW+
+            </h1>
+            <br/>
+            <button 
+              onClick={handleDownload} 
+              className="bg-yellow-400 text-black font-semibold px-4 py-2 rounded-md w-fit hover:bg-yellow-500"
+            >
+              Descargar resumen
+            </button>
+          </div>
           {/* El ícono grande lo moví al componente hijo si quieres; si no, déjalo */}
-          {/* <img src={GWOff} className="w-24 h-24 flex-shrink-0" /> */}
+          {/* <img src={GWOff} className="w-24 h-24 flex-shrink-0" />  */}
         </div>
       </div>
 
