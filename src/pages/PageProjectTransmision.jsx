@@ -259,7 +259,7 @@ const PageProjectTransmision = () => {
                   <FileText size={16} />
                 }
                 title={milestone.title}
-                value={milestone.title.includes('cambios') ? `${milestone.value} cambios` : fmtDate(milestone.value)}
+                value={milestone.title.includes('cambios') ? `${milestone.value} ` : fmtDate(milestone.value)}
                 hint={milestone.updated ? `Actualizado: ${fmtDate(milestone.updated)}` : null}
               />
             ))}
