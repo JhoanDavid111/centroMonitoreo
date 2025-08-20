@@ -16,6 +16,8 @@
     "firebase": "^11.9.1",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.510.0",
     "material-react-table": "^3.2.1",
