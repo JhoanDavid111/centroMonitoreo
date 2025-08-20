@@ -35,3 +35,8 @@
     color: #fafafa !important;
   }
 }
+
+.highcharts-tooltip span {
+  pointer-events: auto !important;
+  user-select: text !important;
+}
