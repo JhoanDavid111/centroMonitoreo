@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
-// Ícono de las tarjetas
+// Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 
-// Mapa de textos (valores quemados)
+// Textos (quemados por ahora)
 const LABEL_MAP = {
   total_proyectos_bd075: {
     label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
@@ -39,7 +39,7 @@ const LABEL_MAP = {
   },
 };
 
-// Orden de las tarjetas (sin incluir el total)
+// Orden de tarjetas (se muestran TODAS; 3 por fila)
 const ORDER = [
   'total_proyectos_aprobados_bd075',
   'total_capacidad_instalada_bd075',
@@ -48,22 +48,19 @@ const ORDER = [
   'proyectos_aprobados_no_curva_s',
 ];
 
-// ✅ Helper: formatea números con separador de miles
-function formatCount(n) {
-  if (n === null || n === undefined) return '';
-  return new Intl.NumberFormat('es-CO').format(Number(n));
+// Helpers
+function cleanSubtitle(raw) {
+  // quita el " =" final del label para usarlo como subtítulo
+  return String(raw || '').replace(/\s*=\s*$/, '');
 }
 
 export default function IndicadoresProyectos075() {
   const [loading] = useState(false);
   const [error] = useState('');
 
-  // ✅ Extrae automáticamente el 145 del texto de LABEL_MAP para no duplicar
-  const totalProyectos = Number(
-    (LABEL_MAP.total_proyectos_bd075.value.match(/\d+/) || [0])[0]
-  );
+  const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
+  const heroValue = LABEL_MAP.total_proyectos_bd075.value;
 
-  // Fecha de actualización
   const updated = new Date().toLocaleDateString('es-CO');
 
   if (loading) {
@@ -71,8 +68,8 @@ export default function IndicadoresProyectos075() {
       <div className="px-4 py-6 text-white">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 5 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {ORDER.map((_, i) => (
               <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
                 <div className="h-6 bg-neutral-700 rounded mb-4" />
                 <div className="h-8 bg-neutral-600 rounded mb-2" />
@@ -98,17 +95,38 @@ export default function IndicadoresProyectos075() {
 
   return (
     <>
-      {/* Total de proyectos */}
-      <div className="flex flex-row items-center justify-center gap-6 px-4 py-6">
-        <p className="text-white text-2xl mr-2">Total de proyectos</p>
-        <p className="text-6xl font-semibold" style={{ color: '#FFC800', lineHeight: '36px' }}>
-          {formatCount(totalProyectos)}
-        </p>
+      {/* ───────── Indicador general (hero) ───────── */}
+      <div className="px-4 pt-6 text-center">
+        <div className="inline-flex items-center gap-4">
+          {/* círculo amarillo + icono negro (forzado con filter) */}
+          <span
+            className="inline-flex items-center justify-center rounded-full"
+            style={{ width: 64, height: 64, background: '#FFC800' }}
+          >
+            <img
+              src={DemandaOn}
+              alt="Icono"
+              className="w-7 h-7"
+              style={{ filter: 'brightness(0) saturate(100%)' }} // vuelve el svg negro
+            />
+          </span>
+
+          <span
+            className="font-semibold leading-tight"
+            style={{ color: '#FFC800', fontSize: '44px' }}
+          >
+            {heroValue}
+          </span>
+        </div>
+
+        <div className="mt-2 text-[#D1D1D0] text-[20px]">
+          {heroSubtitle}
+        </div>
       </div>
 
-      {/* Tarjetas */}
-      <div className="px-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ───────── Tarjetas: 3 por fila ───────── */}
+      <div className="px-2 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {cards.map(({ key, icon, label, value }) => (
             <div key={key} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
               <div className="flex items-center mb-2">
@@ -132,4 +150,5 @@ export default function IndicadoresProyectos075() {
     </>
   );
 }
+
 
