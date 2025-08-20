@@ -56,7 +56,7 @@ export function Sidebar({ open, toggle, userRole }) {
     }, */
 
     {
-      title: 'ESTRATEGIA 6GW+',
+      title: 'SEGUIMIENTO PLAN 6GW+',
       items: [
         {
           title: 'Resumen',
@@ -81,7 +81,7 @@ export function Sidebar({ open, toggle, userRole }) {
         },
         {
           title: 'Comunidades energéticas',
-          path: '/comunidades_energeticas',
+          path: '/en_construccion',
           icon: ComunidadesEnergOff,
           activeIcon: ComunidadesEnergOn,
           permission: 'comunidades',

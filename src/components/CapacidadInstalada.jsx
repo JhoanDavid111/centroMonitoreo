@@ -1,3 +1,4 @@
+// src/components/CapacidadInstalada.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
@@ -8,78 +9,65 @@ import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
-// Configuración de caché
+// ============== Caché ==============
 const CACHE_PREFIX = 'chart-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-
-// Caché en memoria para la sesión actual
 const memoryCache = new Map();
 
-// Helper para obtener datos del caché
 const getFromCache = (key) => {
-  // Primero verificar caché en memoria
-  if (memoryCache.has(key)) {
-    return memoryCache.get(key);
-  }
-
-  // Si no está en memoria, verificar localStorage
-  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
-  if (!cachedItem) return null;
-
+  if (memoryCache.has(key)) return memoryCache.get(key);
+  const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+  if (!raw) return null;
   try {
-    const { data, timestamp } = JSON.parse(cachedItem);
-
-    // Verificar si el caché ha expirado
+    const { data, timestamp } = JSON.parse(raw);
     if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
       localStorage.removeItem(`${CACHE_PREFIX}${key}`);
       return null;
     }
-
-    // Almacenar en memoria para acceso más rápido
     memoryCache.set(key, data);
     return data;
-  } catch (e) {
-    console.error('Error parsing cache', e);
+  } catch {
     localStorage.removeItem(`${CACHE_PREFIX}${key}`);
     return null;
   }
 };
 
-// Helper para guardar datos en el caché
 const setToCache = (key, data) => {
-  const timestamp = Date.now();
-  const cacheItem = JSON.stringify({ data, timestamp });
-
-  // Almacenar en ambos niveles de caché
+  const payload = JSON.stringify({ data, timestamp: Date.now() });
   memoryCache.set(key, data);
-
   try {
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
-  } catch (e) {
-    console.error('LocalStorage is full, clearing oldest items...');
-    // Limpieza de caché si está lleno (mantener solo los 50 más recientes)
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, payload);
+  } catch {
+    // limpia dejando los 50 más recientes
     const keys = Object.keys(localStorage)
       .filter(k => k.startsWith(CACHE_PREFIX))
-      .map(k => ({
-        key: k,
-        timestamp: JSON.parse(localStorage.getItem(k)).timestamp
-      }))
+      .map(k => ({ key: k, timestamp: JSON.parse(localStorage.getItem(k)).timestamp }))
       .sort((a, b) => b.timestamp - a.timestamp);
-
-    keys.slice(50).forEach(item => {
-      localStorage.removeItem(item.key);
-    });
-
-    // Intentar nuevamente
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
+    keys.slice(50).forEach(i => localStorage.removeItem(i.key));
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, payload);
   }
 };
 
-// Inicializar módulos de Highcharts
+// ============== Highcharts mods ==============
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
+
+// normaliza string (mayúsculas, sin tildes)
+const norm = (s='') =>
+  s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+// color por fuente (robusto a variantes)
+const colorFor = (name='') => {
+  const n = norm(name);
+  if (n.includes('SOLAR')) return '#FFC800';
+  if (n.includes('EOLICA') || n.includes('EOLICO') || n.includes('VIENTO')) return '#5DFF97';
+  if (n === 'PCH') return '#3B82F6';
+  if (n.includes('TERM')) return '#F97316';
+  if (n.includes('BIOMASA')) return '#B39FFF';
+  return '#666666';
+};
 
 export function CapacidadInstalada() {
   const chartRef = useRef(null);
@@ -89,15 +77,14 @@ export function CapacidadInstalada() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let alive = true;
     const cacheKey = 'capacidad_instalada_acumulada';
 
-    const fetchData = async () => {
+    (async () => {
       try {
-        // Verificar caché primero
-        const cachedData = getFromCache(cacheKey);
-        if (cachedData && isMounted) {
-          setOptions(cachedData);
+        const cached = getFromCache(cacheKey);
+        if (cached && alive) {
+          setOptions(cached);
           setIsCached(true);
           setLoading(false);
           return;
@@ -107,65 +94,72 @@ export function CapacidadInstalada() {
         setIsCached(false);
         setError(null);
 
-        const response = await fetch(`${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
+        const res = await fetch(
+          `${API}/v1/graficas/6g_proyecto/acumulado_capacidad_proyectos`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        );
+        if (!res.ok) throw new Error('Error en la respuesta del servidor');
 
-        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) throw new Error('No hay datos disponibles');
 
-        const data = await response.json();
-
-        if (!data || !Array.isArray(data) || data.length === 0) {
-          throw new Error('No hay datos disponibles');
-        }
-
-        // Ordenar por fecha
+        // ordena por fecha
         const sorted = [...data].sort(
           (a, b) => new Date(a.fecha_entrada_operacion) - new Date(b.fecha_entrada_operacion)
         );
 
-        // Detección dinámica de fuentes de energía
-        const allFuentes = Object.keys(sorted[0]).filter(k => k !== 'fecha_entrada_operacion');
+        // Fuentes detectadas dinámicamente (quitamos Biomasa)
+        const fuentesAll = Object.keys(sorted[0]).filter(k => k !== 'fecha_entrada_operacion');
+        const fuentesSinBiomasa = fuentesAll.filter(k => norm(k) !== 'BIOMASA');
 
-        const colorMap = {
-          SOLAR: '#FFC800',
-          EOLICA: '#5DFF97',
-          VIENTO: '#FF9900',
-          PCH: '#3B82F6',
-          BIOMASA: '#B39FFF',
-          TERMICA: '#F97316'
-        };
+        // --- ORDEN deseado en la pila ---
+        // base inferior: PCH y EÓLICA
+        const pchKey     = fuentesSinBiomasa.find(f => norm(f) === 'PCH');
+        const eolicaKey  = fuentesSinBiomasa.find(f => norm(f).includes('EOLICA') || norm(f).includes('EOLICO') || norm(f).includes('VIENTO'));
+        // tope superior: SOLAR (si existe)
+        const solarKey   = fuentesSinBiomasa.find(f => norm(f).includes('SOLAR'));
 
-        // Crear series con datos [timestamp, valor]
-        const series = allFuentes.map(fuente => {
-          let lastValue = 0;
-          const dataPoints = sorted.map(item => {
-            const time = new Date(item.fecha_entrada_operacion).getTime();
+        // el resto en el medio, manteniendo el orden original
+        const middle = fuentesSinBiomasa.filter(f =>
+          f !== pchKey && f !== eolicaKey && f !== solarKey
+        );
+
+        // orden final para stacking (primero = fondo, último = arriba)
+        const orderedFuentes = [
+          ...(pchKey ? [pchKey] : []),
+          ...(eolicaKey ? [eolicaKey] : []),
+          ...middle,
+          ...(solarKey ? [solarKey] : []),
+        ];
+
+        // crea series acumuladas [timestamp, valor]
+        const series = orderedFuentes.map(fuente => {
+          let last = 0;
+          const points = sorted.map(item => {
+            const t = new Date(item.fecha_entrada_operacion).getTime();
             if (item[fuente] !== undefined && !isNaN(item[fuente])) {
-              lastValue = parseFloat(item[fuente]);
+              last = parseFloat(item[fuente]);
             }
-            return [time, lastValue];
+            return [t, last];
           });
           return {
             name: fuente,
-            data: dataPoints,
-            color: colorMap[fuente] || '#666666'
+            data: points,
+            color: colorFor(fuente),
           };
         });
 
-        // Configuración de opciones de Highcharts
         const chartOptions = {
           chart: {
             type: 'area',
             backgroundColor: '#262626',
             height: 550,
-            marginBottom: 100
+            marginBottom: 100,
           },
           title: {
-            text: 'Capacidad acumulada por tipo de proyecto',
+            text: 'Evolución Capacidad Instalada por Tecnología',
             align: 'left',
-            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', textAlign: 'left'}
+            style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' }
           },
           subtitle: {
             text: isCached ? '(Datos en caché)' : '',
@@ -173,43 +167,21 @@ export function CapacidadInstalada() {
           },
           xAxis: {
             type: 'datetime',
-            dateTimeLabelFormats: {
-              day: '%e %b %Y',
-              month: '%b \'%y',
-              year: '%Y'
-            },
-            labels: {
-              rotation: -45,
-              y: 18,
-              style: {
-                color: '#CCC',
-                fontFamily: 'Nunito Sans, sans-serif',
-                fontSize: '12px'
-              }
-            },
+            dateTimeLabelFormats: { day: '%e %b %Y', month: "%b '%y", year: '%Y' },
+            labels: { rotation: -45, y: 18, style: { color: '#CCC', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
             title: { text: 'Fecha de entrada en operación', style: { color: '#FFF' } },
-            lineColor: '#555',
-            tickColor: '#888',
-            tickLength: 5
+            lineColor: '#555', tickColor: '#888', tickLength: 5
           },
           yAxis: {
             min: 0,
             tickAmount: 6,
             gridLineDashStyle: 'Dash',
             gridLineColor: '#444',
-            title: {
-              text: 'Capacidad acumulada (MW)',
-              style: { color: '#FFF' }
-            },
+            reversedStacks: false,           // ← fuerza que la 1a serie vaya al fondo
+            title: { text: 'Capacidad acumulada (MW)', style: { color: '#FFF' } },
             labels: {
-              formatter() {
-                return this.value.toLocaleString() + ' MW';
-              },
-              style: {
-                color: '#CCC',
-                fontFamily: 'Nunito Sans, sans-serif',
-                fontSize: '12px'
-              }
+              formatter() { return this.value.toLocaleString() + ' MW'; },
+              style: { color: '#CCC', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
             }
           },
           tooltip: {
@@ -219,33 +191,17 @@ export function CapacidadInstalada() {
             formatter() {
               const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
               let total = 0;
-
-              const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-              // Sumar total
-              this.points.forEach(pt => {
-                total += pt.y;
-              });
-
-              // Encabezado
+              this.points.forEach(pt => { total += pt.y; });
               let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
-              s += `<span style="color:#FFD700"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
-
-              // Categorías
+              s += `<span style="color:#FFD700"><b>Total: ${total.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} MW</b></span><br/><br/>`;
               this.points.forEach(pt => {
-                const nombre = capitalize(pt.series.name);
-                s += `<span style="color:${pt.color}">\u25CF</span> ${nombre}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b><br/><br/>`;
+                s += `<span style="color:${pt.color}">●</span> ${pt.series.name}: <b>${pt.y.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} MW</b><br/><br/>`;
               });
-
               return s;
             }
           },
           plotOptions: {
-            area: {
-              stacking: 'normal',
-              marker: { enabled: false },
-              lineWidth: 1
-            }
+            area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1 }
           },
           series,
           legend: {
@@ -254,46 +210,29 @@ export function CapacidadInstalada() {
             y: 25,
             itemStyle: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
             itemHoverStyle: { color: '#fff' }
-          },
-        /*   exporting: {
-            enabled: true,
-            buttons: {
-              contextButton: {
-                menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG']
-              }
-            }
-          } */
+          }
         };
 
-        if (isMounted) {
+        if (alive) {
           setOptions(chartOptions);
           setToCache(cacheKey, chartOptions);
           setTimeout(() => chartRef.current?.chart?.redraw(), 200);
         }
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
-        if (isMounted) {
-          setError(err.message);
-        }
+      } catch (e) {
+        if (alive) setError(e.message || 'Error al cargar datos');
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (alive) setLoading(false);
       }
-    };
+    })();
 
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { alive = false; };
   }, []);
 
   if (loading) {
     return (
       <div className="w-full bg-[#262626] p-4 rounded rounded-lg border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }} />
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)' }} />
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }} />
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }} />
         </div>
@@ -307,14 +246,11 @@ export function CapacidadInstalada() {
       <div className="w-full bg-[#262626] p-4 rounded-lg border border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="text-red-400 mb-2">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.062 19h13.876c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.33 16c-.77 1.333.2 3 1.732 3z" />
           </svg>
         </div>
         <p className="text-gray-300 text-center">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-        >
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
           Reintentar
         </button>
       </div>
@@ -326,7 +262,7 @@ export function CapacidadInstalada() {
   return (
     <section className="mt-8 mb-14">
       <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
-        {/* Botón de ayuda superpuesto */}
+        {/* Ayuda */}
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
@@ -336,19 +272,10 @@ export function CapacidadInstalada() {
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
             <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-            <text
-              x="12"
-              y="18"
-              textAnchor="middle"
-              fontSize="16"
-              fill="#fff"
-              fontWeight="bold"
-              fontFamily="Nunito Sans, sans-serif"
-              pointerEvents="none"
-            >?</text>
+            <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
           </svg>
         </button>
-        {/* Gráfica */}
+
         <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
     </section>
@@ -356,3 +283,4 @@ export function CapacidadInstalada() {
 }
 
 export default CapacidadInstalada;
+
