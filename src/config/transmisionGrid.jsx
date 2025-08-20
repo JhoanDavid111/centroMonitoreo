@@ -295,13 +295,13 @@ export const TRANSMISION_GRID_CONFIG = {
           width: "150px"
         },
         {
-          name: "FPO UPME",
+          name: "FPO",
           selector: row => row.fpo_concepto_upme?.split(' ')[0] || '-',
           sortable: true,
           width: "120px"
         },
         {
-          name: "Clasificación Impacto",
+          name: "Impacto",
           selector: row => row.clasificacion_por_impacto,
           sortable: true,
           width: "150px",
