@@ -10,6 +10,7 @@ import EolicaOn from '../assets/svg-icons/Eolica-On.svg';
 import HidrologiaOn from '../assets/svg-icons/Hidrologia-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
+import { API } from '../config/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
