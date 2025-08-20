@@ -87,7 +87,7 @@ export function Sidebar({ open, toggle, userRole }) {
           permission: 'comunidades',
         },
         {
-          title: 'Acciones estratégicas',
+          title: 'Acciones 6GW+',
           path: 'http://192.168.1.74:8065/boards/',
           icon: AccionesEstrategicasOff,
           activeIcon: AccionesEstrategicasOn,
@@ -174,24 +174,45 @@ export function Sidebar({ open, toggle, userRole }) {
                         return (
                           showItem && (
                             <li key={i}>
-                              {/* Si algún día usas enlaces externos en subitems, podrías manejar item.external aquí */}
-                              <Link
-                                to={item.path}
-                                className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
-                                  isActive ? 'bg-[#333333]' : ''
-                                }`}
-                              >
-                                <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
-                                {open && (
-                                  <span
-                                    className={`ml-3 text-base whitespace-nowrap ${
-                                      isActive ? 'text-[#FFC800]' : 'text-gray-300'
-                                    }`}
-                                  >
-                                    {item.title}
-                                  </span>
-                                )}
-                              </Link>
+                              {item.external ? (
+                                <a
+                                  href={item.path}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
+                                    isActive ? 'bg-[#333333]' : ''
+                                  }`}
+                                >
+                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
+                                  {open && (
+                                    <span
+                                      className={`ml-3 text-base whitespace-nowrap ${
+                                        isActive ? 'text-[#FFC800]' : 'text-gray-300'
+                                      }`}
+                                    >
+                                      {item.title}
+                                    </span>
+                                  )}
+                                </a>
+                              ) : (
+                                <Link
+                                  to={item.path}
+                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
+                                    isActive ? 'bg-[#333333]' : ''
+                                  }`}
+                                >
+                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
+                                  {open && (
+                                    <span
+                                      className={`ml-3 text-base whitespace-nowrap ${
+                                        isActive ? 'text-[#FFC800]' : 'text-gray-300'
+                                      }`}
+                                    >
+                                      {item.title}
+                                    </span>
+                                  )}
+                                </Link>
+                              )}
                             </li>
                           )
                         );
@@ -221,4 +242,3 @@ export function Sidebar({ open, toggle, userRole }) {
     </aside>
   );
 }
-
