@@ -12,6 +12,7 @@ import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
 import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
+import { API } from '../config/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -60,7 +61,7 @@ const formatMW = (n) =>
   Number(n ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function fetchIndicadores6GW() {
-  const resp = await fetch(`http://192.168.8.138:8002/v1/indicadores/6g_proyecto`, { method: 'POST' });
+  const resp = await fetch(`${API}/v1/indicadores/6g_proyecto`, { method: 'POST' });
   if (!resp.ok) throw new Error('Error al consultar indicadores 6GW+');
   return resp.json();
 }
@@ -216,4 +217,3 @@ export default function Indicadores6GW() {
     </>
   );
 }
-

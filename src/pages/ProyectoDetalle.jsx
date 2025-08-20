@@ -12,14 +12,14 @@ import ExportData from 'highcharts/modules/export-data';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import HighchartsReact from 'highcharts-react-official';
 import proyectoDetalleImg from '../assets/proyectoDetalle.png';
-// (opcional) import solarDarkmodeAmarillo from '../assets/solarDarkmodeAmarillo.svg';
+import { API } from '../config/api';
 
-// Highcharts modules
+
 Exporting(Highcharts);
 ExportData(Highcharts);
 OfflineExporting(Highcharts);
 
-// Tema oscuro global
+
 Highcharts.setOptions({
   chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
   title: { style: { color: '#fff', fontSize: '13px', fontWeight: 600 } },
@@ -149,11 +149,10 @@ export default function ProyectoDetalle() {
           throw new Error('Sin datos de Curva S para este proyecto.');
         }
 
-        // Normaliza
         const parse = (arr) =>
           (arr ?? [])
             .map(pt => ({
-              iso: (pt.fecha || '').split('T')[0],          // YYYY-MM-DD
+              iso: (pt.fecha || '').split('T')[0],
               avance: Number(pt.avance) || 0,
               hito_nombre: pt.hito_nombre ?? ''
             }))
@@ -167,17 +166,14 @@ export default function ProyectoDetalle() {
           throw new Error('Sin datos de Curva S para este proyecto.');
         }
 
-        // Unión de fechas ordenadas
         const catsRaw = Array.from(new Set([...refData, ...segData].map(d => d.iso))).sort();
 
-        // Etiquetas dd/mes/aaaa
         const categories = catsRaw.map(iso => {
           const dt = new Date(iso);
           const m  = dt.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
           return `${String(dt.getDate()).padStart(2, '0')}/${m}/${dt.getFullYear()}`;
         });
 
-        // Alinear datos a categorías
         const toSeriesData = (arr) =>
           catsRaw.map(iso => {
             const f = arr.find(d => d.iso === iso);
@@ -206,7 +202,6 @@ export default function ProyectoDetalle() {
             backgroundColor: '#1f2937',
             style: { color: '#fff', fontSize: '12px' },
             formatter() {
-              // toma el primer hito con texto disponible para esa fecha
               const firstHito =
                 (this.points || []).map(p => p.point?.hito_nombre).find(Boolean) || '';
               const rows = (this.points || [])
@@ -372,6 +367,7 @@ export default function ProyectoDetalle() {
     </div>
   );
 }
+
 
 
 
