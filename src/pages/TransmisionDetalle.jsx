@@ -221,7 +221,7 @@ export default function TransmisionDetalle() {
             <StatCard icon={<CalendarClock size={16} />} title="FPO vigente" value={fmtDate(proyecto.fpo.vigente)} hint="Res. MME 403150 de 2025" />
             <StatCard icon={<CalendarDays size={16} />} title="FPO inicial" value={fmtDate(proyecto.fpo.inicial)} />
             <StatCard icon={<CalendarRange size={16} />} title="FPO estimada interconexión" value={fmtDate(proyecto.fpo.estimadaInter)} hint="Actualizado el 4/7/2025" />
-            <StatCard icon={<FileText size={16} />} title="No. de cambios FPO" value={`${proyecto.fpo.cambios} cambios`} />
+            <StatCard icon={<FileText size={16} />} title="No. de cambios FPO" value={`${proyecto.fpo.cambios} `} />
           </div>
         </div>
 

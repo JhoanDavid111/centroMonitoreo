@@ -352,13 +352,13 @@ const PageProjectTransmision = () => {
           {/* <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2> */}
 
 
-          {projectData.mapEmbedUrl ? (
+          {projectData.mapEmbedUrl && (
             
             <MapaProyectosTransmision 
               mapUrl={projectData.mapEmbedUrl}
               title={`Ubicación del proyecto: ${projectData.header.title}`}
             />
-          ) : (
+          ) /* : (
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
               <img
                 src={imgMapaInterno}
@@ -366,7 +366,8 @@ const PageProjectTransmision = () => {
                 className="w-full object-cover rounded-lg"
               />
             </div>
-          )}
+          ) */
+         }
 
          {/*  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 lg:col-span-2">
