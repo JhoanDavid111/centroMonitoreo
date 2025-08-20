@@ -71,6 +71,16 @@ const extractSeriesByNameUTC = (html, seriesName) => {
   return extractUtcPairs(block);
 };
 
+// Tooltip SOLO para el slice/punto en pies (primeros 2 charts)
+function singlePieTooltipFormatter() {
+  return `
+      <div style="pointer-events:auto;user-select:text;padding:6px;">
+        <b>${this.series.name}</b><br/>
+        ${this.x}: ${this.y}
+      </div>
+    `;
+}
+
 /* ======================= Índices (mock visual) ======================= */
 const indices = [
   {
@@ -156,7 +166,8 @@ function useAportesOptionsFromHtml() {
       height: 650,
       marginTop: 80,
       marginBottom: 180,
-      spacingBottom: 40
+      spacingBottom: 40,
+      type: 'column'
     },
     title: { 
       text: 'Aportes y nivel útil de embalses por mes', 
@@ -184,19 +195,42 @@ function useAportesOptionsFromHtml() {
       { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
       { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
     ],
-    tooltip: { 
-      backgroundColor: 'rgba(0,0,0,.50)', 
-      style: { color: '#FFF', fontSize: '12px' }, 
-      shared: true,
-      crosshairs: true,
-      xDateFormat: '%Y-%m', 
-    },
+    
     legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
     series: [
       { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', marker: { radius: 3 }, lineWidth: 2, data: aportes.s1, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', marker: { radius: 3 }, lineWidth: 2, data: aportes.s2, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: aportes.s3, tooltip: { valueSuffix: '%' } },
     ],
+    tooltip: { 
+      backgroundColor: 'rgba(0,0,0,.50)',
+      style: { color: '#FFF', fontSize: '12px' },
+      xDateFormat: '%Y-%m',
+      shared: true,
+      useHTML: true,
+      formatter: function () {
+        let header = `<b>${Highcharts.dateFormat("%e %b %Y", this.x)}</b><br/>`;
+        let rows = this.points
+          .map((point) => {
+            // usar el valueSuffix definido en cada serie
+            let suffix =
+              (point.series.options.tooltip &&
+                point.series.options.tooltip.valueSuffix) ||
+              "";
+            return `
+              <div style="user-select:text;pointer-events:auto;margin:2px 0;">
+                <span style="color:${point.color}">●</span>
+                ${point.series.name}: <b>${Highcharts.numberFormat(
+              point.y,
+              2
+            )}${suffix}</b>
+              </div>
+            `;
+          })
+          .join("");
+        return `<div style="padding:6px;">${header}${rows}</div>`;
+      },
+    },
   }), [aportes]);
 }
 
@@ -225,7 +259,26 @@ function useDesabastecimientoOptionsFromHtml() {
       { title: { text: 'Nivel de Embalse Util (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '14px' } }, opposite: true },
     ],
     legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 30, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
-    tooltip: { shared: true, crosshairs: true, valueDecimals: 2, style: { color: '#FFF', fontSize: '12px' } },
+    tooltip: {
+      valueDecimals: 2, 
+      style: { color: '#FFF', fontSize: '12px' },
+      useHTML: true,
+      shared: true, // 🔹 muestra todas las series en un mismo tooltip
+      formatter: function () {
+        let header = `<b>${Highcharts.dateFormat("%e %b %Y", this.x)}</b><br/>`;
+        let rows = this.points
+          .map(
+            (point) => `
+              <div style="user-select:text;pointer-events:auto;margin:2px 0;">
+                <span style="color:${point.color}">●</span>
+                ${point.series.name}: <b>${Highcharts.numberFormat(point.y, 2)}</b>
+              </div>
+            `
+          )
+          .join("");
+        return `<div style="padding:6px;">${header}${rows}</div>`;
+      }
+    },
     plotOptions: { series: { marker: { enabled: false } } },
     series: [
       { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: s0 },
