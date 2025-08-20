@@ -553,7 +553,7 @@ export default function Hidrologia() {
           Seguimiento Hidrológico
         </h1>
 
-        <div className="absolute right-4 bottom-3 flex gap-2">
+      {/*   <div className="absolute right-4 bottom-3 flex gap-2">
           <button
             onClick={() => handleDownload('png')}
             className="px-3 py-1.5 rounded-md bg-white/90 hover:bg-white text-black text-sm font-semibold"
@@ -568,7 +568,7 @@ export default function Hidrologia() {
           >
             Descargar PDF
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* ÍNDICES */}

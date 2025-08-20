@@ -20,22 +20,22 @@ const LABEL_MAP = {
   total_capacidad_instalada_bd075: {
     label: 'Proyectos en operación',
     icon: DemandaOn,
-    value: '35 proyectos (2998 MW)',
+    value: '35  (2998 MW)',
   },
   total_capacidad_instalada_aprobados_bd075: {
     label: 'Proyectos en operación FNCER',
     icon: DemandaOn,
-    value: '20 proyectos (1303 MW)',
+    value: '20 (1303 MW)',
   },
   total_proyectos_curva_s: {
     label: 'Solicitudes aprobadas FNCER por entrar',
     icon: DemandaOn,
-    value: '385 solicitudes (16789 MW)',
+    value: '385 (16789 MW)',
   },
   proyectos_aprobados_no_curva_s: {
     label: 'Proyectos FNCER con FPO vencida',
     icon: DemandaOn,
-    value: '83 proyectos (1561 MW)',
+    value: '83  (1561 MW)',
   },
 };
 
