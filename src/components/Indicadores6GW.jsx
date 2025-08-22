@@ -1,6 +1,7 @@
 // src/components/Indicadores6GW.jsx
+// src/components/Indicadores6GW.jsx
 import { useEffect, useMemo, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -10,6 +11,8 @@ import EolicaOn from '../assets/svg-icons/Eolica-On.svg';
 import HidrologiaOn from '../assets/svg-icons/Hidrologia-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
+import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
+
 import { API } from '../config/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,16 +23,24 @@ function stripAccents(s = '') {
 }
 function canonicalKey(raw = '') {
   const clean = stripAccents(String(raw).trim()).toUpperCase();
-  // Sinónimos -> clave canónica
+
   if (clean === 'EN OPERACION') return 'EN OPERACIÓN';
   if (clean === 'PRUEBAS') return 'PRUEBAS';
   if (clean === 'AGGE') return 'AGGE';
   if (clean === 'AGPE') return 'AGPE';
-  if (clean === 'FNCER GRAN ESCALA' || clean === 'FNCER' || clean === 'FNCER GRAN-ESCALA' || clean === 'FNCER A GRAN ESCALA' || clean === 'FNCER GRAN  ESCALA' || clean === 'FNCER  GRAN ESCALA' || clean === 'FNCER GRAN  ESCALA') return 'FNCER GRAN ESCALA';
-  if (clean === 'GENERAClON DlSTRlBUlDA'.replace(/[lI]/g, 'I')) return 'GENERACION DISTRIBUIDA'; // defensivo
+  if (
+    clean === 'FNCER GRAN ESCALA' ||
+    clean === 'FNCER' ||
+    clean === 'FNCER GRAN-ESCALA' ||
+    clean === 'FNCER A GRAN ESCALA' ||
+    clean === 'FNCER GRAN  ESCALA'
+  ) return 'FNCER GRAN ESCALA';
+
   if (clean === 'GENERACION DISTRIBUIDA') return 'GENERACION DISTRIBUIDA';
   if (clean === 'CAPACIDAD A ENTRAR 075') return 'CAPACIDAD A ENTRAR 075';
-  return clean; // fallback para mostrar igualmente
+  if (clean === 'CAPACIDAD TOTAL') return 'CAPACIDAD TOTAL';
+
+  return clean; // fallback
 }
 
 const LABEL_MAP = {
@@ -40,6 +51,7 @@ const LABEL_MAP = {
   'AGGE': { label: 'Autogeneración a gran escala (AGGE)', icon: HidrologiaOn },
   'GENERACION DISTRIBUIDA': { label: 'Generación distribuida (GD)', icon: AutogeneracionOn },
   'AGPE': { label: 'Autogeneración a pequeña escala (AGPE)', icon: CasaOn },
+  'ZNI': { label: 'Zonas no interconectadas (ZNI)', icon: TerritorioOn, special: true },
 };
 
 const ORDER = [
@@ -50,6 +62,7 @@ const ORDER = [
   'AGGE',
   'GENERACION DISTRIBUIDA',
   'AGPE',
+  'ZNI', // Añadir ZNI al orden
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,7 +72,7 @@ const formatMW = (n) =>
   Number(n ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function fetchIndicadores6GW() {
-  const resp = await fetch(`${API}/v1/indicadores/6g_proyecto`, { method: 'POST' });
+  const resp = await fetch(`http://192.168.8.138:8002/v1/indicadores/6g_proyecto`, { method: 'POST' });
   if (!resp.ok) throw new Error('Error al consultar indicadores 6GW+');
   return resp.json();
 }
@@ -88,9 +101,7 @@ export default function Indicadores6GW() {
         }
       }
     })();
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
   const normalized = useMemo(() => {
@@ -102,30 +113,48 @@ export default function Indicadores6GW() {
     }));
   }, [data]);
 
+  // Total que mostramos arriba
   const totalMW = useMemo(() => {
     if (!normalized.length) return 0;
     const total = normalized.find((x) => x.key === 'CAPACIDAD TOTAL')?.mw;
     if (total != null && !Number.isNaN(total)) return total;
-    // Respaldo: suma de todos
-    return normalized.reduce((acc, x) => acc + (x.mw || 0), 0);
+    // Respaldo: suma de categorías (sin duplicar "total")
+    return normalized
+      .filter((x) => x.key !== 'CAPACIDAD TOTAL')
+      .reduce((acc, x) => acc + (x.mw || 0), 0);
   }, [normalized]);
 
   const updated = useMemo(() => new Date().toLocaleDateString('es-CO'), []);
 
   const cards = useMemo(() => {
     if (!normalized.length) return [];
-    // Construir todas las tarjetas (con fallback de icono/label si no está en LABEL_MAP)
-    const all = normalized.map((x) => {
-      const meta = LABEL_MAP[x.key];
-      return {
-        order: ORDER.indexOf(x.key) === -1 ? 999 : ORDER.indexOf(x.key),
-        icon: meta?.icon ?? DemandaOn,
-        label: meta?.label ?? x.original,
-        value: x.mw,
-      };
-    });
-    // Ordenar por ORDER (y por nombre si están fuera del ORDER)
-    return all.sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
+
+    // 1) tarjetas desde API (excluyendo "Capacidad Total")
+    const apiCards = normalized
+      .filter((x) => x.key !== 'CAPACIDAD TOTAL')
+      .map((x) => {
+        const meta = LABEL_MAP[x.key];
+        return {
+          order: ORDER.indexOf(x.key) === -1 ? 999 : ORDER.indexOf(x.key),
+          icon: meta?.icon ?? GWOff,
+          label: meta?.label ?? x.original,
+          value: x.mw,
+          special: meta?.special || false,
+        };
+      })
+      .sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
+
+    // 2) tarjeta fija de ZNI
+    const zniCard = {
+      order: ORDER.indexOf('ZNI'),
+      icon: TerritorioOn,
+      label: 'Zonas no interconectadas (ZNI)',
+      value: 13.89,
+      special: true,
+      fixedDate: '8/5/2025'
+    };
+
+    return [...apiCards, zniCard].sort((a, b) => a.order - b.order);
   }, [normalized]);
 
   if (loading) {
@@ -176,26 +205,45 @@ export default function Indicadores6GW() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card, i) => (
-            <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-              <div className="flex items-center mb-2">
-                <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                  {card.label}
-                </span>
+            card.special ? (
+              // Card especial para Zonas no interconectadas (ZNI)
+              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                <div className="flex items-center mb-2">
+                  <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
+                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                    {card.label}
+                  </span>
+                </div>
+                <div className="flex text-white text-3xl font-bold">
+                  {formatMW(card.value)} MW
+                  <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                    title="Ayuda"
+                  />
+                </div>
+                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {card.fixedDate || updated}</div>
               </div>
-              <div className="flex text-white text-3xl font-bold">
-                {formatMW(card.value)} MW
-                <HelpCircle
-                  className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                  title="Ayuda"
-                />
+            ) : (
+              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                <div className="flex items-center mb-2">
+                  <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
+                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                    {card.label}
+                  </span>
+                </div>
+                <div className="flex text-white text-3xl font-bold">
+                  {formatMW(card.value)} MW
+                  <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                    title="Ayuda"
+                  />
+                </div>
+                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
               </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-            </div>
+            )
           ))}
         </div>
       </div>
     </>
   );
 }
-
