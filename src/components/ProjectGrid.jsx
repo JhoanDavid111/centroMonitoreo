@@ -5,15 +5,15 @@ import Exporting from 'highcharts/modules/exporting';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
+import Boost from 'highcharts/modules/boost';
 import HighchartsReact from 'highcharts-react-official';
 import DataTable, { createTheme } from 'react-data-table-component';
-import { Download, Filter } from 'lucide-react';
+import { Download, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, generatePath } from 'react-router-dom';
 
 // ——— Tema oscuro para DataTable ———
 createTheme('customDark', {
@@ -44,19 +44,11 @@ createTheme('customDark', {
 
 // ——— Estilos extra (paginación) ———
 const customStyles = {
-  tableWrapper: {
-    style: {
-      overflow: 'visible',    // que la tabla no limite el popup
-    }
-  },
-  table: {
-    style: {
-      overflow: 'visible',    // que la tabla no limite el popup
-    }
-  },
+  tableWrapper: { style: { overflow: 'visible' } },
+  table:        { style: { overflow: 'visible' } },
   headCells: {
     style: {
-      overflow: 'visible',    // que la cabecera permita el popup
+      overflow: 'visible',
       fontSize: '16px',
       fontWeight: '600',
       color: '#ffffff',
@@ -64,20 +56,15 @@ const customStyles = {
   },
   cells: {
     style: {
-      overflow: 'visible',    // que las celdas permitan el popup
+      overflow: 'visible',
       fontSize: '14px',
       fontWeight: '400',
       color: '#cccccc',
     }
   },
   rows: {
-    style: {
-      backgroundColor: '#262626',
-    },
-    highlightOnHoverStyle: {
-      backgroundColor: '#3a3a3a',
-      transition: '0.2s ease-in-out',
-    },
+    style: { backgroundColor: '#262626' },
+    highlightOnHoverStyle: { backgroundColor: '#3a3a3a', transition: '0.2s ease-in-out' },
   },
   pagination: {
     style: {
@@ -90,17 +77,9 @@ const customStyles = {
   paginationButtons: {
     style: {
       color: '#cccccc',
-      '&:hover': {
-        backgroundColor: '#3a3a3a',
-      },
-      // Para los SVG de Lucide:
-      '& svg': {
-        stroke: '#cccccc',
-      },
-      // Y por si el icono lleva paths con stroke propio:
-      '& svg path': {
-        stroke: '#cccccc',
-      },
+      '&:hover': { backgroundColor: '#3a3a3a' },
+      '& svg': { stroke: '#cccccc' },
+      '& svg path': { stroke: '#cccccc' },
     },
   },
 };
@@ -110,6 +89,7 @@ Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
 FullScreen(Highcharts);
+Boost(Highcharts);
 
 // ——— Opciones globales de Highcharts ———
 Highcharts.setOptions({
@@ -154,58 +134,100 @@ const LoadingSpinner = ({ message = "Cargando datos..." }) => (
   </div>
 );
 
-// ——— Opciones base de la Curva S (2 series) ———
+// ——— Opciones base de la Curva S (datetime + tooltip por nodo + performance) ———
 const baseChartOptions = {
-  chart: { type: 'spline', height: 300 },
-  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
-  xAxis: {
-    categories: [],
-    title: { text: 'Fecha', style: { color: '#ccc' } },
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    gridLineColor: '#333'
+  chart: { 
+    type: 'spline', 
+    height: 520,
+    backgroundColor: '#262626',
+    animation: false
   },
+  title: { 
+    text: 'Curva S – Proyecto', 
+    style: { color: '#fff' } 
+  },
+  subtitle: { text: '' },
+
+  xAxis: {
+    type: 'datetime',
+    gridLineColor: '#333',
+    tickPixelInterval: 80,
+    dateTimeLabelFormats: {
+      day:   '%e %b %Y',
+      week:  '%e %b %Y',
+      month: '%b %Y',
+      year:  '%Y'
+    },
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    crosshair: { width: 1 }
+  },
+
   yAxis: {
     title: { text: 'Avance (%)', style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    gridLineColor: '#333',
     min: 0,
-    max: 100
+    max: 100,
+    crosshair: { width: 1 }
   },
+
+  legend: {
+    itemStyle: { color: '#ccc' },
+    itemHoverStyle: { color: '#fff' },
+    itemHiddenStyle: { color: '#666' }
+  },
+  credits: { enabled: false },
+
   tooltip: {
-    shared: true,
-    useHTML: true,
-    backgroundColor: '#1f2937',
-    borderColor: '#666',
-    style: { color: '#fff', fontSize: '12px' },
-    formatter() {
-      const rows = (this.points || []).map(p => {
-        const hito = p.point?.hito_nombre ?? '';
-        return `
-          <tr>
-            <td style="padding-right:8px;white-space:nowrap;">
-              <span style="color:${p.color}">●</span> ${Highcharts.escapeHTML(p.series.name)}:
-            </td>
-            <td style="text-align:right;"><b>${Highcharts.numberFormat(p.y ?? 0, 1)} %</b></td>
-          </tr>
-          ${hito ? `<tr><td colspan="2" style="font-size:11px;color:#aaa;padding:2px 0 6px">${Highcharts.escapeHTML(hito)}</td></tr>` : ''}
-        `;
-      }).join('');
-      return `<b>${this.x}</b><br/><table>${rows}</table>`;
+    shared: false,         // por punto (salta en los nodos)
+    useHTML: false,        // SVG label (más rápido)
+    followPointer: false,
+    stickOnContact: true,
+    hideDelay: 60,
+    snap: 16,              // tolerancia alrededor del marcador
+    xDateFormat: '%Y-%m-%d',
+    formatter: function () {
+      // 'this' es el punto
+      const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
+      const valor = Highcharts.numberFormat(this.y ?? 0, 1);
+      const hito  = this.point?.hito_nombre ? `\n${this.point.hito_nombre}` : '';
+      return `${fecha}\n${this.series.name}: ${valor} %${hito}`;
     }
   },
+
   plotOptions: {
-    spline: { marker: { enabled: true } }
+    series: {
+      turboThreshold: 0,
+      stickyTracking: false,             // obliga pasar por el punto
+      animation: { duration: 150 },
+      states: { hover: { halo: { size: 7 } } },
+      boostThreshold: 2000
+    },
+    spline: {
+      marker: { enabled: true, radius: 4, lineWidth: 1 },
+      connectNulls: false
+    }
   },
+
   series: [
     { name: 'Programado', data: [], color: '#60A5FA' }, // referencia
     { name: 'Cumplido',   data: [], color: '#A3E635' }  // seguimiento
   ],
+
   exporting: {
     enabled: true,
     buttons: {
       contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] },
     }
   },
-};
 
+  responsive: {
+    rules: [{
+      condition: { maxWidth: 640 },
+      chartOptions: { chart: { height: 420 } }
+    }]
+  }
+};
 
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
@@ -264,505 +286,473 @@ export default function ProyectoDetalle() {
     fetchList();
   }, []);
 
-// ——— Al hacer clic en Curva S (usa el nuevo endpoint y dibuja 2 series) ———
-const handleViewCurve = async (row) => {
-  setLoadingCurve(true);
-  setErrorCurve(null);
-  try {
-    const res = await fetch(
-      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const payload = await res.json();
+  // ——— Reflow al redimensionar (mejora render) ———
+  useEffect(() => {
+    const onResize = () => chartRef.current?.chart?.reflow();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
-    const refArr = payload?.referencia?.curva ?? [];
-    const segArr = payload?.seguimiento?.curva ?? [];
+  // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
+  const handleViewCurve = async (row) => {
+    setLoadingCurve(true);
+    setErrorCurve(null);
+    try {
+      const res = await fetch(
+        `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json();
 
-    if (!Array.isArray(refArr) && !Array.isArray(segArr)) {
-      throw new Error('Formato no válido');
+      const refArr = payload?.referencia?.curva ?? [];
+      const segArr = payload?.seguimiento?.curva ?? [];
+
+      const parse = (arr) =>
+        (arr ?? [])
+          .map(pt => {
+            const iso = (pt.fecha || '').split('T')[0];
+            if (!iso) return null;
+            const t = new Date(iso).getTime(); // timestamp ms
+            const y = Number(pt.avance);
+            return Number.isFinite(t) && Number.isFinite(y)
+              ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+              : null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.x - b.x);
+
+      const refData = parse(refArr);
+      const segData = parse(segArr);
+
+      if (refData.length === 0 && segData.length === 0) {
+        setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
+        setChartOptions(opts => ({
+          ...opts,
+          title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
+          series: [{ ...opts.series[0], data: [] }, { ...opts.series[1], data: [] }]
+        }));
+        return;
+      }
+
+      setChartOptions(opts => ({
+        ...opts,
+        title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
+        series: [
+          { ...opts.series[0], name: 'Programado', data: refData, color: '#60A5FA' },
+          { ...opts.series[1], name: 'Cumplido',   data: segData, color: '#A3E635' },
+        ],
+      }));
+    } catch (err) {
+      console.error(err);
+      setErrorCurve('No fue posible cargar la curva S.');
+    } finally {
+      setLoadingCurve(false);
+
+      if (chartContainerRef.current) {
+        const OFFSET = 80; // ajusta según altura de tu header
+        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+        window.scrollTo({ top, behavior: 'smooth' });
+
+        setTimeout(() => {
+          chartRef.current?.chart?.reflow();
+        }, 250);
+      }
     }
-
-    const parse = (arr) =>
-      (arr ?? [])
-        .map(pt => ({
-          fecha: (pt.fecha || '').split('T')[0],
-          avance: Number(pt.avance),
-          hito_nombre: pt.hito_nombre ?? ''
-        }))
-        .filter(d => d.fecha) // evita vacíos
-        .sort((a, b) => a.fecha.localeCompare(b.fecha));
-
-    const refData = parse(refArr);
-    const segData = parse(segArr);
-
-    if (refData.length === 0 && segData.length === 0) {
-      setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
-      setChartOptions({
-        ...baseChartOptions,
-        title: { ...baseChartOptions.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` }
-      });
-      return;
-    }
-
-    // Categorías = unión ordenada de fechas de ambas curvas
-    const cats = Array.from(new Set([...refData, ...segData].map(d => d.fecha))).sort();
-
-    const toSeriesData = (arr) =>
-      cats.map(fecha => {
-        const f = arr.find(d => d.fecha === fecha);
-        return f ? { y: f.avance, hito_nombre: f.hito_nombre } : { y: null, hito_nombre: '' };
-      });
-
-    setChartOptions({
-      ...baseChartOptions,
-      title: { ...baseChartOptions.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-      xAxis: {
-        ...baseChartOptions.xAxis,
-        categories: cats,
-        tickInterval: 1,
-        labels: { ...baseChartOptions.xAxis.labels, rotation: -45, step: 1, autoRotation: false },
-      },
-      series: [
-        { name: 'Programado', data: toSeriesData(refData), color: '#60A5FA' },
-        { name: 'Cumplido',   data: toSeriesData(segData), color: '#A3E635' },
-      ],
-    });
-  } catch (err) {
-    console.error(err);
-    setErrorCurve('No fue posible cargar la curva S.');
-  } finally {
-    setLoadingCurve(false);
-    chartContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-};
-
+  };
 
   function applyGlobal(row) {
-  if (!globalFilter) return true;
-  return Object.values({
-    id: row.id,
-    nombre: row.nombre_proyecto,
-    capacidad: row.capacidad_instalada_mw,
-    fpo: row.fpo,
-    avance: row.porcentaje_avance_display,
-    promotor: row.promotor
-  })
-  .some(v => String(v).toLowerCase().includes(globalFilter.toLowerCase()));
-}
+    if (!globalFilter) return true;
+    return Object.values({
+      id: row.id,
+      nombre: row.nombre_proyecto,
+      capacidad: row.capacidad_instalada_mw,
+      fpo: row.fpo,
+      avance: row.porcentaje_avance_display,
+      promotor: row.promotor
+    })
+    .some(v => String(v).toLowerCase().includes(globalFilter.toLowerCase()));
+  }
 
   // ——— Filtrado por columna ———
   const filteredSeguimiento = proyectos
-  .filter(r => /^[0-9]+$/.test(String(r.id)))
-  .filter(r => String(r.id).includes(columnFilters.id))
-  .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
-  .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
-  .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
-  .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
-  .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
-  .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
-  .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
-  .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
-  .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
-  .filter(applyGlobal);
+    .filter(r => /^[0-9]+$/.test(String(r.id)))
+    .filter(r => String(r.id).includes(columnFilters.id))
+    .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
+    .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
+    .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
+    .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
+    .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
+    .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
+    .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
+    .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
+    .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
+    .filter(applyGlobal);
 
-const filteredAll = proyectos
-  .filter(r => String(r.id).includes(columnFilters.id))
-  .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
-  .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
-  .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
-  .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
-  .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
-  .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
-  .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
-  .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
-  .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
-  .filter(applyGlobal);
+  const filteredAll = proyectos
+    .filter(r => String(r.id).includes(columnFilters.id))
+    .filter(r => String(r.nombre_proyecto ?? '').toLowerCase().includes(columnFilters.nombre.toLowerCase()))
+    .filter(r => String(r.capacidad_instalada_mw ?? '').includes(columnFilters.capacidad))
+    .filter(r => String(r.fpo  ?? '').toLowerCase().includes(columnFilters.fpo.toLowerCase()))
+    .filter(r => String(r.porcentaje_avance_display ?? '').toLowerCase().includes(columnFilters.avance.toLowerCase()))
+    .filter(r => String(r.priorizado ?? '').toLowerCase().includes(columnFilters.priorizado.toLowerCase()))
+    .filter(r => String(r.ciclo_asignacion ?? '').toLowerCase().includes(columnFilters.ciclo.toLowerCase()))
+    .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
+    .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
+    .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
+    .filter(applyGlobal);
 
   const initialFilters = {
-  id: '',
-  nombre: '',
-  capacidad: '',
-  fpo: '',
-  avance: '',
-  priorizado: '',
-  ciclo: '',
-  promotor: '',
-  departamento: '',
-  municipio: ''
-};
+    id: '',
+    nombre: '',
+    capacidad: '',
+    fpo: '',
+    avance: '',
+    priorizado: '',
+    ciclo: '',
+    promotor: '',
+    departamento: '',
+    municipio: ''
+  };
 
   // Función helper para capitalizar cada palabra omitiendo conectores
-function titleCase(raw) {
-  const connectors = ['y','de','la','el','los','las','en','a','por','para','con','sin','del','al','o','u'];
-  return raw
-    .split(' ')
-    .map((word, index) => {
-      // Si es acrónimo con puntos, todo en mayúscula
-      if (word.includes('.')) {
-        return word.toUpperCase();
-      }
-      const lower = word.toLowerCase();
-      // Conectores en minúscula si no es la primera palabra
-      if (index > 0 && connectors.includes(lower)) {
-        return lower;
-      }
-      // Capitalizar primera letra
-      return lower.charAt(0).toUpperCase() + lower.slice(1);
-    })
-    .join(' ');
-}
-
+  function titleCase(raw) {
+    const connectors = ['y','de','la','el','los','las','en','a','por','para','con','sin','del','al','o','u'];
+    return raw
+      .split(' ')
+      .map((word, index) => {
+        if (word.includes('.')) return word.toUpperCase();
+        const lower = word.toLowerCase();
+        if (index > 0 && connectors.includes(lower)) return lower;
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      })
+      .join(' ');
+  }
 
   // ——— Columnas compartidas ———
-const columnsSimple = [
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>ID</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.id ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
-        />
-        {openFilter==='id' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.id}
-              onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.id,
-    sortable: false,
-    wrap: true,
-    width: '120px',
-  },
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Nombre</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.nombre ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
-        />
-        {openFilter==='nombre' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.nombre}
-              onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.nombre_proyecto,
-    sortable: false,
-    wrap: true,
-    minWidth: '200px',
-    cell: row => {
-      const raw = row.nombre_proyecto || '';
-      const formatted = titleCase(raw);
-      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-      return <span title={formatted}>{disp}</span>;
-    }
-  },
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Capacidad</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.capacidad ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
-        />
-        {openFilter==='capacidad' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.capacidad}
-              onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.capacidad_instalada_mw,
-    sortable: false,
-    wrap: true,
-    width: '130px',
-    cell: row => (`${row.capacidad_instalada_mw} MW`),
-  },
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>FPO</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.fpo ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
-        />
-        {openFilter==='fpo' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.fpo}
-              onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.fpo,
-    sortable: false,
-    wrap: true,
-    width: '150px',
-  },
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Avance</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.avance ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
-        />
-        {openFilter==='avance' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.avance}
-              onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.porcentaje_avance_display,
-    sortable: false,
-    wrap: true,
-    width: '120px',
-  },
-    // Priorizado
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Priorizado</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.priorizado ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='priorizado'?'':'priorizado')}
-        />
-        {openFilter === 'priorizado' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.priorizado}
-              onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.priorizado,
-    sortable: false,
-    wrap: true,
-    width: '130px',
-  },
-  // Ciclo
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Ciclo</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.ciclo ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='ciclo'?'':'ciclo')}
-        />
-        {openFilter === 'ciclo' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.ciclo}
-              onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.ciclo_asignacion,
-    sortable: false,
-    wrap: true,
-    width: '150px',
-    cell: row => {
-      const raw = row.ciclo_asignacion || '';
-      const formatted = titleCase(raw);
-      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-      return <span title={formatted}>{disp}</span>;
-    }
-  },
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Promotor</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.promotor ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
-        />
-        {openFilter==='promotor' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.promotor}
-              onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.promotor,
-    sortable: false,
-    wrap: true,
-    minWidth: '200px',
-    cell: row => {
-      const raw = row.promotor || '';
-      const formatted = titleCase(raw);
-      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-      return <span title={formatted}>{disp}</span>;
-    }
-  },
-    // Departamento
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Departamento</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.departamento ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='departamento'?'':'departamento')}
-        />
-        {openFilter === 'departamento' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.departamento}
-              onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.departamento,
-    sortable: false,
-    wrap: true,
-    minWidth: '180px',
-    cell: row => {
-      const raw = row.departamento || '';
-      const formatted = titleCase(raw);
-      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-      return <span title={formatted}>{disp}</span>;
-    }
-  },
-  // Municipio
-  {
-    name: (
-      <div className="relative inline-block pb-11">
-        <span>Municipio</span>
-        <Filter
-          className={`inline ml-1 cursor-pointer ${
-            columnFilters.municipio ? 'text-yellow-400' : 'text-gray-500'
-          }`}
-          size={16}
-          onClick={() => setOpenFilter(openFilter==='municipio'?'':'municipio')}
-        />
-        {openFilter === 'municipio' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={columnFilters.municipio}
-              onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
-            />
-          </div>
-        )}
-      </div>
-    ),
-    selector: row => row.municipio,
-    sortable: false,
-    wrap: true,
-    minWidth: '180px',
-    cell: row => {
-      const raw = row.municipio || '';
-      const formatted = titleCase(raw);
-      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-      return <span title={formatted}>{disp}</span>;
-    }
-  },
-];
-
+  const columnsSimple = [
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>ID</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.id ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
+          />
+          {openFilter==='id' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.id}
+                onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-16"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.id,
+      sortable: false,
+      wrap: true,
+      width: '120px',
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Nombre</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.nombre ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
+          />
+          {openFilter==='nombre' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.nombre}
+                onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-32"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.nombre_proyecto,
+      sortable: false,
+      wrap: true,
+      minWidth: '200px',
+      cell: row => {
+        const raw = row.nombre_proyecto || '';
+        const formatted = titleCase(raw);
+        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+        return <span title={formatted}>{disp}</span>;
+      }
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Capacidad</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.capacidad ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
+          />
+          {openFilter==='capacidad' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.capacidad}
+                onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-16"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.capacidad_instalada_mw,
+      sortable: false,
+      wrap: true,
+      width: '130px',
+      cell: row => (`${row.capacidad_instalada_mw} MW`),
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>FPO</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.fpo ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
+          />
+          {openFilter==='fpo' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.fpo}
+                onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-24"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.fpo,
+      sortable: false,
+      wrap: true,
+      width: '150px',
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Avance</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.avance ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
+          />
+          {openFilter==='avance' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.avance}
+                onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-16"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.porcentaje_avance_display,
+      sortable: false,
+      wrap: true,
+      width: '120px',
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Priorizado</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.priorizado ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='priorizado'?'':'priorizado')}
+          />
+          {openFilter === 'priorizado' && (
+            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.priorizado}
+                onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-16"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.priorizado,
+      sortable: false,
+      wrap: true,
+      width: '130px',
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Ciclo</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.ciclo ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='ciclo'?'':'ciclo')}
+          />
+          {openFilter === 'ciclo' && (
+            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.ciclo}
+                onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-24"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.ciclo_asignacion,
+      sortable: false,
+      wrap: true,
+      width: '150px',
+      cell: row => {
+        const raw = row.ciclo_asignacion || '';
+        const formatted = titleCase(raw);
+        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+        return <span title={formatted}>{disp}</span>;
+      }
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Promotor</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.promotor ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
+          />
+          {openFilter==='promotor' && (
+            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.promotor}
+                onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-32"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.promotor,
+      sortable: false,
+      wrap: true,
+      minWidth: '200px',
+      cell: row => {
+        const raw = row.promotor || '';
+        const formatted = titleCase(raw);
+        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+        return <span title={formatted}>{disp}</span>;
+      }
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Departamento</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.departamento ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='departamento'?'':'departamento')}
+          />
+          {openFilter === 'departamento' && (
+            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.departamento}
+                onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-32"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.departamento,
+      sortable: false,
+      wrap: true,
+      minWidth: '180px',
+      cell: row => {
+        const raw = row.departamento || '';
+        const formatted = titleCase(raw);
+        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+        return <span title={formatted}>{disp}</span>;
+      }
+    },
+    {
+      name: (
+        <div className="relative inline-block pb-11">
+          <span>Municipio</span>
+          <Filter
+            className={`inline ml-1 cursor-pointer ${columnFilters.municipio ? 'text-yellow-400' : 'text-gray-500'}`}
+            size={16}
+            onClick={() => setOpenFilter(openFilter==='municipio'?'':'municipio')}
+          />
+          {openFilter === 'municipio' && (
+            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={columnFilters.municipio}
+                onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
+                className="bg-[#262626] text-white p-1 text-sm w-32"
+              />
+            </div>
+          )}
+        </div>
+      ),
+      selector: row => row.municipio,
+      sortable: false,
+      wrap: true,
+      minWidth: '180px',
+      cell: row => {
+        const raw = row.municipio || '';
+        const formatted = titleCase(raw);
+        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+        return <span title={formatted}>{disp}</span>;
+      }
+    },
+  ];
 
   // ——— Columnas para Seguimiento Curva S ———
 const columnsSeguimiento = [
   {
-    name: (
-      <div className="relative inline-block pb-11">
-        Acciones
-      </div>
-    ),
+    name: (<div className="relative inline-block pb-11">Acciones</div>),
     cell: row => (
       <div className="flex space-x-2">
         <img
-            src={ojoAmarillo}
-            alt="Ver proyecto"
-            title="Ver proyecto"
-            className="w-5 h-5 cursor-pointer"
-            onClick={() =>
-              navigate(`/proyectos075/${row.id}`, { state: { nombre: row.nombre_proyecto } })
-            }
-          />
+          src={ojoAmarillo}
+          alt="Ver proyecto"
+          title="Ver proyecto"
+          className="w-5 h-5 cursor-pointer"
+          onClick={() => {
+            const rawId = String(row.id ?? '').trim();
+            if (!rawId) return; // evita navegar sin id
+            const safeId = encodeURIComponent(rawId); // evita 404 por caracteres especiales
+            const path = generatePath('/proyectos075/:id', { id: safeId });
+            navigate(path, { state: { nombre: row.nombre_proyecto ?? '' } });
+          }}
+        />
         <img
           src={curvaSAmarillo}
           alt="Ver curva S"
@@ -777,8 +767,8 @@ const columnsSeguimiento = [
     button: true,
     width: '100px',
   },
-  ...columnsSimple
-];
+    ...columnsSimple
+  ];
 
   // ——— Estilos de filas alternadas ———
   const conditionalRowStyles = [
@@ -807,7 +797,6 @@ const columnsSeguimiento = [
             key={tab}
             onClick={() => {
               setActiveTab(tab);
-              // resetea filtros y búsqueda al cambiar de vista:
               setColumnFilters(initialFilters);
               setGlobalFilter('');
               setOpenFilter('');
@@ -826,21 +815,21 @@ const columnsSeguimiento = [
       {/* Seguimiento Curva S */}
       {activeTab==='Seguimiento Curva S' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-        <div className="flex items-center justify-between mb-4">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={globalFilter}
-            onChange={e => setGlobalFilter(e.target.value)}
-            className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
-          />
-          <button
-            className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-            onClick={() => exportToCSV(filteredSeguimiento)}
-          >
-            <Download size={16} /> Exportar CSV
-          </button>
-        </div>
+          <div className="flex items-center justify-between mb-4">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+            />
+            <button
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              onClick={() => exportToCSV(filteredSeguimiento)}
+            >
+              <Download size={16} /> Exportar CSV
+            </button>
+          </div>
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsSeguimiento}
@@ -858,10 +847,12 @@ const columnsSeguimiento = [
               paginationIconLastPage ={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(360deg)' }} />}
             />
           </div>
-          {/* Curva Chart */}
+
+          {/* Curva S */}
           <div
-          ref={chartContainerRef}
-          className="mt-6 bg-[#262626] p-4 rounded-lg shadow">
+            ref={chartContainerRef}
+            className="mt-6 bg-[#262626] p-4 rounded-lg shadow min-h-[600px] scroll-mt-24"
+          >
             {loadingCurve
               ? <p className="text-gray-300">Cargando curva S…</p>
               : errorCurve
@@ -879,21 +870,21 @@ const columnsSeguimiento = [
       {/* Todos los proyectos */}
       {activeTab==='Todos los proyectos' && (
         <div className="bg-[#262626] p-4 rounded-lg shadow">
-        <div className="flex items-center justify-between mb-4">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={globalFilter}
-            onChange={e => setGlobalFilter(e.target.value)}
-            className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
-          />
-          <button
-            className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-            onClick={() => exportToCSV(filteredAll)}
-          >
-            <Download size={16} /> Exportar CSV
-          </button>
-        </div>
+          <div className="flex items-center justify-between mb-4">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+            />
+            <button
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              onClick={() => exportToCSV(filteredAll)}
+            >
+              <Download size={16} /> Exportar CSV
+            </button>
+          </div>
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsSimple}
