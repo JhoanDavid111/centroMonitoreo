@@ -243,7 +243,7 @@ export const TRANSMISION_GRID_CONFIG = {
               spacing: [20, 10, 10, 10]
             },
 
-            // 👇 eje X categórico y sin usar "categories"
+            //  eje X categórico y sin usar "categories"
             xAxis: {
               type: 'category',
               tickPositions: [0, 1, 2],
@@ -251,10 +251,10 @@ export const TRANSMISION_GRID_CONFIG = {
               title: { text: null },
               labels: {
                 style: { color: '#FFFFFF', fontSize: '11px', fontWeight: 'bold' },
-                rotation: -45,
+                rotation: 0,
                 step: 1,
                 y: 20,
-                x: -5,
+                x: 45,
                 crop: false,       // no recortes
                 overflow: 'allow', // permite sobresalir del plot area
                 reserveSpace: true

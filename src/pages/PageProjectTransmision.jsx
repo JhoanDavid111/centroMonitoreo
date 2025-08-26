@@ -126,6 +126,13 @@ const PageProjectTransmision = () => {
   const prev = () => setSlide((s) => (s - 1 + carouselImgs.length) % carouselImgs.length);
   const next = () => setSlide((s) => (s + 1) % carouselImgs.length);
 
+  {/* Se adiciona para que se cargue la información o ancle cada vez que cambia el projectId*/}
+  useEffect(()=>{
+    window.scrollTo({top:0, left:0, behavior:'instant'});
+
+  },[projectId]);
+
+
   useEffect(() => {
     const getProject = async () => {
       try {
