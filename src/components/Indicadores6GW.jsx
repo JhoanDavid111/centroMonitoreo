@@ -1,6 +1,7 @@
 // src/components/Indicadores6GW.jsx
+// src/components/Indicadores6GW.jsx
 import { useEffect, useMemo, useState } from 'react';
-import { HelpCircle, Map as MapIcon } from 'lucide-react';
+import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -50,6 +51,7 @@ const LABEL_MAP = {
   'AGGE': { label: 'Autogeneración a gran escala (AGGE)', icon: HidrologiaOn },
   'GENERACION DISTRIBUIDA': { label: 'Generación distribuida (GD)', icon: AutogeneracionOn },
   'AGPE': { label: 'Autogeneración a pequeña escala (AGPE)', icon: CasaOn },
+  'ZNI': { label: 'Zonas no interconectadas (ZNI)', icon: TerritorioOn, special: true },
 };
 
 const ORDER = [
@@ -60,6 +62,7 @@ const ORDER = [
   'AGGE',
   'GENERACION DISTRIBUIDA',
   'AGPE',
+  'ZNI', // Añadir ZNI al orden
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -126,7 +129,7 @@ export default function Indicadores6GW() {
   const cards = useMemo(() => {
     if (!normalized.length) return [];
 
-    // 1) tarjetas desde API (excluyendo “Capacidad Total”)
+    // 1) tarjetas desde API (excluyendo "Capacidad Total")
     const apiCards = normalized
       .filter((x) => x.key !== 'CAPACIDAD TOTAL')
       .map((x) => {
@@ -136,20 +139,22 @@ export default function Indicadores6GW() {
           icon: meta?.icon ?? GWOff,
           label: meta?.label ?? x.original,
           value: x.mw,
+          special: meta?.special || false,
         };
       })
       .sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
 
-    // 2) tarjeta fija de ZNI al final
+    // 2) tarjeta fija de ZNI
     const zniCard = {
-      order: 1000,
-      icon: <MapIcon size={22} color="#FFC800" strokeWidth={2.5} />, // icono inline
+      order: ORDER.indexOf('ZNI'),
+      icon: TerritorioOn,
       label: 'Zonas no interconectadas (ZNI)',
       value: 13.89,
-      inlineIcon: true,
+      special: true,
+      fixedDate: '8/5/2025'
     };
 
-    return [...apiCards, zniCard];
+    return [...apiCards, zniCard].sort((a, b) => a.order - b.order);
   }, [normalized]);
 
   if (loading) {
@@ -200,59 +205,43 @@ export default function Indicadores6GW() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card, i) => (
-            <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-              <div className="flex items-center mb-2">
-                {typeof card.icon === 'string'
-                  ? <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                  : <span className="w-6 h-6 flex items-center justify-center">{card.icon}</span>}
-                <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                  {card.label}
-                </span>
+            card.special ? (
+              // Card especial para Zonas no interconectadas (ZNI)
+              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                <div className="flex items-center mb-2">
+                  <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
+                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                    {card.label}
+                  </span>
+                </div>
+                <div className="flex text-white text-3xl font-bold">
+                  {formatMW(card.value)} MW
+                  <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                    title="Ayuda"
+                  />
+                </div>
+                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {card.fixedDate || updated}</div>
               </div>
-              <div className="flex text-white text-3xl font-bold">
-                {formatMW(card.value)} MW
-                <HelpCircle
-                  className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                  title="Ayuda"
-                />
+            ) : (
+              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
+                <div className="flex items-center mb-2">
+                  <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
+                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                    {card.label}
+                  </span>
+                </div>
+                <div className="flex text-white text-3xl font-bold">
+                  {formatMW(card.value)} MW
+                  <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                    title="Ayuda"
+                  />
+                </div>
+                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
               </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-            </div>
+            )
           ))}
-              card.label === 'Capacidad total' ?
-                // Card especial para Zonas no interconectadas (ZNI)
-                <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                  <div className="flex items-center mb-2">
-                    <i className="fas fa-bolt text-yellow-400 w-1 h-6 flex-shrink-0"></i>
-                    <img src={TerritorioOn} alt="Icono Territorio" className="w-6 h-6 flex-shrink-0" />
-                    <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                      Zonas no interconectadas (ZNI)
-                    </span>
-                  </div>
-                  <div className="flex text-white text-3xl font-bold">
-                    13,89 MW
-                    <i className="fas fa-question-circle help-icon self-center h-6 w-6 ml-4" title="Ayuda"></i>
-                  </div>
-                  <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: 8/5/2025</div>
-                </div>
-                :
-                <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                  <div className="flex items-center mb-2">
-                    <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                    <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                      {card.label}
-                    </span>
-                  </div>
-                  <div className="flex text-white text-3xl font-bold">
-                    {formatMW(card.value)} MW
-                    <HelpCircle
-                      className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                      title="Ayuda"
-                    />
-                  </div>
-                  <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-                </div>
-            ))}
         </div>
       </div>
     </>

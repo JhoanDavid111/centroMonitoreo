@@ -12,6 +12,7 @@ import MapaCreg174 from '../components/MapaCreg174';
 import { GeneracionDespacho } from '../components/GeneracionDespacho';
 import MapasCreg from '../components/MapasCreg';
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
+import Plan6gw2 from '../assets/Plan6gw+2.svg'; // o .png
 
 
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
@@ -39,8 +40,18 @@ export default function Resumen() {
 
             {/* Título + botón en columna */}
           <div className="flex flex-col">
-            <h1 className="text-6xl font-semibold text-white mb-2">
-              Seguimiento plan 6GW+
+          <h1 className="mb-2 font-semibold text-white">
+            <span className="inline-flex items-baseline gap-2">
+              {/* “Seguimiento” grande y responsivo */}
+              <span className="text-[clamp(28px,4.6vw,41px)] leading-none tracking-tight">
+                Seguimiento
+              </span>
+              <img
+                src={Plan6gw2}
+                alt="Plan 6GW+"
+                className="h-[1em] md:h-[50px] w-auto align-baseline translate-y-[0.8em]"
+              />
+               </span>
             </h1>
             <br/>
             <button 
