@@ -1,8 +1,8 @@
 // src/pages/ProyectoDetalle.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, BadgeCheck, MapPin, CheckCircle2, Sun, Layers,
-  Gauge, CalendarDays, FileText, CircleAlert
+  Gauge, CalendarDays, CircleAlert
 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -12,24 +12,23 @@ import ExportData from 'highcharts/modules/export-data';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import HighchartsReact from 'highcharts-react-official';
 import proyectoDetalleImg from '../assets/proyectoDetalle.png';
-import { API } from '../config/api';
 
-
+// ===== Inicialización Highcharts =====
 Exporting(Highcharts);
 ExportData(Highcharts);
 OfflineExporting(Highcharts);
 
-
 Highcharts.setOptions({
   chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff', fontSize: '13px', fontWeight: 600 } },
-  subtitle: { style: { color: '#aaa', fontSize: '11px' } },
-  xAxis: { labels: { style: { color: '#ccc' } }, gridLineColor: '#333' },
-  yAxis: { labels: { style: { color: '#ccc' } }, title: { style: { color: '#ccc' } }, gridLineColor: '#333' },
+  title: { style: { color: '#fff', fontSize: '16px', fontWeight: 600 } },
+  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
+  xAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, gridLineColor: '#333' },
+  yAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, title: { style: { color: '#ccc' } }, gridLineColor: '#333' },
   legend: { itemStyle: { color: '#ccc' }, itemHoverStyle: { color: '#fff' }, itemHiddenStyle: { color: '#666' } },
-  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff' } }
+  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' } }
 });
 
+// ===== Estilos locales =====
 const YELLOW = '#FFC800';
 const LABEL = '#B0B0B0';
 const BORDER = '#3a3a3a';
@@ -88,20 +87,104 @@ const fmtFPO = (iso) => {
   return `${String(d.getDate()).padStart(2, '0')}/${mes}/${d.getFullYear()}`;
 };
 
+// ===== Opciones BASE de Curva S (igual que ProjectGrid) =====
+const baseCurveOptions = {
+  chart: {
+    type: 'spline',
+    height: 520,                 // más alto
+    backgroundColor: '#262626',
+    animation: false
+  },
+  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  subtitle: { text: '' },
+  xAxis: {
+    type: 'datetime',
+    gridLineColor: '#333',
+    tickPixelInterval: 80,
+    dateTimeLabelFormats: {
+      day:   '%e %b %Y',
+      week:  '%e %b %Y',
+      month: '%b %Y',
+      year:  '%Y'
+    },
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    crosshair: { width: 1 }
+  },
+  yAxis: {
+    title: { text: 'Avance (%)', style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    gridLineColor: '#333',
+    min: 0,
+    max: 100,
+    crosshair: { width: 1 }
+  },
+  legend: {
+    itemStyle: { color: '#ccc' },
+    itemHoverStyle: { color: '#fff' },
+    itemHiddenStyle: { color: '#666' }
+  },
+  credits: { enabled: false },
+  tooltip: {
+    shared: false,         // por punto (como en ProjectGrid)
+    useHTML: false,        // etiqueta SVG rápida
+    followPointer: false,
+    stickOnContact: true,
+    hideDelay: 60,
+    snap: 16,
+    xDateFormat: '%Y-%m-%d',
+    formatter: function () {
+      const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
+      const valor = Highcharts.numberFormat(this.y ?? 0, 1);
+      const hito  = this.point?.hito_nombre ? `\n${this.point.hito_nombre}` : '';
+      return `${fecha}\n${this.series.name}: ${valor} %${hito}`;
+    }
+  },
+  plotOptions: {
+    series: {
+      turboThreshold: 0,
+      stickyTracking: false,
+      animation: { duration: 150 },
+      states: { hover: { halo: { size: 7 } } },
+      boostThreshold: 2000
+    },
+    spline: {
+      marker: { enabled: true, radius: 4, lineWidth: 1 },
+      connectNulls: false
+    }
+  },
+  series: [
+    { name: 'Programado', data: [], color: '#60A5FA' },
+    { name: 'Cumplido',   data: [], color: '#A3E635' }
+  ],
+  exporting: {
+    enabled: true,
+    buttons: {
+      contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] },
+    }
+  },
+  responsive: {
+    rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }]
+  }
+};
+
 export default function ProyectoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { state } = useLocation(); // { nombre } opcional desde la lista
+  const { state } = useLocation(); // { nombre } opcional
 
-  // Datos del proyecto (encabezado, stats, tags…)
+  // Refs para scroll y reflow
+  const chartRef = useRef(null);
+  const chartContainerRef = useRef(null);
+
+  // Datos del proyecto (encabezado)
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
   const [data, setData] = useState(null);
 
-  // Curva S (desde API)
+  // Curva S
   const [curveLoading, setCurveLoading] = useState(true);
   const [curveError, setCurveError] = useState('');
-  const [curveOptions, setCurveOptions] = useState(null);
+  const [curveOptions, setCurveOptions] = useState(baseCurveOptions);
 
   // Fetch info de proyecto
   useEffect(() => {
@@ -111,7 +194,7 @@ export default function ProyectoDetalle() {
         setLoading(true);
         setErr('');
         const res = await fetch(
-          `${API}/v1/graficas/proyectos_075/informacion_proyecto/${id}`,
+          `${API}/v1/graficas/proyectos_075/informacion_proyecto/${encodeURIComponent(id)}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -127,7 +210,7 @@ export default function ProyectoDetalle() {
     return () => { alive = false; };
   }, [id]);
 
-  // Fetch Curva S — NUEVO ENDPOINT con referencia/seguimiento
+  // Fetch Curva S — datetime puro (evita duplicados de categorías)
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -136,7 +219,7 @@ export default function ProyectoDetalle() {
         setCurveError('');
 
         const res = await fetch(
-          `${API}/v1/graficas/proyectos_075/grafica_curva_s/${id}`,
+          `${API}/v1/graficas/proyectos_075/grafica_curva_s/${encodeURIComponent(id)}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -145,19 +228,20 @@ export default function ProyectoDetalle() {
         const refArr = payload?.referencia?.curva ?? [];
         const segArr = payload?.seguimiento?.curva ?? [];
 
-        if (!Array.isArray(refArr) && !Array.isArray(segArr)) {
-          throw new Error('Sin datos de Curva S para este proyecto.');
-        }
-
+        // Parse a puntos datetime {x: timestamp, y, hito_nombre}
         const parse = (arr) =>
           (arr ?? [])
-            .map(pt => ({
-              iso: (pt.fecha || '').split('T')[0],
-              avance: Number(pt.avance) || 0,
-              hito_nombre: pt.hito_nombre ?? ''
-            }))
-            .filter(d => d.iso)
-            .sort((a, b) => a.iso.localeCompare(b.iso));
+            .map(pt => {
+              const iso = (pt.fecha || '').split('T')[0];
+              if (!iso) return null;
+              const t = new Date(iso).getTime();
+              const y = Number(pt.avance);
+              return Number.isFinite(t) && Number.isFinite(y)
+                ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+                : null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.x - b.x);
 
         const refData = parse(refArr);
         const segData = parse(segArr);
@@ -166,76 +250,45 @@ export default function ProyectoDetalle() {
           throw new Error('Sin datos de Curva S para este proyecto.');
         }
 
-        const catsRaw = Array.from(new Set([...refData, ...segData].map(d => d.iso))).sort();
-
-        const categories = catsRaw.map(iso => {
-          const dt = new Date(iso);
-          const m  = dt.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
-          return `${String(dt.getDate()).padStart(2, '0')}/${m}/${dt.getFullYear()}`;
-        });
-
-        const toSeriesData = (arr) =>
-          catsRaw.map(iso => {
-            const f = arr.find(d => d.iso === iso);
-            return f ? { y: f.avance, hito_nombre: f.hito_nombre } : { y: null, hito_nombre: '' };
-          });
-
-        const options = {
-          chart: { type: 'spline', height: 380, backgroundColor: '#262626' },
-          title: { text: (state?.nombre || `Proyecto ${id}`).toString() },
-          subtitle: { text: 'Curva S (programado vs cumplido)' },
-          xAxis: {
-            categories,
-            tickInterval: 1,
-            labels: { rotation: -45, step: 1, style: { color: '#ccc' } },
-            gridLineColor: '#333'
-          },
-          yAxis: {
-            title: { text: '' },
-            min: 0, max: 100, tickInterval: 10,
-            labels: { style: { color: '#ccc' } },
-            gridLineColor: '#333'
-          },
-          tooltip: {
-            shared: true,
-            useHTML: true,
-            backgroundColor: '#1f2937',
-            style: { color: '#fff', fontSize: '12px' },
-            formatter() {
-              const firstHito =
-                (this.points || []).map(p => p.point?.hito_nombre).find(Boolean) || '';
-              const rows = (this.points || [])
-                .map(p => `
-                  <tr>
-                    <td style="padding-right:8px;white-space:nowrap;">
-                      <span style="color:${p.color}">●</span> ${Highcharts.escapeHTML(p.series.name)}:
-                    </td>
-                    <td style="text-align:right;"><b>${Highcharts.numberFormat(p.y ?? 0, 1)} %</b></td>
-                  </tr>
-                `)
-                .join('');
-              return `<b>${this.x}</b><br/>${firstHito ? `<div style="font-size:11px;color:#aaa;margin:4px 0">${Highcharts.escapeHTML(firstHito)}</div>` : ''}<table>${rows}</table>`;
-            }
-          },
-          plotOptions: { series: { marker: { enabled: true, radius: 3 } } },
-          series: [
-            { name: 'Programado', data: toSeriesData(refData), color: '#60a5fa', lineWidth: 3 },
-            { name: 'Cumplido',   data: toSeriesData(segData), color: '#b7fa5a', lineWidth: 3 }
-          ],
-          credits: { enabled: false },
-          exporting: { enabled: true }
-        };
-
-        if (alive) setCurveOptions(options);
+        // Actualiza opciones conservando estilos base
+        if (alive) {
+          setCurveOptions(opts => ({
+            ...opts,
+            title: { ...opts.title, text: (state?.nombre || `Proyecto ${id}`).toString() },
+            series: [
+              { ...opts.series[0], name: 'Programado', data: refData, color: '#60A5FA' },
+              { ...opts.series[1], name: 'Cumplido',   data: segData, color: '#A3E635' },
+            ]
+          }));
+        }
       } catch (e) {
         if (alive) setCurveError(e.message || 'Error cargando Curva S.');
       } finally {
-        if (alive) setCurveLoading(false);
+        if (alive) {
+          setCurveLoading(false);
+
+          // Scroll automático a la gráfica + reflow (como en ProjectGrid)
+          if (chartContainerRef.current) {
+            const OFFSET = 80; // ajusta según tu header fijo
+            const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+            window.scrollTo({ top, behavior: 'smooth' });
+            setTimeout(() => {
+              chartRef.current?.chart?.reflow();
+            }, 250);
+          }
+        }
       }
     })();
 
     return () => { alive = false; };
   }, [id, state?.nombre]);
+
+  // Reflow en resize
+  useEffect(() => {
+    const onResize = () => chartRef.current?.chart?.reflow();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const title = useMemo(() => {
     const nombre = state?.nombre?.trim();
@@ -331,25 +384,17 @@ export default function ProyectoDetalle() {
         <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>
           Seguimiento Curva S
         </div>
-        <div className="bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
+        <div
+          ref={chartContainerRef}
+          className="bg-[#262626] border rounded-xl p-3 scroll-mt-24"
+          style={{ borderColor: BORDER }}
+        >
           {curveLoading && <p className="text-gray-300 px-2 py-4">Cargando Curva S…</p>}
           {!curveLoading && curveError && <p className="text-red-400 px-2 py-4">Error: {curveError}</p>}
-          {!curveLoading && !curveError && curveOptions && (
-            <HighchartsReact highcharts={Highcharts} options={curveOptions} />
+          {!curveLoading && !curveError && (
+            <HighchartsReact highcharts={Highcharts} options={curveOptions} ref={chartRef} />
           )}
-          {!curveLoading && !curveError && !curveOptions && (
-            <p className="text-gray-300 px-2 py-4">Sin datos para graficar.</p>
-          )}
-          <div className="px-3 pb-3 -mt-2">
-            <div className="flex items-center justify-center gap-4">
-              <span className="inline-flex items-center gap-2 text-sm bg-[#2b2b2b] px-3 py-1 rounded border" style={{ borderColor: BORDER }}>
-                <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#60a5fa' }} /> Programado
-              </span>
-              <span className="inline-flex items-center gap-2 text-sm bg-[#2b2b2b] px-3 py-1 rounded border" style={{ borderColor: BORDER }}>
-                <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#b7fa5a' }} /> Cumplido
-              </span>
-            </div>
-          </div>
+          {/* NOTA: Se eliminó la leyenda manual para evitar duplicados */}
         </div>
 
         {/* Ubicación y detalles */}
@@ -367,6 +412,8 @@ export default function ProyectoDetalle() {
     </div>
   );
 }
+
+
 
 
 
