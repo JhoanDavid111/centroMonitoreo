@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import bannerImage from '../assets/bannerResumenEstrategia6GW.png';
-import { ComunidadesResumen } from '../components/ComunidadesResumen';
+import ComunidadesResumen from '../components/ComunidadesResumen';
 import { CapacidadHistorica } from '../components/CapacidadHistorica';
 import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
@@ -66,10 +66,12 @@ export default function Resumen() {
         </div>
       </div>
 
-      {/* Aquí renderizamos el nuevo componente que maneja su propio fetch */}
       <Indicadores6GW />
 
       {/* Resto de secciones */}
+      <div>
+      <ComunidadesResumen />
+      </div>
       <div className="px-2">
         <CapacidadInstalada />
       </div>
