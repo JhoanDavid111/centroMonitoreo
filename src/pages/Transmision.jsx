@@ -55,6 +55,7 @@ export default function Transmision() {
               label={indicator.label}
               value={data[indicator.key] || '8'}
               updated={updatedDate}
+              showHelp={indicator.showHelp || false}
             />
           ))}
         </div>
