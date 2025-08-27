@@ -13,38 +13,46 @@ export const TRANSMISION_CONFIG = {
     {
       key: 'total_proyectos_convocatorias',
       label: 'Proyectos por convocatorias',
-      icon: iconConvocatoria
+      icon: iconConvocatoria,
+      showHelp: true
+      
     },
     {
       key: 'total_proyectos_str',
       label: 'Proyectos STR',
-      icon: iconProyectoSTR
+      icon: iconProyectoSTR,
+      showHelp: true
     },
     {
       key: 'proyectos_adjudicacion',
       label: 'Proyectos en proceso de adjudicación',
-      icon: iconProyectoAdjudicacion
+      icon: iconProyectoAdjudicacion,
+      showHelp: true
     },
     {
       key: 'convocatorias_proyectadas',
       label: 'Convocatorias proyectadas',
-      icon: iconConvocatoriaProyectada
+      icon: iconConvocatoriaProyectada,
+      showHelp: true
 
     },
     {
       key: 'total_lineas_convocatorias',
       label: 'Número total de líneas',
-      icon: iconLineaConvocatoria
+      icon: iconLineaConvocatoria,
+      showHelp: true
     },
     {
       key: 'longitud_total_lineas_km',
       label: 'Longitud total de líneas (km)',
-      icon: iconLongitudTotal
+      icon: iconLongitudTotal,
+      showHelp: true
     },
     {
       key: 'total_subestaciones_convocatorias',
       label: 'Total de subestaciones',
-      icon: iconTotalSubestaciones
+      icon: iconTotalSubestaciones,
+      showHelp: true
     }
   ]
 };
