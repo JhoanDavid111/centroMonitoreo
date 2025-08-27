@@ -10,6 +10,12 @@ import chart2Html from '../data/Chart2.html?raw';
 import chart3Html from '../data/Chart3.html?raw'; // Información general
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
 import bannerHidrologia from '../assets/bannerHidrologia.png';
+import hidrologiaIcon from '../assets/svg-icons/Hidrologia-On.svg';
+import OfertaDemandaIcon from '../assets/svg-icons/OfertaDemanda-On.svg';
+import AutogeneracionIcon from '../assets/svg-icons/Autogeneracion-On.svg';
+import GeneracionTermicaIcon from '../assets/svg-icons/GeneracionTermica-On.svg';
+import arrowUpDarkmodeAmarilloIcon from '../assets/svg-icons/arrowUpDarkmodeAmarillo.svg';
+import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmarillo.svg';
 
 import MapaHidrologia from '../components/MapaHidrologia';
 
@@ -52,11 +58,13 @@ const extractAllNumericSeries = (html) => {
 
 const extractUtcPairs = (src) => {
   const out = [];
-  const re = /\[Date\.UTC\((\d+),\s*(\d+),\s*(\d+)\)\s*,\s*([0-9.\-]+)\]/g;
+  // Soporta espacios, coma decimal y valores negativos
+  const re = /\bDate\.UTC\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*[,]?\s*([\-\d.,]+)/g;
   let mm;
   while ((mm = re.exec(src))) {
-    const y = +mm[1], m = +mm[2], d = +mm[3], val = parseFloat(mm[4]);
-    out.push([Date.UTC(y, m, d), val]);
+    const y = +mm[1], m = +mm[2], d = +mm[3];
+    const val = parseFloat(String(mm[4]).replace(',', '.'));
+    if (Number.isFinite(val)) out.push([Date.UTC(y, m, d), val]);
   }
   return out;
 };
@@ -69,6 +77,87 @@ const extractSeriesByNameUTC = (html, seriesName) => {
   const block = html.slice(idx, endIdx);
   return extractUtcPairs(block);
 };
+
+const extractAllSeriesUTCGeneric = (html) => {
+  const out = [];
+  // Captura cada bloque de serie con name y data (comillas simples o dobles)
+  const re = /\{\s*name\s*:\s*['"]([^'"]+)['"][\s\S]*?data\s*:\s*\[([\s\S]*?)\][\s\S]*?\}/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const name = m[1];
+    const dataBlock = m[2];
+    const utc = extractUtcPairs(dataBlock); // pares [Date.UTC, y]
+    // fallback numérico por si una serie viniera sin UTC
+    const num = dataBlock
+      .split(',')
+      .map(s => parseFloat(String(s).replace(',', '.')))
+      .filter(v => Number.isFinite(v));
+    out.push({ name, utc, num });
+  }
+  return out;
+};
+
+// ===== Tiempo / ticks mensuales =====
+const MS_DAY = 24 * 3600 * 1000;
+function monthStart(ts) {
+  const d = new Date(ts);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+}
+function addMonths(ts, n = 1) {
+  const d = new Date(ts);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + n, 1);
+}
+function buildMonthlyTicks(minX, maxX) {
+  if (!Number.isFinite(minX) || !Number.isFinite(maxX) || minX >= maxX) return undefined;
+  const ticks = [];
+  let t = monthStart(minX);
+  while (t <= maxX) {
+    ticks.push(t);
+    t = addMonths(t, 1);
+  }
+  return ticks;
+}
+
+// Ya lo tienes, lo usamos también:
+function normalizeXY(arr) {
+  if (!Array.isArray(arr)) return [];
+  const cleaned = arr
+    .filter(p => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]))
+    .map(([x, y]) => [Number(x), Number(y)])
+    .sort((a, b) => a[0] - b[0]);
+
+  const dedup = [];
+  for (let i = 0; i < cleaned.length; i++) {
+    if (i === 0 || cleaned[i][0] !== cleaned[i - 1][0]) dedup.push(cleaned[i]);
+    else dedup[dedup.length - 1] = cleaned[i];
+  }
+  return dedup;
+}
+
+// Filtra puntos “basura” en la época Unix y cualquier y no finito
+const EPOCH_FLOOR = Date.UTC(1971, 0, 1);
+function sanitizeSeries(pts) {
+  return normalizeXY(pts).filter(([x, y]) =>
+    Number.isFinite(x) && Number.isFinite(y) && x >= EPOCH_FLOOR
+  );
+}
+
+// Límite duro hasta 2025-07-31 (mes 6 porque Date.UTC es 0-based)
+const HARD_MAX_JUL2025 = Date.UTC(2025, 6, 31);
+
+function clipToMax(pts, maxX = HARD_MAX_JUL2025) {
+  return (pts || []).filter(
+    (p) => Array.isArray(p) && Number.isFinite(p[0]) && p[0] <= maxX
+  );
+}
+
+// (solo para el fallback con categorías tipo "YYYY-MM")
+function ymToUtc(ym) {
+  const m = String(ym).match(/^(\d{4})[-/](\d{1,2})/);
+  if (!m) return NaN;
+  return Date.UTC(+m[1], (+m[2]) - 1, 1);
+}
+
 
 // Tooltip SOLO para el slice/punto en pies (primeros 2 charts)
 function singlePieTooltipFormatter() {
@@ -226,52 +315,185 @@ function useAportesOptionsFromHtml() {
 
 function useDesabastecimientoOptionsFromHtml() {
   const parsed = useMemo(() => {
-    const categories = extractCategories(chart1Html);
-    const series = extractAllNumericSeries(chart1Html);
-    return { categories, series };
+    const seriesBlocks = extractAllSeriesUTCGeneric(chart1Html);
+    const hasUTC = seriesBlocks.some(s => s.utc && s.utc.length > 0);
+    const categories = hasUTC ? null : extractCategories(chart1Html);
+    return { seriesBlocks, hasUTC, categories };
   }, []);
-  const s0 = parsed.series?.[0]?.data ?? [];
-  const s1 = parsed.series?.[1]?.data ?? [];
-  const s2 = parsed.series?.[2]?.data ?? [];
-  const s3 = parsed.series?.[3]?.data ?? [];
 
-  return useMemo(() => ({
-    chart: { zooming: { type: 'xy' }, backgroundColor: COLORS.darkBg, marginTop: 50, marginBottom: 100, spacingBottom: 60, height: 600 },
-    title: { text: 'Estatuto de desabastecimiento', align: 'left', margin: 50, style: { color: '#fff', fontSize: '1.65em' } },
-    subtitle: { text: '', align: 'left', style: { color: COLORS.gray } },
+  return useMemo(() => {
+    // -------- Camino ideal: datetime con pares UTC --------
+// -------- Camino ideal: datetime con pares UTC --------
+if (parsed.hasUTC) {
+  const by = (regex, idxFallback) =>
+    parsed.seriesBlocks.find(s => regex.test(s.name))?.utc ??
+    parsed.seriesBlocks[idxFallback]?.utc ?? [];
+
+  // Normaliza, sanea y RECORTA al límite 2025-07-31
+  const p1 = clipToMax(sanitizeSeries(by(/bolsa.*punta|bolsa/i, 0)));
+  const p2 = clipToMax(sanitizeSeries(by(/escasez/i, 1)));
+  const p3 = clipToMax(sanitizeSeries(by(/embalse/i, 2)));
+  const p4 = clipToMax(sanitizeSeries(by(/senda|referencia/i, 3)));
+
+  const allX = [...p1, ...p2, ...p3, ...p4].map(pt => pt[0]).filter(Number.isFinite);
+  const minX = allX.length ? Math.min(...allX) : undefined;
+  // maxX ya queda ≤ HARD_MAX_JUL2025 por el clip
+
+  return {
+    chart: { /* igual que tenías */ },
+    title: { /* igual que tenías */ },
+
     xAxis: {
-      categories: parsed.categories,
-      labels: { style: { color: COLORS.gray, fontSize: '14px' } },
+      type: 'datetime',
+      min: Number.isFinite(minX) ? minX : undefined,
+      // 👇 corte duro en julio-2025
+      max: HARD_MAX_JUL2025,
+      ordinal: false,
+      startOnTick: false,
+      endOnTick: false,
+      minPadding: 0,
+      maxPadding: 0,
+
+      // ticks mensuales respetando el corte
+      tickPositioner: function () {
+        const { dataMin, dataMax } = this.getExtremes();
+        if (!Number.isFinite(dataMin) || !Number.isFinite(dataMax) || dataMin >= dataMax) {
+          return this.tickPositions;
+        }
+        const localMax = Math.min(dataMax, HARD_MAX_JUL2025);
+        let t = Date.UTC(new Date(dataMin).getUTCFullYear(), new Date(dataMin).getUTCMonth(), 1);
+        const end = Date.UTC(new Date(localMax).getUTCFullYear(), new Date(localMax).getUTCMonth(), 1);
+        const pos = [];
+        while (t <= end) {
+          if (t >= dataMin && t <= localMax) pos.push(t);
+          const d = new Date(t);
+          t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+        }
+        return pos.length ? pos : this.tickPositions;
+      },
+
+      gridLineWidth: 1,
+      gridLineColor: '#444',
+      lineColor: '#666',
+      tickColor: '#666',
+      lineWidth: 1,
+      tickLength: 6,
+      labels: {
+        rotation: -45, align: 'right',
+        style: { color: COLORS.gray, fontSize: '12px' },
+        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); }
+      },
       title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
     },
-    yAxis: [
-      { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '14px' } } },
-      { title: { text: 'Nivel de Embalse Util (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '14px' } }, opposite: true },
-    ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 30, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
-    tooltip: {
-      valueDecimals: 2, style: { color: '#FFF', fontSize: '12px' }, useHTML: true, shared: true,
-      formatter: function () {
-        let header = `<b>${Highcharts.dateFormat("%e %b %Y", this.x)}</b><br/>`;
-        let rows = this.points.map(
-          (point) => `
-            <div style="user-select:text;pointer-events:auto;margin:2px 0;">
-              <span style="color:${point.color}">●</span>
-              ${point.series.name}: <b>${Highcharts.numberFormat(point.y, 2)}</b>
-            </div>`
-        ).join("");
-        return `<div style="padding:6px;">${header}${rows}</div>`;
-      }
-    },
-    plotOptions: { series: { marker: { enabled: false } } },
+
+    yAxis: [ /* igual que tenías */ ],
+    legend:  { /* igual que tenías */ },
+    tooltip: { /* igual que tenías */ },
+    plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+
     series: [
-      { name: 'Precio de bolsa en períodos punta(COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: s0 },
-      { name: 'Precio marginal de escasez (COP/kWh)', type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: s1 },
-      { name: 'Nivel de embalse útil (%)', type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: s2 },
-      { name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: s3 },
+      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: p1 },
+      { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: p2 },
+      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: p3, tooltip: { valueSuffix: '%' } },
+      { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: p4, tooltip: { valueSuffix: '%' } },
     ],
-  }), [parsed]);
+  };
 }
+
+
+// -------- Fallback: categorías + datos numéricos --------
+const b = parsed.seriesBlocks;
+const s0 = b[0]?.num ?? [];
+const s1 = b[1]?.num ?? [];
+const s2 = b[2]?.num ?? [];
+const s3 = b[3]?.num ?? [];
+
+const cats = parsed.categories ?? [];
+
+const lastIdx = cats.reduce(
+  (acc, c, i) => (ymToUtc(c) <= HARD_MAX_JUL2025 ? i : acc),
+  -1
+);
+const catsCut = lastIdx >= 0 ? cats.slice(0, lastIdx + 1) : cats;
+
+const L = catsCut.length;
+const s0cut = s0.slice(0, L);
+const s1cut = s1.slice(0, L);
+const s2cut = s2.slice(0, L);
+const s3cut = s3.slice(0, L);
+
+return {
+  chart: {
+    zooming: { type: 'xy' },
+    backgroundColor: COLORS.darkBg,
+    height: 600,
+    marginTop: 50,
+    marginBottom: 140,
+    spacingBottom: 20,
+  },
+  title: {
+    text: 'Estatuto de desabastecimiento',
+    align: 'left',
+    margin: 50,
+    style: { color: '#fff', fontSize: '1.65em' },
+  },
+  xAxis: {
+    // 👇 usa las categorías recortadas
+    categories: catsCut,
+    labels: {
+      rotation: -45,
+      autoRotation: undefined,
+      align: 'right',
+      style: { color: COLORS.gray, fontSize: '12px' },
+    },
+    tickInterval: 1,
+    tickmarkPlacement: 'on',
+    startOnTick: true,
+    endOnTick: true,
+    showFirstLabel: true,
+    showLastLabel: true,
+    gridLineWidth: 1,
+    gridLineColor: '#444',
+    lineColor: '#666',
+    tickColor: '#666',
+    lineWidth: 1,
+    tickLength: 6,
+    title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
+  },
+  yAxis: [
+    { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '12px' } } },
+    { title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } }, opposite: true },
+  ],
+  legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
+  tooltip: {
+    shared: true,
+    useHTML: true,
+    backgroundColor: 'rgba(0,0,0,.50)',
+    style: { color: '#FFF', fontSize: '12px' },
+    formatter() {
+      const idx = this.points?.[0]?.point?.index ?? 0;
+      const header = `<b>${(catsCut ?? [])[idx] ?? ''}</b><br/>`;
+      const rows = (this.points || [])
+        .map(p => `<div style="user-select:text;pointer-events:auto;margin:2px 0;">
+          <span style="color:${p.color}">●</span>
+          ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}</b>
+        </div>`).join('');
+      return `<div style="padding:6px;">${header}${rows}</div>`;
+    },
+  },
+  plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+  series: [
+    { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: s0cut },
+    { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: s1cut },
+    { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: s2cut },
+    { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: s3cut },
+  ],
+};
+
+  }, [parsed]);
+}
+
+
 
 /* -------- inyección de estilos para iframes embebidos (srcDoc) -------- */
 function injectStylesForGeneral(html) {
@@ -375,6 +597,38 @@ function injectStylesForAportes(html) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>${CSS}</style></head><body>${html}<script>${SCRIPT}</script></body></html>`;
 }
 
+function TitleRow({ title, updated, icon = hidrologiaIcon }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <img src={icon} alt="" className="w-4 h-4" />
+        <span className="font-semibold text-gray-300">{title}</span>
+      </div>
+      {updated && (
+        <span className="text-xs text-gray-400">{updated}</span>
+      )}
+    </div>
+  );
+}
+
+function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
+  return (
+    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626]">
+      <div className="flex items-center gap-2 mb-1">
+        {icon && <img src={icon} alt="" className="w-4 h-4 opacity-90" />}
+        <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
+      </div>
+      <div className="text-white text-xl">{value}</div>
+      <div className="text-gray-300 text-sm">{unit}</div>
+      <div className="mt-2">
+        <TrendChip dir={dir}>{delta}</TrendChip>
+      </div>
+    </div>
+  );
+}
+
+
+
 /* --------------------------------- Página --------------------------------- */
 export default function Hidrologia() {
   const aportesOptions = useAportesOptionsFromHtml();
@@ -437,91 +691,146 @@ export default function Hidrologia() {
           </div>
         </div>
 
-        {/* ÍNDICES */}
-        <h2 className="text-lg text-gray-300 avoid-break">Índices</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <div className="text-gray-300 text-sm mb-2 flex items-center gap-3">
-              <span className="font-semibold text-white">{indices[0].title}</span>
-              <span className="text-xs text-gray-400">Actualizado: {indices[0].updated}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[0].value}</p>
-              <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
-            </div>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#D1D1D0]">
-                <div className="h-3" style={{ width: '81%', background: COLORS.blue }} />
-              </div>
-              <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
-            </div>
-            <div className="mt-1 text-gray-300">{indices[0].pct}</div>
-          </div>
+    {/* ÍNDICES */}
+    <h2 className="text-lg text-gray-300 avoid-break">Índices</h2>
 
-          {/* Card 2 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <div className="text-gray-300 text-sm mb-2 flex items-center gap-3">
-              <span className="font-semibold text-white">{indices[1].title}</span>
-              <span className="text-xs text-gray-400">Actualizado: {indices[1].updated}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].value}</p>
-              <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].pct}</p>
-              <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
-            </div>
-            <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
-          </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Card 1: Nivel de embalse actual */}
+      <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+        <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
 
-          {/* Card 3 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <div className="text-gray-300 text-sm mb-4">
-              <span className="font-semibold text-white">{indices[2].title}</span>
-              <div className="text-xs text-gray-400">{indices[2].updated}</div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {indices[2].groups.map((g) => (
-                <div key={g.name} className="rounded-lg border border-[#3a3a3a] p-3">
-                  <div className="text-yellow-400 font-semibold mb-1">{g.name}</div>
-                  <div className="text-white text-xl">{g.value}</div>
-                  <div className="text-gray-300 text-sm">{g.unit}</div>
-                  <div className="mt-2"><TrendChip dir={g.dir}>{g.delta}</TrendChip></div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
-              <div className="text-white">{indices[2].bottom}</div>
-              <div className="mt-2"><TrendChip dir={indices[2].bottomDir}>{indices[2].bottomDelta}</TrendChip></div>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <div className="text-gray-300 text-sm mb-4">
-              <span className="font-semibold text-white">{indices[3].title}</span>
-              <div className="text-xs text-gray-400">{indices[3].updated}</div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {indices[3].groups.map((g) => (
-                <div key={g.name} className="rounded-lg border border-[#3a3a3a] p-3">
-                  <div className="text-yellow-400 font-semibold whitespace-pre-line mb-1">{g.name}</div>
-                  <div className="text-white text-xl">{g.value}</div>
-                  <div className="text-gray-300 text-sm">{g.unit}</div>
-                  <div className="mt-2"><TrendChip dir={g.dir}>{g.delta}</TrendChip></div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center gap-3">
-              <span className="inline-flex items-center gap-2 bg-[#FFC800] text-[#111] px-3 py-1.5 rounded-md text-sm font-semibold">
-                {indices[3].badge}
-              </span>
-              <span className="text-[#FFC800] font-semibold">{indices[3].badgeValue}</span>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          <p className="text-white text-xl">{indices[0].value}</p>
+          <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
         </div>
+
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#D1D1D0]">
+            <div className="h-3" style={{ width: '81%', background: COLORS.blue }} />
+          </div>
+          <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
+        </div>
+        <div className="mt-1 text-gray-300">{indices[0].pct}</div>
+      </div>
+
+    {/* Card 2: Aportes mensuales promedio */}
+    <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+      <TitleRow 
+        title="Aportes mensuales promedio" 
+        updated={indices[1].updated} 
+        icon={OfertaDemandaIcon}
+      />
+
+      <div className="flex items-center gap-3">
+        <p className="text-white text-xl">{indices[1].value}</p>
+        <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <p className="text-white text-xl">{indices[1].pct}</p>
+        <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
+      </div>
+
+      <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
+    </div>
+
+    {/* Card 3: Generación promedio diaria */}
+    {/* Card 3: Generación promedio diaria */}
+    <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+      <div className="mb-2 flex items-center justify-between">
+        {/* 👇 Ahora el título principal ya NO lleva icono */}
+        <span className="font-semibold text-gray-300">Generación promedio diaria</span>
+        <span className="text-xs text-gray-400">{indices[2].updated}</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {indices[2].groups.map((g) => {
+          let customIcon = null;
+
+          if (g.name === 'Hídrica') {
+            customIcon = hidrologiaIcon;
+          }
+          if (g.name === 'Térmica') {
+            customIcon = GeneracionTermicaIcon;
+          }
+          if (g.name === 'FNCER') {
+            customIcon = AutogeneracionIcon;
+          }
+
+          return (
+            <MiniStatTile
+              key={g.name}
+              name={g.name}
+              value={g.value}
+              unit={g.unit}
+              delta={g.delta}
+              dir={g.dir}
+              icon={customIcon}   // 👈 cada uno con su icono (o ninguno si null)
+            />
+          );
+        })}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
+        <div className="text-white">{indices[2].bottom}</div>
+        <div className="mt-2">
+          <TrendChip dir={indices[2].bottomDir}>{indices[2].bottomDelta}</TrendChip>
+        </div>
+      </div>
+    </div>
+
+
+
+    {/* Card 4: Precios de Energía */}
+    <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+      <div className="mb-2 flex items-center justify-between">
+        {/* 👇 sin icono en el título */}
+        <span className="font-semibold text-gray-300">Precios de Energía – Julio vs junio 2025</span>
+        <span className="text-xs text-gray-400">{indices[3].updated}</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {indices[3].groups.map((g) => {
+          let customIcon = null;
+
+          if (g.name.includes('Mínimo')) {
+            customIcon = arrowUpDarkmodeAmarilloIcon;
+          }
+          if (g.name.includes('Promedio')) {
+            customIcon = arrowsDarkmodeAmarilloIcon;
+          }
+          if (g.name.includes('Máximo')) {
+            customIcon = arrowUpDarkmodeAmarilloIcon;
+          }
+
+          return (
+            <MiniStatTile
+              key={g.name}
+              name={g.name}
+              value={g.value}
+              unit={g.unit}
+              delta={g.delta}
+              dir={g.dir}
+              icon={customIcon}
+              multilineName
+            />
+          );
+        })}
+      </div>
+
+      {/* Botón ancho completo (precio marginal de escasez) */}
+      <button
+        type="button"
+        className="mt-4 w-full rounded-lg px-4 py-3 font-semibold bg-[#FFC800] text-[#111827] inline-flex items-center justify-between"
+        aria-label={`${indices[3].badge}: ${indices[3].badgeValue}`}
+      >
+        <span className="inline-flex items-center gap-2">
+          {indices[3].badge}
+        </span>
+        <span className="text-base">{indices[3].badgeValue}</span>
+      </button>
+    </div>
+    </div>
 
         {/* Mapa */}
         <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-2 md:p-3 lg:p-4 avoid-break">
@@ -578,15 +887,3 @@ export default function Hidrologia() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
