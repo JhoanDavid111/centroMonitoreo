@@ -265,7 +265,7 @@ function useDesabastecimientoOptionsFromHtml() {
     },
     plotOptions: { series: { marker: { enabled: false } } },
     series: [
-      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: s0 },
+      { name: 'Precio de bolsa en períodos punta(COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: s0 },
       { name: 'Precio marginal de escasez (COP/kWh)', type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: s1 },
       { name: 'Nivel de embalse útil (%)', type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: s2 },
       { name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: s3 },
