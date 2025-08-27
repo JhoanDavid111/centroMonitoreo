@@ -66,7 +66,7 @@ export function Sidebar({ open, toggle, userRole }) {
           permission: 'dashboard',
         },
         {
-          title: 'Proyectos 075',
+          title: 'Proyectos de Generación',
           path: '/proyectos075',
           icon: Proyecto075Off,
           activeIcon: Proyecto075On,
