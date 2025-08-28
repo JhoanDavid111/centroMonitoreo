@@ -321,6 +321,12 @@ function useAportesOptionsFromHtml() {
 }
 
 function useDesabastecimientoOptionsFromHtml() {
+  const LABEL_STEP = 2;
+  const LABEL_STEP_MONTHS = 2;
+  const PX_PER_LABEL = 80;
+
+
+
   const parsed = useMemo(() => {
     const seriesBlocks = extractAllSeriesUTCGeneric(chart1Html);
     const hasUTC = seriesBlocks.some(s => s.utc && s.utc.length > 0);
@@ -329,179 +335,230 @@ function useDesabastecimientoOptionsFromHtml() {
   }, []);
 
   return useMemo(() => {
-    // -------- Camino ideal: datetime con pares UTC --------
-// -------- Camino ideal: datetime con pares UTC --------
-if (parsed.hasUTC) {
-  const by = (regex, idxFallback) =>
-    parsed.seriesBlocks.find(s => regex.test(s.name))?.utc ??
-    parsed.seriesBlocks[idxFallback]?.utc ?? [];
+    // ===== Camino ideal: datetime con pares UTC =====
+    if (parsed.hasUTC) {
+      const by = (regex, idxFallback) =>
+        parsed.seriesBlocks.find(s => regex.test(s.name))?.utc ??
+        parsed.seriesBlocks[idxFallback]?.utc ?? [];
 
-  // Normaliza, sanea y RECORTA al límite 2025-07-31
-  const p1 = clipToMax(sanitizeSeries(by(/bolsa.*punta|bolsa/i, 0)));
-  const p2 = clipToMax(sanitizeSeries(by(/escasez/i, 1)));
-  const p3 = clipToMax(sanitizeSeries(by(/embalse/i, 2)));
-  const p4 = clipToMax(sanitizeSeries(by(/senda|referencia/i, 3)));
+      // Normaliza + filtra basura y recorta hasta 2025-07-31
+      const p1 = clipToMax(sanitizeSeries(by(/bolsa.*punta|bolsa/i, 0)));
+      const p2 = clipToMax(sanitizeSeries(by(/escasez/i, 1)));
+      const p3 = clipToMax(sanitizeSeries(by(/embalse/i, 2)));
+      const p4 = clipToMax(sanitizeSeries(by(/senda|referencia/i, 3)));
 
-  const allX = [...p1, ...p2, ...p3, ...p4]
-  .filter(p => Array.isArray(p) && Number.isFinite(p[0])) 
-  .map(pt => pt[0])
-  .filter(x => x >= EPOCH_FLOOR && x <= HARD_MAX_JUL2025); 
-  const minX = allX.length ? Math.min(...allX) : undefined;
-  // maxX ya queda ≤ HARD_MAX_JUL2025 por el clip
+      const allX = [...p1, ...p2, ...p3, ...p4]
+        .filter(p => Array.isArray(p) && Number.isFinite(p[0]))
+        .map(pt => pt[0])
+        .filter(x => x >= EPOCH_FLOOR && x <= HARD_MAX_JUL2025);
 
-  return {
-    chart: { /* igual que tenías */ },
-    title: { /* igual que tenías */ },
+      const minX = allX.length ? Math.min(...allX) : undefined;
 
-    xAxis: {
-      type: 'datetime',
-      min: Number.isFinite(minX) ? minX : undefined,
-      // 👇 corte duro en julio-2025
-      max: HARD_MAX_JUL2025,
-      ordinal: false,
-      startOnTick: false,
-      endOnTick: false,
-      minPadding: 0,
-      maxPadding: 0,
+      return {
+        chart: {
+          zooming: { type: 'x' },
+          backgroundColor: COLORS.darkBg,
+          height: 600,
+          marginTop: 50,
+          marginBottom: 140,
+          spacingBottom: 20,
+        },
+        title: {
+          text: 'Estatuto de desabastecimiento',
+          align: 'left',
+          margin: 50,
+          style: { color: '#fff', fontSize: '1.65em' },
+        },
 
-      // ticks mensuales respetando el corte
-      tickPositioner: function () {
-        const { dataMin, dataMax } = this.getExtremes();
-        if (!Number.isFinite(dataMin) || !Number.isFinite(dataMax) || dataMin >= dataMax) {
-          return this.tickPositions;
-        }
-        const localMax = Math.min(dataMax, HARD_MAX_JUL2025);
-        let t = Date.UTC(new Date(dataMin).getUTCFullYear(), new Date(dataMin).getUTCMonth(), 1);
-        const end = Date.UTC(new Date(localMax).getUTCFullYear(), new Date(localMax).getUTCMonth(), 1);
-        const pos = [];
-        while (t <= end) {
-          if (t >= dataMin && t <= localMax) pos.push(t);
-          const d = new Date(t);
-          t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
-        }
-        return pos.length ? pos : this.tickPositions;
-      },
+xAxis: {
+  type: 'datetime',
+  min: Number.isFinite(minX) ? minX : undefined,
+  max: HARD_MAX_JUL2025,
+  ordinal: false,
+  startOnTick: false,
+  endOnTick: false,
+  minPadding: 0,
+  maxPadding: 0,
 
-      gridLineWidth: 1,
-      gridLineColor: '#444',
-      lineColor: '#666',
-      tickColor: '#666',
-      lineWidth: 1,
-      tickLength: 6,
-      labels: {
-        rotation: -45, align: 'right',
-        style: { color: COLORS.gray, fontSize: '12px' },
-        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); }
-      },
-      title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
-    },
+  // Ticks mensuales con salto dinámico según ancho del eje
+  tickPositioner: function () {
+    const { dataMin, dataMax } = this.getExtremes();
+    if (!Number.isFinite(dataMin) || !Number.isFinite(dataMax) || dataMin >= dataMax) {
+      return this.tickPositions || [];
+    }
+    const localMin = Math.max(dataMin, EPOCH_FLOOR);
+    const localMax = Math.min(dataMax, HARD_MAX_JUL2025);
 
-    yAxis: [ /* igual que tenías */ ],
-    legend:  { /* igual que tenías */ },
-    tooltip: { /* igual que tenías */ },
-    plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+    // primer día de mes en min y max
+    const s = new Date(localMin);
+    const e = new Date(localMax);
+    let t = Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), 1);
+    const end = Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), 1);
 
-    series: [
-      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: p1 },
-      { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: p2 },
-      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: p3, tooltip: { valueSuffix: '%' } },
-      { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: p4, tooltip: { valueSuffix: '%' } },
-    ],
-  };
-}
+    // meses totales en el rango
+    const months =
+      (e.getUTCFullYear() - s.getUTCFullYear()) * 12 +
+      (e.getUTCMonth() - s.getUTCMonth()) + 1;
 
+    // paso dinámico en meses ≈ (N etiquetas) = len / PX_PER_LABEL
+    const len = Math.max(1, this.len || 800);
+    const step = Math.max(1, Math.ceil((months * PX_PER_LABEL) / len));
 
-// -------- Fallback: categorías + datos numéricos --------
-const b = parsed.seriesBlocks;
-const s0 = b[0]?.num ?? [];
-const s1 = b[1]?.num ?? [];
-const s2 = b[2]?.num ?? [];
-const s3 = b[3]?.num ?? [];
-
-const cats = parsed.categories ?? [];
-
-const lastIdx = cats.reduce(
-  (acc, c, i) => (ymToUtc(c) <= HARD_MAX_JUL2025 ? i : acc),
-  -1
-);
-const catsCut = lastIdx >= 0 ? cats.slice(0, lastIdx + 1) : cats;
-
-const L = catsCut.length;
-const s0cut = s0.slice(0, L);
-const s1cut = s1.slice(0, L);
-const s2cut = s2.slice(0, L);
-const s3cut = s3.slice(0, L);
-
-return {
-  chart: {
-    zooming: { type: 'xy' },
-    backgroundColor: COLORS.darkBg,
-    height: 600,
-    marginTop: 50,
-    marginBottom: 140,
-    spacingBottom: 20,
+    const pos = [];
+    let i = 0;
+    while (t <= end) {
+      if (i % step === 0 && t >= EPOCH_FLOOR) pos.push(t);
+      const d = new Date(t);
+      t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+      i++;
+    }
+    return pos;
   },
-  title: {
-    text: 'Estatuto de desabastecimiento',
-    align: 'left',
-    margin: 50,
-    style: { color: '#fff', fontSize: '1.65em' },
-  },
-  xAxis: {
-    // 👇 usa las categorías recortadas
-    categories: catsCut,
-    labels: {
-      rotation: -45,
-      autoRotation: undefined,
-      align: 'right',
-      style: { color: COLORS.gray, fontSize: '12px' },
-    },
-    tickInterval: 1,
-    tickmarkPlacement: 'on',
-    startOnTick: true,
-    endOnTick: true,
-    showFirstLabel: true,
-    showLastLabel: true,
-    gridLineWidth: 1,
-    gridLineColor: '#444',
-    lineColor: '#666',
-    tickColor: '#666',
-    lineWidth: 1,
-    tickLength: 6,
-    title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
-  },
-  yAxis: [
-    { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '12px' } } },
-    { title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } }, opposite: true },
-  ],
-  legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
-  tooltip: {
-    shared: true,
-    useHTML: true,
-    backgroundColor: 'rgba(0,0,0,.50)',
-    style: { color: '#FFF', fontSize: '12px' },
+
+  gridLineWidth: 1,
+  gridLineColor: '#444',
+  lineColor: '#666',
+  tickColor: '#666',
+  lineWidth: 1,
+  tickLength: 6,
+
+  labels: {
+    // ¡Importante! No usar labels.step aquí
+    rotation: -45,
+    align: 'right',
+    autoRotation: undefined,
+    style: { color: COLORS.gray, fontSize: '12px' },
     formatter() {
-      const idx = this.points?.[0]?.point?.index ?? 0;
-      const header = `<b>${(catsCut ?? [])[idx] ?? ''}</b><br/>`;
-      const rows = (this.points || [])
-        .map(p => `<div style="user-select:text;pointer-events:auto;margin:2px 0;">
-          <span style="color:${p.color}">●</span>
-          ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}</b>
-        </div>`).join('');
-      return `<div style="padding:6px;">${header}${rows}</div>`;
+      if (this.value < EPOCH_FLOOR) return ''; // nunca 1970
+      return Highcharts.dateFormat('%Y-%m', this.value);
     },
   },
-  plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
-  series: [
-    { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: s0cut },
-    { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: s1cut },
-    { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: s2cut },
-    { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: s3cut },
-  ],
-};
+  title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
+},
 
+        yAxis: [
+          { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '12px' } } },
+          { title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } }, opposite: true },
+        ],
+        legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
+        tooltip: {
+          shared: true,
+          useHTML: true,
+          backgroundColor: 'rgba(0,0,0,.50)',
+          style: { color: '#FFF', fontSize: '12px' },
+          xDateFormat: '%Y-%m',
+        },
+        plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+        series: [
+          { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: p1 },
+          { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: p2 },
+          { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: p3, tooltip: { valueSuffix: '%' } },
+          { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: p4, tooltip: { valueSuffix: '%' } },
+        ],
+      };
+    }
+
+    // ===== Fallback: categorías (no hay UTC en el HTML) =====
+    const b = parsed.seriesBlocks;
+    const s0 = b[0]?.num ?? [];
+    const s1 = b[1]?.num ?? [];
+    const s2 = b[2]?.num ?? [];
+    const s3 = b[3]?.num ?? [];
+    const cats = parsed.categories ?? [];
+
+    // recorta y filtra 1970 explícitamente
+    const catsCut = (parsed.categories ?? []).filter(c => {
+      const t = ymToUtc(c);
+      return Number.isFinite(t) && t >= EPOCH_FLOOR && t <= HARD_MAX_JUL2025;
+    });
+
+    // Ticks cada 2 (o 3) categorías
+    const tickIdx = catsCut.map((_, i) => i).filter(i => i % LABEL_STEP_MONTHS === 0);
+
+
+    const L = catsCut.length;
+    const s0cut = s0.slice(0, L);
+    const s1cut = s1.slice(0, L);
+    const s2cut = s2.slice(0, L);
+    const s3cut = s3.slice(0, L);
+
+    return {
+      chart: {
+        zooming: { type: 'xy' },
+        backgroundColor: COLORS.darkBg,
+        height: 600,
+        marginTop: 50,
+        marginBottom: 140,
+        spacingBottom: 20,
+      },
+      title: {
+        text: 'Estatuto de desabastecimiento',
+        align: 'left',
+        margin: 50,
+        style: { color: '#fff', fontSize: '1.65em' },
+      },
+xAxis: {
+  categories: catsCut,
+  // Calcula tickPositions según el ancho del eje y número de categorías
+  tickPositioner: function () {
+    const N = catsCut.length;
+    if (!N) return [];
+    const len = Math.max(1, this.len || 800);
+    const step = Math.max(1, Math.ceil((N * PX_PER_LABEL) / len));
+    const pos = [];
+    for (let i = 0; i < N; i += step) pos.push(i);
+    return pos;
+  },
+
+  labels: {
+    // No uses labels.step ni tickInterval aquí
+    rotation: -45,
+    align: 'right',
+    autoRotation: undefined,
+    style: { color: COLORS.gray, fontSize: '12px' },
+  },
+
+  gridLineWidth: 1,
+  gridLineColor: '#444',
+  lineColor: '#666',
+  tickColor: '#666',
+  lineWidth: 1,
+  tickLength: 6,
+  title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
+},
+
+      yAxis: [
+        { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '12px' } } },
+        { title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } }, opposite: true },
+      ],
+      legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
+      tooltip: {
+        shared: true,
+        useHTML: true,
+        backgroundColor: 'rgba(0,0,0,.50)',
+        style: { color: '#FFF', fontSize: '12px' },
+        formatter() {
+          const idx = this.points?.[0]?.point?.index ?? 0;
+          const header = `<b>${(catsCut ?? [])[idx] ?? ''}</b><br/>`;
+          const rows = (this.points || [])
+            .map(p => `<div style="user-select:text;pointer-events:auto;margin:2px 0;">
+              <span style="color:${p.color}">●</span>
+              ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}</b>
+            </div>`).join('');
+          return `<div style="padding:6px;">${header}${rows}</div>`;
+        },
+      },
+      plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+      series: [
+        { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: s0cut },
+        { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: s1cut },
+        { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: s2cut },
+        { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: s3cut },
+      ],
+    };
   }, [parsed]);
 }
+
 
 
 
