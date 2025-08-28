@@ -35,7 +35,6 @@ import Hidrologia from './pages/Hidrologia';
 
 function AppContent() {
   const { currentUser, loading, userRole } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
 
   if (loading) {
@@ -98,8 +97,6 @@ function AppContent() {
       
       <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
         <Sidebar
-          open={sidebarOpen}
-          toggle={() => setSidebarOpen(prev => !prev)}
           userRole={userRole}
         />
 

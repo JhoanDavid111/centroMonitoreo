@@ -1,12 +1,10 @@
-// src/components/Sidebar.jsx
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useMobile } from '../hooks/use-mobile';
+
+import {  ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ROLES, ROLE_PERMISSIONS } from '../config/roles';
 
-// Iconos (Vite devuelve la URL del SVG)
-import DashboardOff from '../assets/svg-icons/Dashboard-Off.svg';
-import DashboardOn from '../assets/svg-icons/Dashboard-On.svg';
 import GWOff from '../assets/svg-icons/6GW-off.svg';
 import GWOn from '../assets/svg-icons/6GW-on.svg';
 import ComunidadesEnergOff from '../assets/svg-icons/ComunidadesEnerg-Off.svg';
@@ -18,15 +16,95 @@ import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.
 import ProyectosTransmisionOn from '../assets/svg-icons/Transmision-On.svg';
 import ProyectosTransmisionOff from '../assets/svg-icons/Transmision-Off.svg';
 
-// NUEVOS: Hidrología y Energía firme (usa tus propios SVG si los tienes)
 import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
 import HidroOn  from '../assets/svg-icons/Hidrologia-On.svg';
-// Placeholder para Energía firme usando los de energía eléctrica:
 import EnergiaFirmeOff from '../assets/svg-icons/EnergiaElectrica-Off.svg';
 import EnergiaFirmeOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 
-export function Sidebar({ open, toggle, userRole }) {
+const WIDTHS = {
+  open: "18rem",
+  closed: "3rem",
+}
+
+ const sections = [
+   /*  {
+      title: 'Inicio',
+      path: '/',
+      icon: DashboardOff,
+      activeIcon: DashboardOn,
+      permission: 'dashboard',
+    }, */
+   {
+     title: "Seguimiento plan 6GW+",
+     items: [
+       {
+         title: "Resumen",
+         path: "/6GW+",
+         icon: GWOff,
+         activeIcon: GWOn,
+         permission: "dashboard",
+       },
+       {
+         title: "Proyectos de Generación",
+         path: "/proyectos075",
+         icon: Proyecto075Off,
+         activeIcon: Proyecto075On,
+         permission: "proyectos",
+       },
+       {
+         title: "Transmisión",
+         path: "/Transmision",
+         icon: ProyectosTransmisionOff,
+         activeIcon: ProyectosTransmisionOn,
+         roles: [ROLES.ADMIN],
+       },
+       {
+         title: "Comunidades energéticas",
+         path: "/en_construccion",
+         icon: ComunidadesEnergOff,
+         activeIcon: ComunidadesEnergOn,
+         permission: "comunidades",
+       },
+       {
+         title: "Acciones 6GW+",
+         path: "http://192.168.1.74:8065/boards/",
+         icon: AccionesEstrategicasOff,
+         activeIcon: AccionesEstrategicasOn,
+         roles: [ROLES.ADMIN],
+         external: true,
+       },
+     ],
+   },
+   {
+     title: "Abastecimiento",
+     items: [
+       {
+         title: "Hidrología",
+         path: "/hidrologia",
+         icon: HidroOff,
+         activeIcon: HidroOn,
+         permission: "dashboard", 
+       },
+       {
+         title: "Energía firme",
+         path: "/en_construccion",
+         icon: EnergiaFirmeOff,
+         activeIcon: EnergiaFirmeOn,
+         permission: "dashboard",
+       },
+     ],
+   },
+ ];
+
+export function Sidebar({ userRole }) {
+  const [open, setOpen] = useState(true);
+
   const { pathname } = useLocation();
+  const { isMobile } = useMobile();
+
+  useEffect(() => {
+    setOpen(!isMobile);
+  }, [isMobile, setOpen]);
 
   // -------- helpers de permisos/roles --------
   const hasPermission = (permission) => {
@@ -41,99 +119,25 @@ export function Sidebar({ open, toggle, userRole }) {
     if (!allowedRolesArray || allowedRolesArray.length === 0) return true;
     return allowedRolesArray.includes(userRole);
   };
-  // ------------------------------------------
-
-  // -------- estructura de secciones/ítems --------
-  const sections = [
-   /*  {
-      title: 'Inicio',
-      path: '/',
-      icon: DashboardOff,
-      activeIcon: DashboardOn,
-      permission: 'dashboard',
-    },
-      permission: 'dashboard' // Asumimos que la ruta de inicio también requiere el permiso de dashboard
-    }, */
-
-    {
-      title: 'SEGUIMIENTO PLAN 6GW+',
-      items: [
-        {
-          title: 'Resumen',
-          path: '/6GW+',
-          icon: GWOff,
-          activeIcon: GWOn,
-          permission: 'dashboard',
-        },
-        {
-          title: 'Proyectos de Generación',
-          path: '/proyectos075',
-          icon: Proyecto075Off,
-          activeIcon: Proyecto075On,
-          permission: 'proyectos',
-        },
-        {
-          title: 'Transmisión',
-          path: '/Transmision',
-          icon: ProyectosTransmisionOff,
-          activeIcon: ProyectosTransmisionOn,
-          roles: [ROLES.ADMIN],
-        },
-        {
-          title: 'Comunidades energéticas',
-          path: '/en_construccion',
-          icon: ComunidadesEnergOff,
-          activeIcon: ComunidadesEnergOn,
-          permission: 'comunidades',
-        },
-        {
-          title: 'Acciones 6GW+',
-          path: 'http://192.168.1.74:8065/boards/',
-          icon: AccionesEstrategicasOff,
-          activeIcon: AccionesEstrategicasOn,
-          roles: [ROLES.ADMIN],
-          external: true,
-        },
-      ],
-    },
-    // ---- NUEVA SECCIÓN: ABASTECIMIENTO ----
-    {
-      title: 'ABASTECIMIENTO',
-      items: [
-        {
-          title: 'Hidrología',
-          path: '/hidrologia',
-          icon: HidroOff,
-          activeIcon: HidroOn,
-          permission: 'dashboard', // cambia a 'hidrologia' si defines ese permiso
-        },
-        {
-          title: 'Energía firme',
-          path: '/en_construccion', // cambia cuando tengas la página real
-          icon: EnergiaFirmeOff,
-          activeIcon: EnergiaFirmeOn,
-          permission: 'dashboard',
-        },
-      ],
-    },
-  ];
-  // -----------------------------------------------
 
   return (
     <aside
-      className={`bg-[#262626] font-sans mt-3 sticky top-24 text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300 ${
-        open ? 'w-1/6 p-4' : 'w-16 p-2'
-      }`}
+      className="bg-[#262626] font-sans mt-3 sticky top-24 text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300"
+      style={{
+        width: open ? WIDTHS.open : WIDTHS.closed,
+      }}
     >
       {/* Botón toggle */}
-      <div className="flex justify-end mb-4">
-        <button onClick={toggle} className="text-white focus:outline-none" title="Expandir/Contraer">
-          {open ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+      <div className="flex justify-end mb-4 px-4 py-2">
+        <button onClick={() => {setOpen((prev) => !prev)}} className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8" title={
+          open ? 'Contraer' : 'Expandir'
+        }>
+          <ChevronRight size={24} className={open ? 'rotate-180 text-gray-300 group-hover:text-white transition-all duration-100' : ''} />
         </button>
       </div>
 
       <nav className="flex-1 space-y-6">
-        {sections.map((section, si) => {
+        {sections.map((section, index) => {
           let showSection = false;
 
           if (section.items) {
@@ -151,18 +155,17 @@ export function Sidebar({ open, toggle, userRole }) {
 
           return (
             showSection && (
-              <div key={si}>
+              <div key={index}>
                 {section.items ? (
                   <>
-                    <h4
-                      className={`text-sm font-semibold text-[#D1D1D0] mb-2 ${
-                        open ? '' : 'sr-only'
-                      }`}
+                    <span
+                    data-state={open ? "show" : "hidden"}
+                      className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:sr-only"
                     >
                       {section.title}
-                    </h4>
+                    </span>
                     <ul className="space-y-1">
-                      {section.items.map((item, i) => {
+                      {section.items.map((item, itemIndex) => {
                         const showItem =
                           (item.permission && hasPermission(item.permission)) ||
                           (item.roles && isInAllowedRoles(item.roles)) ||
@@ -170,16 +173,15 @@ export function Sidebar({ open, toggle, userRole }) {
 
                         const isActive = pathname === item.path;
                         const IconSVG = isActive ? item.activeIcon : item.icon;
-
                         return (
                           showItem && (
-                            <li key={i}>
+                            <li key={itemIndex}>
                               {item.external ? (
                                 <a
                                   href={item.path}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
+                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition  ${
                                     isActive ? 'bg-[#333333]' : ''
                                   }`}
                                 >
