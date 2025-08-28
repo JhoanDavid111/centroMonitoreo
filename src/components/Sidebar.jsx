@@ -23,7 +23,7 @@ import EnergiaFirmeOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 
 const WIDTHS = {
   open: "18rem",
-  closed: "3rem",
+  closed: "4.5rem",
 }
 
  const sections = [
@@ -99,7 +99,6 @@ const WIDTHS = {
 export function Sidebar({ userRole }) {
   const [open, setOpen] = useState(true);
 
-  const { pathname } = useLocation();
   const { isMobile } = useMobile();
 
   useEffect(() => {
@@ -122,23 +121,35 @@ export function Sidebar({ userRole }) {
 
   return (
     <aside
-      className="bg-[#262626] font-sans mt-3 sticky top-24 text-gray-300 h-screen overflow-y-auto flex flex-col transition-all duration-300"
+      className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-300"
       style={{
         width: open ? WIDTHS.open : WIDTHS.closed,
       }}
     >
       {/* Botón toggle */}
-      <div className="flex justify-end mb-4 px-4 py-2">
-        <button onClick={() => {setOpen((prev) => !prev)}} className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8" title={
+      <div data-state={open ? "open" : "closed"} className="flex justify-end mb-2 px-4 py-2 w-full data-[state=closed]:justify-center">
+        <button onClick={() => {setOpen((prev) => !prev)}} className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8 flex items-center justify-center" title={
           open ? 'Contraer' : 'Expandir'
         }>
           <ChevronRight size={24} className={open ? 'rotate-180 text-gray-300 group-hover:text-white transition-all duration-100' : ''} />
         </button>
       </div>
 
-      <nav className="flex-1 space-y-6">
-        {sections.map((section, index) => {
-          let showSection = false;
+      <nav className="flex-1 flex-col">
+        <ul className="flex flex-col gap-y-6 h-full">
+
+        {sections.map((section, index) => (
+          <SidebarItem key={index} section={section} hasPermission={hasPermission} isInAllowedRoles={isInAllowedRoles} open={open} />
+        ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+}
+
+const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
+  const { pathname } = useLocation();
+  let showSection = false;
 
           if (section.items) {
             showSection = section.items.some((item) =>
@@ -153,14 +164,17 @@ export function Sidebar({ userRole }) {
               (!section.permission && !section.roles);
           }
 
-          return (
-            showSection && (
-              <div key={index}>
+        if(!showSection) return null;
+
+    return (
+              <li
+                className="w-full space-y-2 px-4"
+              >
                 {section.items ? (
                   <>
                     <span
                     data-state={open ? "show" : "hidden"}
-                      className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:sr-only"
+                      className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:hidden"
                     >
                       {section.title}
                     </span>
@@ -185,16 +199,14 @@ export function Sidebar({ userRole }) {
                                     isActive ? 'bg-[#333333]' : ''
                                   }`}
                                 >
-                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
-                                  {open && (
+                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 shrink-0" />
                                     <span
-                                      className={`ml-3 text-base whitespace-nowrap ${
-                                        isActive ? 'text-[#FFC800]' : 'text-gray-300'
-                                      }`}
+                                    data-state={open ? "show" : "hidden"}
+                                    data-active={isActive}
+                                      className="ml-3 text-base whitespace-nowrap text-gray-300 data-[active=true]:text-[#FFC800] data-[state=hidden]:hidden"
                                     >
                                       {item.title}
                                     </span>
-                                  )}
                                 </a>
                               ) : (
                                 <Link
@@ -236,11 +248,7 @@ export function Sidebar({ userRole }) {
                     {open && <span className="ml-3">{section.title}</span>}
                   </Link>
                 )}
-              </div>
-            )
-          );
-        })}
-      </nav>
-    </aside>
-  );
+              </li>
+            );
 }
+// <3 ¯\_( ͡❛ ͜ʖ ͡❛)_/¯ js08

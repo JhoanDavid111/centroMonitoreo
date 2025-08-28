@@ -94,7 +94,7 @@ function AppContent() {
   return (
     <div className="relative">
       <Header userRole={userRole} />
-      
+
       <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
         <Sidebar
           userRole={userRole}
