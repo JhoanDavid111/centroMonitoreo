@@ -64,9 +64,16 @@ const extractUtcPairs = (src) => {
   while ((mm = re.exec(src))) {
     const y = +mm[1], m = +mm[2], d = +mm[3];
     const val = parseFloat(String(mm[4]).replace(',', '.'));
-    if (Number.isFinite(val)) out.push([Date.UTC(y, m, d), val]);
-  }
-  return out;
+    if (
+      Number.isFinite(val) &&
+      y >= 1971 && y <= 2025 &&
+      m >= 0 && m <= 11 &&
+      d >= 1 && d <= 31
+    ) {
+      out.push([Date.UTC(y, m, d), val]);
+    }
+    }
+    return out;
 };
 
 const extractSeriesByNameUTC = (html, seriesName) => {
@@ -138,7 +145,7 @@ function normalizeXY(arr) {
 const EPOCH_FLOOR = Date.UTC(1971, 0, 1);
 function sanitizeSeries(pts) {
   return normalizeXY(pts).filter(([x, y]) =>
-    Number.isFinite(x) && Number.isFinite(y) && x >= EPOCH_FLOOR
+    Number.isFinite(x) && Number.isFinite(y) && x >= EPOCH_FLOOR && x <= HARD_MAX_JUL2025
   );
 }
 
@@ -335,7 +342,10 @@ if (parsed.hasUTC) {
   const p3 = clipToMax(sanitizeSeries(by(/embalse/i, 2)));
   const p4 = clipToMax(sanitizeSeries(by(/senda|referencia/i, 3)));
 
-  const allX = [...p1, ...p2, ...p3, ...p4].map(pt => pt[0]).filter(Number.isFinite);
+  const allX = [...p1, ...p2, ...p3, ...p4]
+  .filter(p => Array.isArray(p) && Number.isFinite(p[0])) 
+  .map(pt => pt[0])
+  .filter(x => x >= EPOCH_FLOOR && x <= HARD_MAX_JUL2025); 
   const minX = allX.length ? Math.min(...allX) : undefined;
   // maxX ya queda ≤ HARD_MAX_JUL2025 por el clip
 

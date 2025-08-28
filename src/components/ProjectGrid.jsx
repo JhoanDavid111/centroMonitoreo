@@ -172,10 +172,20 @@ const baseChartOptions = {
   },
 
   legend: {
-    itemStyle: { color: '#ccc' },
+    useHTML: true,
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans' },
     itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHiddenStyle: { color: '#666' },
+    labelFormatter: function () {
+      // Si es un "placeholder" (mensaje del servicio), pintamos el texto en rojo
+      if (this.userOptions && this.userOptions.isPlaceholder) {
+        return `<span style="color:#ef4444">${this.name}</span>`;
+      }
+      // Texto normal para series reales
+      return this.name;
+    }
   },
+
   credits: { enabled: false },
 
   tooltip: {
@@ -184,10 +194,9 @@ const baseChartOptions = {
     followPointer: false,
     stickOnContact: true,
     hideDelay: 60,
-    snap: 16,              // tolerancia alrededor del marcador
+    snap: 16,
     xDateFormat: '%Y-%m-%d',
     formatter: function () {
-      // 'this' es el punto
       const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
       const valor = Highcharts.numberFormat(this.y ?? 0, 1);
       const hito  = this.point?.hito_nombre ? `\n${this.point.hito_nombre}` : '';
@@ -198,7 +207,7 @@ const baseChartOptions = {
   plotOptions: {
     series: {
       turboThreshold: 0,
-      stickyTracking: false,             // obliga pasar por el punto
+      stickyTracking: false,
       animation: { duration: 150 },
       states: { hover: { halo: { size: 7 } } },
       boostThreshold: 2000
@@ -209,10 +218,8 @@ const baseChartOptions = {
     }
   },
 
-  series: [
-    { name: 'Programado', data: [], color: '#60A5FA' }, // referencia
-    { name: 'Cumplido',   data: [], color: '#A3E635' }  // seguimiento
-  ],
+  // Dejamos vacío; se construye dinámicamente en handleViewCurve
+  series: [],
 
   exporting: {
     enabled: true,
@@ -222,12 +229,10 @@ const baseChartOptions = {
   },
 
   responsive: {
-    rules: [{
-      condition: { maxWidth: 640 },
-      chartOptions: { chart: { height: 420 } }
-    }]
+    rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }]
   }
 };
+
 
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
@@ -294,72 +299,135 @@ export default function ProyectoDetalle() {
   }, []);
 
   // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-  const handleViewCurve = async (row) => {
-    setLoadingCurve(true);
-    setErrorCurve(null);
-    try {
-      const res = await fetch(
-        `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const payload = await res.json();
+// ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
+const handleViewCurve = async (row) => {
+  setLoadingCurve(true);
+  setErrorCurve(null);
 
-      const refArr = payload?.referencia?.curva ?? [];
-      const segArr = payload?.seguimiento?.curva ?? [];
+  // Helpers
+  const formatDMY = (iso) => {
+    if (!iso) return '';
+    // esperado: YYYY-MM-DD
+    const [y, m, d] = String(iso).split('-');
+    return (y && m && d) ? `${d}/${m}/${y}` : iso;
+  };
 
-      const parse = (arr) =>
-        (arr ?? [])
-          .map(pt => {
-            const iso = (pt.fecha || '').split('T')[0];
-            if (!iso) return null;
-            const t = new Date(iso).getTime(); // timestamp ms
-            const y = Number(pt.avance);
-            return Number.isFinite(t) && Number.isFinite(y)
-              ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-              : null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.x - b.x);
+  const parse = (arr) =>
+    (arr ?? [])
+      .map(pt => {
+        // arr puede venir con strings (mensaje) o con objetos {fecha, avance, ...}
+        if (!pt || typeof pt === 'string') return null;
+        const iso = (pt.fecha || '').split('T')[0];
+        if (!iso) return null;
+        const t = new Date(iso).getTime();
+        const y = Number(pt.avance);
+        return Number.isFinite(t) && Number.isFinite(y)
+          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+          : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.x - b.x);
 
-      const refData = parse(refArr);
-      const segData = parse(segArr);
+  try {
+    const res = await fetch(
+      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
 
-      if (refData.length === 0 && segData.length === 0) {
-        setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
-        setChartOptions(opts => ({
-          ...opts,
-          title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-          series: [{ ...opts.series[0], data: [] }, { ...opts.series[1], data: [] }]
-        }));
-        return;
-      }
+    const refRaw = payload?.referencia?.curva;
+    const segRaw = payload?.seguimiento?.curva;
+    const refRad = payload?.referencia?.fecha_radicado || null;
+    const segRad = payload?.seguimiento?.fecha_radicado || null;
 
+    const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
+    const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
+
+    const refData = refIsMsg ? [] : parse(refRaw);
+    const segData = segIsMsg ? [] : parse(segRaw);
+
+    const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
+    const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
+
+    // Construimos series en el orden: Referencia -> Seguimiento
+    const newSeries = [];
+
+    if (refIsMsg) {
+      newSeries.push({
+        name: String(refRaw[0]),          // mensaje del servicio
+        data: [],
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true               // para pintar en rojo en el legend
+      });
+    } else if (refData.length) {
+      newSeries.push({
+        type: 'spline',
+        name: refName,
+        data: refData,
+        color: '#60A5FA'
+      });
+    }
+
+    if (segIsMsg) {
+      newSeries.push({
+        name: String(segRaw[0]),          // mensaje del servicio
+        data: [],
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true
+      });
+    } else if (segData.length) {
+      newSeries.push({
+        type: 'spline',
+        name: segName,
+        data: segData,
+        color: '#A3E635'
+      });
+    }
+
+    if (newSeries.length === 0) {
+      // No hay ni datos ni mensajes (caso raro)
+      setErrorCurve(`No existe Curva S para el proyecto ${row.id}.`);
       setChartOptions(opts => ({
         ...opts,
         title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-        series: [
-          { ...opts.series[0], name: 'Programado', data: refData, color: '#60A5FA' },
-          { ...opts.series[1], name: 'Cumplido',   data: segData, color: '#A3E635' },
-        ],
+        series: []
       }));
-    } catch (err) {
-      console.error(err);
-      setErrorCurve('No fue posible cargar la curva S.');
-    } finally {
-      setLoadingCurve(false);
-
-      if (chartContainerRef.current) {
-        const OFFSET = 80; // ajusta según altura de tu header
-        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-        window.scrollTo({ top, behavior: 'smooth' });
-
-        setTimeout(() => {
-          chartRef.current?.chart?.reflow();
-        }, 250);
-      }
+      return;
     }
-  };
+
+    setChartOptions(opts => ({
+      ...opts,
+      title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
+      // reforzamos leyenda con useHTML y labelFormatter para placeholders
+      legend: {
+        ...opts.legend,
+        useHTML: true,
+        labelFormatter: function () {
+          if (this.userOptions && this.userOptions.isPlaceholder) {
+            return `<span style="color:#ef4444">${this.name}</span>`;
+          }
+          return this.name;
+        }
+      },
+      series: newSeries
+    }));
+  } catch (err) {
+    console.error(err);
+    setErrorCurve('No fue posible cargar la Curva S.');
+  } finally {
+    setLoadingCurve(false);
+    if (chartContainerRef.current) {
+      const OFFSET = 80;
+      const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+      window.scrollTo({ top, behavior: 'smooth' });
+      setTimeout(() => chartRef.current?.chart?.reflow(), 250);
+    }
+  }
+};
+
 
   function applyGlobal(row) {
     if (!globalFilter) return true;
