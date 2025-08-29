@@ -667,13 +667,11 @@ function injectStylesForAportes(html) {
 function TitleRow({ title, updated, icon = hidrologiaIcon }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <img src={icon} alt="" className="w-4 h-4" />
-        <span className="font-semibold text-gray-300">{title}</span>
+      <div className="flex items-center gap-3">
+        <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7" />
+        <span className="font-semibold text-gray-300 text-[17px]">{title}</span>
       </div>
-      {updated && (
-        <span className="text-xs text-gray-400">{updated}</span>
-      )}
+      {updated && <span className="text-xs text-gray-400">{updated}</span>}
     </div>
   );
 }
@@ -682,7 +680,7 @@ function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multi
   return (
     <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626]">
       <div className="flex items-center gap-2 mb-1">
-        {icon && <img src={icon} alt="" className="w-4 h-4 opacity-90" />}
+        {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
         <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
       </div>
       <div className="text-white text-xl">{value}</div>

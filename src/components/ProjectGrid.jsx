@@ -270,7 +270,7 @@ export default function ProyectoDetalle() {
       setErrorList(null);
       try {
         const res  = await fetch(
-          `${API}/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
+          `http://192.168.8.138:8002/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -303,6 +303,8 @@ export default function ProyectoDetalle() {
 const handleViewCurve = async (row) => {
   setLoadingCurve(true);
   setErrorCurve(null);
+  const COLOR_REF = '#60A5FA';  // azul
+  const COLOR_SEG = '#A3E635';  // verde
 
   // Helpers
   const formatDMY = (iso) => {
@@ -330,7 +332,7 @@ const handleViewCurve = async (row) => {
 
   try {
     const res = await fetch(
-      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+      `http://192.168.8.138:8002/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -355,37 +357,44 @@ const handleViewCurve = async (row) => {
 
     if (refIsMsg) {
       newSeries.push({
-        name: String(refRaw[0]),          // mensaje del servicio
+        type: 'spline',
+        name: String(refRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
         data: [],
+        color: COLOR_REF,          // << azul cuando falta referencia
         showInLegend: true,
         enableMouseTracking: false,
-        isPlaceholder: true               // para pintar en rojo en el legend
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
       });
     } else if (refData.length) {
       newSeries.push({
         type: 'spline',
         name: refName,
         data: refData,
-        color: '#60A5FA'
+        color: COLOR_REF
       });
     }
 
     if (segIsMsg) {
       newSeries.push({
-        name: String(segRaw[0]),          // mensaje del servicio
+        type: 'spline',
+        name: String(segRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
         data: [],
+        color: COLOR_SEG,          // << VERDE aunque no haya datos
         showInLegend: true,
         enableMouseTracking: false,
-        isPlaceholder: true
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
       });
     } else if (segData.length) {
       newSeries.push({
         type: 'spline',
         name: segName,
         data: segData,
-        color: '#A3E635'
+        color: COLOR_SEG
       });
     }
+
 
     if (newSeries.length === 0) {
       // No hay ni datos ni mensajes (caso raro)
