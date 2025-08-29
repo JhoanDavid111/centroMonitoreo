@@ -1,3 +1,12 @@
+import {
+  Banner,
+  BannerBackground,
+  BannerHeader,
+  BannerTitle,
+  BannerLogo,
+  BannerAction,
+} from '../components/ui/Banner';
+
 // src/pages/Hidrologia.jsx
 import React, { useMemo, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
@@ -732,32 +741,22 @@ export default function Hidrologia() {
       <style>{`@media print { ${pageStyle} }`}</style>
 
       <section className="space-y-6" ref={printRef}>
-        {/* Banner + botón imprimir */}
-        <div
-          className="rounded-2xl overflow-hidden h-24 md:h-28 lg:h-32 relative avoid-break"
-          style={{
-            backgroundImage: `url(${bannerHidrologia})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <h1 className="absolute left-6 top-1/2 -translate-y-1/2 text-white font-bold text-3xl md:text-4xl">
-            Seguimiento Hidrológico
-          </h1>
-
-          <div className="absolute right-4 bottom-3 no-print">
-            <button
+      <Banner>
+        <BannerBackground
+          src="../../src/assets/bannerHidrologia.png"
+          title="Banner Background"
+          alt="Banner Background"
+        />
+        <BannerHeader>
+          <BannerTitle>Seguimiento Hidrológico</BannerTitle>
+          <BannerAction>
+            <a
               onClick={handlePrint}
-              className="inline-block px-3 py-1.5 rounded-md bg-yellow-400 hover:brightness-95 text-black text-sm font-semibold"
-              title="Descargar PDF"
-              type="button"
-            >
-              Descargar PDF
-            </button>
-          </div>
-        </div>
-
+            >Descargar PDF</a>
+          </BannerAction>
+        </BannerHeader>
+      </Banner>
+        
     {/* ÍNDICES */}
     <h2 className="text-lg text-gray-300 avoid-break">Índices</h2>
 
