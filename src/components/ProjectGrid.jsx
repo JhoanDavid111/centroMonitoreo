@@ -270,7 +270,7 @@ export default function ProyectoDetalle() {
       setErrorList(null);
       try {
         const res  = await fetch(
-          `http://192.168.8.138:8002/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
+          `${API}/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -332,7 +332,7 @@ const handleViewCurve = async (row) => {
 
   try {
     const res = await fetch(
-      `http://192.168.8.138:8002/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
