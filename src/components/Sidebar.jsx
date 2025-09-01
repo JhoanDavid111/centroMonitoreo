@@ -5,8 +5,8 @@ import {  ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ROLES, ROLE_PERMISSIONS } from '../config/roles';
 
-import GWOff from '../assets/svg-icons/6GW-off.svg';
-import GWOn from '../assets/svg-icons/6GW-on.svg';
+import GWOff from '../assets/svg-icons/6GW-off-act.svg';
+import GWOn from '../assets/svg-icons/6GW-on-act.svg';
 import ComunidadesEnergOff from '../assets/svg-icons/ComunidadesEnerg-Off.svg';
 import ComunidadesEnergOn from '../assets/svg-icons/ComunidadesEnerg-On.svg';
 import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg';
