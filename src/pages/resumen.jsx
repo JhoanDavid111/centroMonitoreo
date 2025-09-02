@@ -15,6 +15,7 @@ import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 import Plan6gw2 from '../assets/Plan6gw+2.svg'; // o .png
 
 
+
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
 import { Import } from 'lucide-react';
 

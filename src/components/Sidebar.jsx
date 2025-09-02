@@ -46,7 +46,7 @@ const WIDTHS = {
        },
        {
          title: "Proyectos de Generación",
-         path: "/proyectos075",
+         path: "/proyectos_generacion",
          icon: Proyecto075Off,
          activeIcon: Proyecto075On,
          permission: "proyectos",

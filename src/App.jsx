@@ -121,14 +121,14 @@ function AppContent() {
           </PrivateRoute>
         } />
 
-        <Route path="/proyectos075" element={
+        <Route path="/proyectos_generacion" element={
           <PrivateRoute requiredPermission="proyectos">
             <Proyectos />
           </PrivateRoute> 
         } />
 
         {/* 🔹 Ruta de detalle de proyecto 075 */}
-        <Route path="/proyectos075/:id" element={
+        <Route path="//proyectos_generacion/:id" element={
           <PrivateRoute requiredPermission="proyectos">
             <ProyectoDetalle />
           </PrivateRoute>
