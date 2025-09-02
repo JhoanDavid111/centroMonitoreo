@@ -1,4 +1,3 @@
-import { signOut } from "firebase/auth";
 import {
     HelpCircleIcon,
     LogOutIcon,
@@ -9,24 +8,14 @@ import {
 import { useState } from "react";
 import energiaLogo from "../assets/logosEnergiaUpme.svg";
 import { useAuth } from "../context/AuthContext";
-import { auth } from "../firebase/config";
+
 
 import { useSidebar } from "./Sidebar";
 
 export function Header() {
   const { open, setOpen } = useSidebar();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setIsDropdownOpen(false);
-      window.location.href = "/CentroMonitoreo"; // Redirigir al home con recarga
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-24 bg-[#262626] border-b border-[#575756] flex items-center justify-between px-6 z-50">
@@ -105,7 +94,7 @@ export function Header() {
                   </p>
                 </div>
                 <button
-                  onClick={handleLogout}
+                  onClick={async () => {await logout()}}
                   className="w-full px-4 py-2 text-sm text-white hover:bg-[#FFC800] hover:text-black flex items-center space-x-2"
                 >
                   <LogOutIcon size={16} />

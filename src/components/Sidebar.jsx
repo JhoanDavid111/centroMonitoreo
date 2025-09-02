@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { useMobile } from '../hooks/use-mobile';
 
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, HelpCircleIcon,LogOutIcon } from "lucide-react";
 import { Link, useLocation } from 'react-router-dom';
 import { ROLES, ROLE_PERMISSIONS } from '../config/roles';
 
@@ -97,6 +98,8 @@ const sections = [
  ];
 
  export const Sidebar = ({ userRole }) => {
+  const { logout } = useAuth();
+
   const { isMobile } = useMobile();
   const { open, setOpen } = useSidebar();
 
@@ -118,14 +121,14 @@ const sections = [
     <>
       <div
         data-state={open ? "open" : "closed"}
-        className="absolute top-0 right-0 w-screen h-screen data-[state=open]:bg-black/75 bg-transparent transition-all duration-300 z-20 data-[state=open]:backdrop-blur-sm"
+        className="fixed top-0 right-0 w-screen h-screen data-[state=open]:bg-black/75 bg-transparent transition-all duration-300 z-20 data-[state=open]:backdrop-blur-sm"
       />
       <aside
         data-state={open ? "open" : "closed"}
         className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-[#262626] data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-30 border-l border-gray-600"
       >
-        <nav className="flex-1 flex-col py-6">
-          <ul className="flex flex-col gap-y-6 h-full">
+        <nav className="flex-1 flex-col py-6 h-full">
+          <ul className="flex flex-col gap-y-6 mb-auto">
             {sections.map((section, index) => (
               <SidebarItem
                 key={index}
@@ -135,6 +138,35 @@ const sections = [
                 open={open}
               />
             ))}
+          </ul>
+
+          <ul className="flex flex-col gap-y-6 mt-auto pt-6">
+            <li className="w-full px-4">
+              <button
+                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#374151] transition text-[#d1d5db] w-full"
+                title="Ayuda"
+              >
+                <HelpCircleIcon
+                  size={24}
+                  className="w-6 h-6 flex-shrink-0 "
+                />
+                <span>Ayuda</span>
+              </button>
+            </li>
+
+            <li className="w-full px-4">
+              <button
+                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#410f00] transition text-[#d1d5db] w-full"
+                title="Cerrar sesión"
+                onClick={async () => {await logout()}}
+              >
+                <LogOutIcon
+                  size={24}
+                  className="w-6 h-6 flex-shrink-0"
+                />
+                <span>Cerrar sesión</span>
+              </button>
+            </li>
           </ul>
         </nav>
       </aside>
