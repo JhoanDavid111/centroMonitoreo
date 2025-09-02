@@ -1,32 +1,33 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { useMobile } from '../hooks/use-mobile';
 
-import {  ChevronRight } from 'lucide-react';
+import { ChevronRight, HelpCircleIcon, LogOutIcon } from "lucide-react";
 import { Link, useLocation } from 'react-router-dom';
 import { ROLES, ROLE_PERMISSIONS } from '../config/roles';
 
-import GWOff from '../assets/svg-icons/6GW-off-act.svg';
-import GWOn from '../assets/svg-icons/6GW-on-act.svg';
+import GWOff from '../assets/svg-icons/6GW-off.svg';
+import GWOn from '../assets/svg-icons/6GW-on.svg';
+import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Off.svg';
+import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg';
 import ComunidadesEnergOff from '../assets/svg-icons/ComunidadesEnerg-Off.svg';
 import ComunidadesEnergOn from '../assets/svg-icons/ComunidadesEnerg-On.svg';
 import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg';
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg';
-import AccionesEstrategicasOff from '../assets/svg-icons/AccionesEstrategicas-Off.svg';
-import AccionesEstrategicasOn from '../assets/svg-icons/AccionesEstrategicas-On.svg';
-import ProyectosTransmisionOn from '../assets/svg-icons/Transmision-On.svg';
 import ProyectosTransmisionOff from '../assets/svg-icons/Transmision-Off.svg';
+import ProyectosTransmisionOn from '../assets/svg-icons/Transmision-On.svg';
 
-import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
-import HidroOn  from '../assets/svg-icons/Hidrologia-On.svg';
 import EnergiaFirmeOff from '../assets/svg-icons/EnergiaElectrica-Off.svg';
-import EnergiaFirmeOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
+import EnergiaFirmeOn from '../assets/svg-icons/EnergiaElectrica-On.svg';
+import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
+import HidroOn from '../assets/svg-icons/Hidrologia-On.svg';
 
 const WIDTHS = {
   open: "18rem",
   closed: "4.5rem",
 }
 
- const sections = [
+const sections = [
    /*  {
       title: 'Inicio',
       path: '/',
@@ -83,7 +84,7 @@ const WIDTHS = {
          path: "/hidrologia",
          icon: HidroOff,
          activeIcon: HidroOn,
-         permission: "dashboard", 
+         permission: "dashboard",
        },
        {
          title: "Energía firme",
@@ -96,14 +97,11 @@ const WIDTHS = {
    },
  ];
 
-export function Sidebar({ userRole }) {
-  const [open, setOpen] = useState(true);
+ export const Sidebar = ({ userRole }) => {
+  const { logout } = useAuth();
 
   const { isMobile } = useMobile();
-
-  useEffect(() => {
-    setOpen(!isMobile);
-  }, [isMobile, setOpen]);
+  const { open, setOpen } = useSidebar();
 
   // -------- helpers de permisos/roles --------
   const hasPermission = (permission) => {
@@ -119,33 +117,128 @@ export function Sidebar({ userRole }) {
     return allowedRolesArray.includes(userRole);
   };
 
-  return (
+  return isMobile ? (
+    <>
+      <div
+        data-state={open ? "open" : "closed"}
+        className="fixed top-0 right-0 w-screen h-screen data-[state=open]:bg-black/75 bg-transparent transition-all duration-300 z-20 data-[state=open]:backdrop-blur-sm"
+      />
+      <aside
+        data-state={open ? "open" : "closed"}
+        className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-[#262626] data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-30 border-l border-gray-600"
+      >
+        <nav className="flex-1 flex-col py-6 h-full">
+          <ul className="flex flex-col gap-y-6 mb-auto">
+            {sections.map((section, index) => (
+              <SidebarItem
+                key={index}
+                section={section}
+                hasPermission={hasPermission}
+                isInAllowedRoles={isInAllowedRoles}
+                open={open}
+              />
+            ))}
+          </ul>
+
+          <ul className="flex flex-col gap-y-6 mt-auto pt-6">
+            <li className="w-full px-4">
+              <button
+                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#374151] transition text-[#d1d5db] w-full"
+                title="Ayuda"
+              >
+                <HelpCircleIcon
+                  size={24}
+                  className="w-6 h-6 flex-shrink-0 "
+                />
+                <span>Ayuda</span>
+              </button>
+            </li>
+
+            <li className="w-full px-4">
+              <button
+                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#410f00] transition text-[#d1d5db] w-full"
+                title="Cerrar sesión"
+                onClick={async () => {await logout()}}
+              >
+                <LogOutIcon
+                  size={24}
+                  className="w-6 h-6 flex-shrink-0"
+                />
+                <span>Cerrar sesión</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+    </>
+  ) : (
     <aside
-      className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-300"
+      className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-100"
       style={{
         width: open ? WIDTHS.open : WIDTHS.closed,
       }}
     >
       {/* Botón toggle */}
-      <div data-state={open ? "open" : "closed"} className="flex justify-end mb-2 px-4 py-2 w-full data-[state=closed]:justify-center">
-        <button onClick={() => {setOpen((prev) => !prev)}} className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8 flex items-center justify-center" title={
-          open ? 'Contraer' : 'Expandir'
-        }>
-          <ChevronRight size={24} className={open ? 'rotate-180 text-gray-300 group-hover:text-white transition-all duration-100' : ''} />
+      <div
+        data-state={open ? "open" : "closed"}
+        className="flex justify-end mb-2 px-4 py-2 w-full data-[state=closed]:justify-center"
+      >
+        <button
+          onClick={() => {
+            setOpen((prev) => !prev);
+          }}
+          className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8 flex items-center justify-center"
+          title={open ? "Contraer" : "Expandir"}
+        >
+          <ChevronRight
+            size={24}
+            className={
+              open
+                ? "rotate-180 text-gray-300 group-hover:text-white transition-all duration-100"
+                : ""
+            }
+          />
         </button>
       </div>
 
       <nav className="flex-1 flex-col">
         <ul className="flex flex-col gap-y-6 h-full">
-
-        {sections.map((section, index) => (
-          <SidebarItem key={index} section={section} hasPermission={hasPermission} isInAllowedRoles={isInAllowedRoles} open={open} />
-        ))}
+          {sections.map((section, index) => (
+            <SidebarItem
+              key={index}
+              section={section}
+              hasPermission={hasPermission}
+              isInAllowedRoles={isInAllowedRoles}
+              open={open}
+            />
+          ))}
         </ul>
       </nav>
     </aside>
   );
 }
+
+const SidebarContext = createContext({
+  open: true,
+  setOpen: () => {},
+});
+
+export const SidebarProvider = ({ children }) => {
+  const [open, setOpen] = useState(false);
+  const { isMobile } = useMobile();
+
+  useEffect(() => {
+    setOpen(!isMobile);
+  }, [isMobile, setOpen]);
+
+  return (
+    <SidebarContext.Provider value={{ open, setOpen }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+export const useSidebar = () => useContext(SidebarContext)
 
 const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
   const { pathname } = useLocation();
