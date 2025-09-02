@@ -17,6 +17,7 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 import LocationOn from '../assets/svg-icons/location-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CalendarDarkmodeAmarillo from '../assets/svg-icons/calendarDarkmodeAmarillo.svg';
+import { API } from '../config/api';
 
 // ===== Inicialización Highcharts =====
 Exporting(Highcharts);

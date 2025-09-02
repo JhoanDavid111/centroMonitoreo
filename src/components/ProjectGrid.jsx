@@ -99,28 +99,27 @@ Highcharts.setOptions({
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent',
   },
-  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
   },
   yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
   },
   legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+    itemHoverStyle:  { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' },
+    itemHiddenStyle: { color: '#666', fontFamily: 'Nunito Sans, sans-serif' },
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style:           { color: '#fff', fontSize: '12px' },
+    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
   },
 });
+
 
 // ——— Componente reutilizable de carga ———
 const LoadingSpinner = ({ message = "Cargando datos..." }) => (
@@ -152,37 +151,26 @@ const baseChartOptions = {
     type: 'datetime',
     gridLineColor: '#333',
     tickPixelInterval: 80,
-    dateTimeLabelFormats: {
-      day:   '%e %b %Y',
-      week:  '%e %b %Y',
-      month: '%b %Y',
-      year:  '%Y'
-    },
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    dateTimeLabelFormats: { day: '%e %b %Y', week: '%e %b %Y', month: '%b %Y', year: '%Y' },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
     crosshair: { width: 1 }
   },
-
   yAxis: {
-    title: { text: 'Avance (%)', style: { color: '#ccc' } },
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    title:  { text: 'Avance (%)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
-    min: 0,
-    max: 100,
+    min: 0, max: 100,
     crosshair: { width: 1 }
   },
-
   legend: {
     useHTML: true,
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans' },
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' },
     labelFormatter: function () {
-      // Si es un "placeholder" (mensaje del servicio), pintamos el texto en rojo
-      if (this.userOptions && this.userOptions.isPlaceholder) {
-        return `<span style="color:#ef4444">${this.name}</span>`;
-      }
-      // Texto normal para series reales
-      return this.name;
+      const isPH = this.userOptions && this.userOptions.isPlaceholder;
+      const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+      return `<span style="${style}">${this.name}</span>`;
     }
   },
 
@@ -303,6 +291,8 @@ export default function ProyectoDetalle() {
 const handleViewCurve = async (row) => {
   setLoadingCurve(true);
   setErrorCurve(null);
+  const COLOR_REF = '#60A5FA';  // azul
+  const COLOR_SEG = '#A3E635';  // verde
 
   // Helpers
   const formatDMY = (iso) => {
@@ -355,37 +345,44 @@ const handleViewCurve = async (row) => {
 
     if (refIsMsg) {
       newSeries.push({
-        name: String(refRaw[0]),          // mensaje del servicio
+        type: 'spline',
+        name: String(refRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
         data: [],
+        color: COLOR_REF,          // << azul cuando falta referencia
         showInLegend: true,
         enableMouseTracking: false,
-        isPlaceholder: true               // para pintar en rojo en el legend
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
       });
     } else if (refData.length) {
       newSeries.push({
         type: 'spline',
         name: refName,
         data: refData,
-        color: '#60A5FA'
+        color: COLOR_REF
       });
     }
 
     if (segIsMsg) {
       newSeries.push({
-        name: String(segRaw[0]),          // mensaje del servicio
+        type: 'spline',
+        name: String(segRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
         data: [],
+        color: COLOR_SEG,          // << VERDE aunque no haya datos
         showInLegend: true,
         enableMouseTracking: false,
-        isPlaceholder: true
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
       });
     } else if (segData.length) {
       newSeries.push({
         type: 'spline',
         name: segName,
         data: segData,
-        color: '#A3E635'
+        color: COLOR_SEG
       });
     }
+
 
     if (newSeries.length === 0) {
       // No hay ni datos ni mensajes (caso raro)
@@ -405,11 +402,11 @@ const handleViewCurve = async (row) => {
       legend: {
         ...opts.legend,
         useHTML: true,
+        itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
         labelFormatter: function () {
-          if (this.userOptions && this.userOptions.isPlaceholder) {
-            return `<span style="color:#ef4444">${this.name}</span>`;
-          }
-          return this.name;
+          const isPH = this.userOptions && this.userOptions.isPlaceholder;
+          const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+          return `<span style="${style}">${this.name}</span>`;
         }
       },
       series: newSeries
