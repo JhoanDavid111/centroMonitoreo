@@ -100,10 +100,15 @@ export default function MapaHidrologia() {
       }
 
       // === Inicializar mapa ===
-      const map = L.map(mapRef.current, { closePopupOnClick: false }).setView(
-        [4.6, -74.1],
-        6
-      );
+      const map = L.map(mapRef.current, { 
+        closePopupOnClick: false,
+        zoomControl: false,      // ❌ quita los botones de zoom
+        scrollWheelZoom: false,  // ❌ desactiva zoom con scroll
+        doubleClickZoom: false,  // ❌ desactiva zoom con doble click
+        touchZoom: false,        // ❌ desactiva zoom táctil
+        boxZoom: false,          // ❌ desactiva zoom con selección de caja
+        dragging: true           // ✅ mantiene mover el mapa
+      }).setView([4.6, -74.1], 6);
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         {
