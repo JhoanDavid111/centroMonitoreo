@@ -117,14 +117,13 @@ export default function IndicadoresProyectos075() {
             />
           </span>
           <span
-            className="font-semibold leading-tight"
-            style={{ color: '#FFC800', fontSize: '44px' }}
+            className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold"
           >
             {heroValue}
           </span>
         </div>
 
-        <div className="mt-2 text-[#D1D1D0] text-[20px]">
+        <div className="mt-2 text-[#D1D1D0] text-1xl lg:text-[20px]">
           {heroSubtitle}
         </div>
       </div>
