@@ -4,14 +4,14 @@ import {
   Banner,
   BannerBackground,
   BannerHeader,
-  BannerTitle,
   BannerLogo,
+  BannerTitle,
 } from '../components/ui/Banner';
 
-import ProjectGrid from '../components/ProjectGrid';
-import SeguimientoIndices from '../components/SeguimientoIndices';
-import SeguimientoCiclos from '../components/SeguimientoCiclos';
 import IndicadoresProyectos075 from '../components/IndicadoresProyectos075';
+import ProjectGrid from '../components/ProjectGrid';
+import SeguimientoCiclos from '../components/SeguimientoCiclos';
+import SeguimientoIndices from '../components/SeguimientoIndices';
 
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 
@@ -27,9 +27,11 @@ export default function Proyectos075() {
           alt="Banner Background"
         />
         <BannerHeader>
-          <BannerTitle>Proyectos de Generación</BannerTitle>
+          <BannerTitle>
+            Proyectos de Generación
+            <div className='absolute left-6 top-20 mt-10 text-2xl'>Ventanilla única resolución CREG 075</div>
+          </BannerTitle>
         </BannerHeader>
-
         <BannerLogo src={GWOff} title="Logo" alt="Logo" />
       </Banner>
 
