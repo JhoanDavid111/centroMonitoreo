@@ -214,6 +214,7 @@ export default function ProyectoDetalle() {
 
   // Fetch info de proyecto
   useEffect(() => {
+
     let alive = true;
     (async () => {
       try {
@@ -289,39 +290,51 @@ useEffect(() => {
 
       const series = [];
 
-      if (refIsMsg) {
-        series.push({
-          name: String(refRaw[0]),   // mensaje del servicio
-          data: [],
-          showInLegend: true,
-          enableMouseTracking: false,
-          isPlaceholder: true
-        });
-      } else if (refData.length) {
-        series.push({
-          type: 'spline',
-          name: refName,
-          data: refData,
-          color: '#60A5FA'
-        });
-      }
+      const COLOR_REF = '#60A5FA';  // azul referencia
+      const COLOR_SEG = '#A3E635';  // verde seguimiento
 
-      if (segIsMsg) {
-        series.push({
-          name: String(segRaw[0]),   // mensaje del servicio
-          data: [],
-          showInLegend: true,
-          enableMouseTracking: false,
-          isPlaceholder: true
-        });
-      } else if (segData.length) {
-        series.push({
-          type: 'spline',
-          name: segName,
-          data: segData,
-          color: '#A3E635'
-        });
-      }
+    // Referencia
+    if (refIsMsg) {
+      series.push({
+        type: 'spline',
+        name: String(refRaw[0]),   // mensaje del servicio
+        data: [],
+        color: COLOR_REF,          // << azul aunque no haya datos
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (refData.length) {
+      series.push({
+        type: 'spline',
+        name: refName,
+        data: refData,
+        color: COLOR_REF
+      });
+    }
+
+    // Seguimiento
+    if (segIsMsg) {
+      series.push({
+        type: 'spline',
+        name: String(segRaw[0]),   // mensaje del servicio
+        data: [],
+        color: COLOR_SEG,          // << VERDE aunque no haya datos
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (segData.length) {
+      series.push({
+        type: 'spline',
+        name: segName,
+        data: segData,
+        color: COLOR_SEG
+      });
+    }
+
 
       if (!alive) return;
 

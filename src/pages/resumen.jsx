@@ -14,6 +14,7 @@ import { GeneracionHoraria } from '../components/GeneracionHoraria';
 import { GeneracionDespacho } from '../components/GeneracionDespacho';
 import MapasCreg from '../components/MapasCreg';
 
+
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
 
 export default function Resumen() {

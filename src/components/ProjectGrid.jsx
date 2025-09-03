@@ -814,7 +814,7 @@ const columnsSeguimiento = [
             const rawId = String(row.id ?? '').trim();
             if (!rawId) return; // evita navegar sin id
             const safeId = encodeURIComponent(rawId); // evita 404 por caracteres especiales
-            const path = generatePath('/proyectos075/:id', { id: safeId });
+            const path = generatePath('/proyectos_generacion/:id', { id: safeId });
             navigate(path, { state: { nombre: row.nombre_proyecto ?? '' } });
           }}
         />
