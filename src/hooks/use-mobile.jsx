@@ -15,6 +15,8 @@ export const useMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_WIDTH);
     }
 
+    handleResize();
+
     window.addEventListener("resize", handleResize);
 
     return () => {

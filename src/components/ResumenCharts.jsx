@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
@@ -80,7 +80,7 @@ Highcharts.setOptions({
   },
   tooltip: {
     backgroundColor: '#262626',
-    style: { color: '#fff', fontSize: '12px' }
+    style: { color: '#fff', fontSize: '13px' },
   }
 });
 
@@ -92,9 +92,12 @@ const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
 // Tooltip SOLO para el slice/punto en pies (primeros 2 charts)
 function singlePieTooltipFormatter() {
   const p = this.point;
-  const percent = typeof p.percentage === 'number' ? p.percentage : (p.y / this.series.data.reduce((s, d) => s + d.y, 0)) * 100;
+  const percent =
+    typeof p.percentage === 'number'
+      ? p.percentage
+      : (p.y / this.series.data.reduce((s, d) => s + d.y, 0)) * 100;
   return `
-    <span style="font-size:12px"><b>${p.name}</b></span><br/>
+    <span style="font-size:13px"><span style="color:${p.color}; fontSize:20px;">● </span><b>${p.name}</b></span><br/>
     Capacidad: <b>${fmt(p.y, 2)} MW</b><br/>
     (${fmt(percent, 2)}%)
   `;
@@ -102,19 +105,23 @@ function singlePieTooltipFormatter() {
 
 // Tooltip para columnas apiladas (todas las series del punto X)
 function columnTooltipFormatter() {
-  const pts = (this.points || []).filter(p => p.series.type !== 'scatter');
+  const pts = (this.points || []).filter((p) => p.series.type !== 'scatter');
   const total = pts.reduce((s, p) => s + p.y, 0);
-  const rows = pts.map(p => `
+  const rows = pts
+    .map(
+      (p) => `
     <tr>
-      <td style="padding:0 8px 0 0; white-space:nowrap;">${p.series.name}:</td>
+      <td style="padding:4px 8px 4px 0; white-space:nowrap;"><span style="color:${p.color}; fontSize:20px;">● </span>${p.series.name}:</td>
       <td style="text-align:right"><b>${fmt(p.y, 2)} MW</b></td>
     </tr>
-  `).join('');
+  `
+    )
+    .join('');
 
   return `
-    <span style="font-size:12px"><b>${this.x}</b></span>
+    <span style="font-size:13px"><b>${this.x}</b></span>
     <table>${rows}
-      <tr><td colspan="2" style="border-top:1px solid #555; padding-top:4px">Total: <b>${fmt(total, 2)} MW</b></td></tr>
+      <tr><td colspan="2" style="border-top:1px solid #555; padding-top:8px">Total: <b>${fmt(total, 2)} MW</b></td></tr>
     </table>
   `;
 }
@@ -181,6 +188,7 @@ export function ResumenCharts() {
           'RAD SOLAR': '#FFC800',
           'TERMICA': '#F97316',
           'TÉRMICA': '#F97316',
+          'COGENERADOR': '#D1D1D0',
         };
         const colorEntrada = {
           'BIOMASA Y RESIDUOS': '#B39FFF',
@@ -254,8 +262,8 @@ export function ResumenCharts() {
           tooltip: {
             useHTML: true,
             backgroundColor: '#262626',
-            borderColor: '#666',
-            formatter: singlePieTooltipFormatter
+            style: { color: '#fff', fontSize: '13px' },
+            formatter: singlePieTooltipFormatter,
           },
           exporting: { enabled: true }
         });

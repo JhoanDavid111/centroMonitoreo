@@ -1,11 +1,11 @@
 // src/components/CapacidadInstalada.jsx
-import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
@@ -185,20 +185,22 @@ export function CapacidadInstalada() {
             }
           },
           tooltip: {
-            backgroundColor: '#1F2937',
-            style: { color: '#FFF', fontSize: '12px' },
+            backgroundColor: '#262626',
+            style: { color: '#FFF', fontSize: '13px' },
             shared: true,
             formatter() {
               const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
               let total = 0;
-              this.points.forEach(pt => { total += pt.y; });
-              let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
-              s += `<span style="color:#FFD700"><b>Total: ${total.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} MW</b></span><br/><br/>`;
-              this.points.forEach(pt => {
-                s += `<span style="color:${pt.color}">●</span> ${pt.series.name}: <b>${pt.y.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} MW</b><br/><br/>`;
+              this.points.forEach((pt) => {
+                total += pt.y;
               });
+              let s = `<b>Fecha: ${fecha}</b><br/><br/>`;
+              this.points.forEach((pt) => {
+                s += `<span style="color:${pt.color}; fontSize:20px;">● </span> ${pt.series.name}: <b>${pt.y.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b><br/><br/>`;
+              });
+              s += `<span style="border-top:1px solid #555; padding-top:8px; width: 100%;"><b>Total: ${total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MW</b></span><br/><br/>`;
               return s;
-            }
+            },
           },
           plotOptions: {
             area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1 }
