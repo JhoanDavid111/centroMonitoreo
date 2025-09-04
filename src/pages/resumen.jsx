@@ -12,6 +12,7 @@ import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
 import { GeneracionHoraria } from '../components/GeneracionHoraria';
 import { GeneracionDespacho } from '../components/GeneracionDespacho';
+import ComunidadesResumen from '../components/ComunidadesResumen';
 import MapasCreg from '../components/MapasCreg';
 
 
@@ -53,6 +54,9 @@ export default function Resumen() {
       {/* Resto de secciones */}
       <div className="px-2">
         <CapacidadInstalada />
+      </div>
+      <div className="px-2">
+        <ComunidadesResumen />
       </div>
       <ResumenCharts />
       <MapasCreg />
