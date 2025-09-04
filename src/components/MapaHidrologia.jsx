@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import regionesHidro from '../assets/geojson/RegionesHidro.geojson?url'
-import embalsesHidro from '../assets/geojson/EmbalsesJson.geojson?url'
+import { useEffect, useRef } from "react";
+import embalsesHidro from '../assets/geojson/EmbalsesJson.geojson?url';
+import regionesHidro from '../assets/geojson/RegionesHidro.geojson?url';
 
 export default function MapaHidrologia() {
   const mapRef = useRef(null);
@@ -100,7 +100,7 @@ export default function MapaHidrologia() {
       }
 
       // === Inicializar mapa ===
-      const map = L.map(mapRef.current, { 
+      const map = L.map(mapRef.current, {
         closePopupOnClick: false,
         zoomControl: false,      // ❌ quita los botones de zoom
         scrollWheelZoom: false,  // ❌ desactiva zoom con scroll
@@ -147,7 +147,7 @@ export default function MapaHidrologia() {
             className: "popup-theme",
             maxWidth: 320,
             autoPan: true,
-            autoClose: false,
+            autoClose: true,
             closeButton: true,
           });
         },

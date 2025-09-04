@@ -30,7 +30,8 @@ export default function Resumen() {
         <BannerHeader>
           <BannerTitle>Seguimiento
             <img
-              className="w-100 object-cover h-6 md:h-10 lg:h-14 ml-3 shrink-0"
+            draggable={false}
+              className="w-100 object-cover h-6 md:h-10 lg:h-14 ml-3 shrink-0 inline-block select-none"
               src="../../src/assets/Plan6gw+2.svg"
               alt="Plan 6GW+"
             />

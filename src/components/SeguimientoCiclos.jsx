@@ -1,12 +1,14 @@
-// SeguimientoCiclos.jsx
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+
+
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
-import Accessibility from 'highcharts/modules/accessibility';
 import HighchartsReact from "highcharts-react-official";
+import Accessibility from 'highcharts/modules/accessibility';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { TOOLTIP_CONFIG } from '../constants/tooltip';
 
 // Carga de módulos de Highcharts
 Exporting(Highcharts);
@@ -105,7 +107,8 @@ const proyectosEstadoOptions = {
       { name: 'Retirado',            y: 15,  color: '#2E8B57' },
       { name: 'TOTAL',               y: 593, color: '#005A28' }
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const capacidadEstadoOptions = {
@@ -169,7 +172,8 @@ const capacidadEstadoOptions = {
       { name: 'Retirado',           y: 1627.49, color: '#006400' },
       { name: 'TOTAL',              y: 39441.89, color: '#005A28' }
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const proyectosDeptoOptions = {
@@ -241,7 +245,8 @@ const proyectosDeptoOptions = {
       '#39FF14','#0B6623','#7FFF00','#228B22','#39FF14','#0B6623',
       '#7FFF00'
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const capacidadDeptoOptions = {
@@ -315,7 +320,8 @@ const capacidadDeptoOptions = {
       '#39FF14','#0B6623','#7FFF00','#228B22','#39FF14','#0B6623',
       '#7FFF00'
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this),
 };
 
 const proyectosEstadoC2Options = {
@@ -381,7 +387,8 @@ const proyectosEstadoC2Options = {
       { name: 'Retirado',           y: 88, color: '#228B22' },
       { name: 'TOTAL',              y: 1718, color: '#005A28' }
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const capacidadEstadoC2Options = {
@@ -449,7 +456,8 @@ const capacidadEstadoC2Options = {
       { name: 'Retirado',           y: 5173.21,  color: '#228B22' },
       { name: 'TOTAL',              y: 98868.23, color: '#005A28' }
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const proyectosDeptoC2Options = {
@@ -535,7 +543,8 @@ const proyectosDeptoC2Options = {
       { name: 'Nariño', y: 4, color: '#228B22' },
       { name: 'Choco', y: 2, color: '#39FF14' }
     ]
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 };
 
 const capacidadDeptoC2Options = {
@@ -598,7 +607,8 @@ const capacidadDeptoC2Options = {
   series: [{
     name: 'Capacidad Instalada (MW)',
     data: capacidadDeptoC2Data
-  }]
+  }],
+    tooltip: TOOLTIP_CONFIG(this)
 };
 
 
@@ -738,7 +748,8 @@ const getChartOptions = (serie, index) => ({
   series: [{
     name: serie.name,
     data: serie.data
-  }]
+  }],
+  tooltip: TOOLTIP_CONFIG(this)
 });
 
 export function GraficaCiclo1() {

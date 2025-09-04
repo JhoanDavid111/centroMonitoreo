@@ -47,7 +47,7 @@ const sections = [
        },
        {
          title: "Proyectos de Generación",
-         path: "/proyectos_generacion",
+         path: "/proyectos075",
          icon: Proyecto075Off,
          activeIcon: Proyecto075On,
          permission: "proyectos",

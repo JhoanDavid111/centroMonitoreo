@@ -38,9 +38,9 @@ function areaTooltipFormatter() {
       (p) => `
     <tr>
       <td style="padding:4px 8px 4px 0; white-space:nowrap;">
-        <span style="color:${p.series.color}; fontSize:20px;">●</span> ${p.series.name}:
+        <span style="color:${p.series.color}; fontSize:20px;">● </span> ${p.series.name}:
       </td>
-      <td style="text-align:right;"><b>${fmt(p.y)} MW/h</b></td>
+      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
     </tr>
   `
     )
@@ -50,7 +50,7 @@ function areaTooltipFormatter() {
     <table>${rows}
       <tr>
         <td colspan="2" style="border-top:1px solid #555;padding-top:8px">
-          Total: <b style="fontSize: 13px;">${fmt(total)} MW/h</b>
+          Total: <b style="fontSize: 13px;">${fmt(total, 2)} MW/h</b>
         </td>
       </tr>
     </table>
