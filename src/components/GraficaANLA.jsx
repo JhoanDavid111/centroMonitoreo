@@ -1,4 +1,3 @@
-import React from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
@@ -73,9 +72,9 @@ const resumenANLAOptions = {
       }
     },
     tooltip: {
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#262626',
       borderColor: '#333',
-      style: { color: '#fff' },
+      style: { color: '#fff', fontSize: '14px' },
       headerFormat: '<b>{category}</b><br/>',
       pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
       useHTML: true
@@ -304,9 +303,9 @@ const tiempoPromedioANLAOptions = {
     gridLineColor: '#388'
   },
   tooltip: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#262626',
     borderColor: '#338',
-    style: { color: '#fff' },
+    style: { color: '#fff', fontSize: '14px' },
     valueSuffix: 'dias',
     pointFormat: 'Promedio de aprobación: <b>{point.y}</b>',
     useHTML: true
@@ -375,12 +374,12 @@ export default function GraficaANLA() {
         </button>
         <HighchartsReact highcharts={Highcharts} options={resumenANLAOptions} />
       </div>
-      
+
       {/* Gráficos por departamento */}
-      <h2 className="text-xl font-semibold mb-4 text-white">
+      {/*<h2 className="text-xl font-semibold mb-4 text-white">
         Evolución de la capacidad instalada licenciada por Departamento
       </h2>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {seriesData.map((serie, index) => (
           <div key={index} className="bg-[#262626] rounded-lg border border-[#666666] h-[420px] p-1  relative h-[420px]">
@@ -408,8 +407,8 @@ export default function GraficaANLA() {
             <HighchartsReact highcharts={Highcharts} options={getChartOptions(serie, index)} />
           </div>
         ))}
-      </div>
-      
+      </div>*/}
+
       {/* Gráfico de tiempos promedio */}
       <div className="bg-[#262626] rounded-lg border border-[#666666] relative p-2">
         <button
