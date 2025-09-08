@@ -1,12 +1,12 @@
 import { useState } from 'react';
-
+import bannerProyectos from '../../src/assets/bannerProyectosEstrategia6GW.png';
 import {
   Banner,
   BannerBackground,
+  BannerDescription,
   BannerHeader,
   BannerLogo,
-  BannerTitle,
-  BannerDescription
+  BannerTitle
 } from '../components/ui/Banner';
 
 import IndicadoresProyectos075 from '../components/IndicadoresProyectos075';
@@ -23,7 +23,7 @@ export default function Proyectos075() {
     <div className="min-h-screen font-sans text-white">
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerProyectosEstrategia6GW.png"
+          src={bannerProyectos}
           title="Banner Background"
           alt="Banner Background"
         />
