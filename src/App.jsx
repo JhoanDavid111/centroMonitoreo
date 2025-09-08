@@ -127,7 +127,7 @@ function AppContent() {
               />
 
               <Route
-                path="/proyectos075"
+                path="/proyectos_generacion"
                 element={
                   <PrivateRoute requiredPermission="proyectos">
                     <Proyectos />
@@ -137,7 +137,7 @@ function AppContent() {
 
               {/* 🔹 Ruta de detalle de proyecto 075 */}
               <Route
-                path="/proyectos075/:id"
+                path="/proyectos_generacion/:id"
                 element={
                   <PrivateRoute requiredPermission="proyectos">
                     <ProyectoDetalle />
