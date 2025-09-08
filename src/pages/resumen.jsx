@@ -1,19 +1,18 @@
+import bannerResumen from '../../src/assets/bannerResumenEstrategia6GW.png';
 import {
   Banner,
+  BannerAction,
   BannerBackground,
   BannerHeader,
-  BannerTitle,
-  BannerAction,
-  BannerLogo,
+  BannerTitle
 } from '../components/ui/Banner';
-import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 
-import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
-import { GeneracionHoraria } from '../components/GeneracionHoraria';
-import { GeneracionDespacho } from '../components/GeneracionDespacho';
 import ComunidadesResumen from '../components/ComunidadesResumen';
+import { GeneracionDespacho } from '../components/GeneracionDespacho';
+import { GeneracionHoraria } from '../components/GeneracionHoraria';
 import MapasCreg from '../components/MapasCreg';
+import { ResumenCharts } from '../components/ResumenCharts';
 
 
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
@@ -24,7 +23,7 @@ export default function Resumen() {
       {/* Banner */}
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerResumenEstrategia6GW.png"
+          src={bannerResumen}
           title="Banner Background"
           alt="Banner Background"
         />

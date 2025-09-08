@@ -1,3 +1,4 @@
+import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
 import {
   Banner,
   BannerAction,
@@ -762,7 +763,7 @@ export default function Hidrologia() {
       <section className="space-y-6" ref={printRef}>
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerHidrologia.png"
+          src={bannerHidrologia}
           title="Banner Background"
           alt="Banner Background"
         />
