@@ -16,7 +16,7 @@ import Proyecto075Off from '../assets/svg-icons/Proyecto075-Off.svg';
 import Proyecto075On from '../assets/svg-icons/Proyecto075-On.svg';
 import ProyectosTransmisionOff from '../assets/svg-icons/Transmision-Off.svg';
 import ProyectosTransmisionOn from '../assets/svg-icons/Transmision-On.svg';
-
+// comentario prueba
 import EnergiaFirmeOff from '../assets/svg-icons/EnergiaElectrica-Off.svg';
 import EnergiaFirmeOn from '../assets/svg-icons/EnergiaElectrica-On.svg';
 import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
