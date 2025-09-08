@@ -6,6 +6,7 @@ import {
   BannerHeader,
   BannerLogo,
   BannerTitle,
+  BannerDescription
 } from '../components/ui/Banner';
 
 import IndicadoresProyectos075 from '../components/IndicadoresProyectos075';
@@ -27,12 +28,16 @@ export default function Proyectos075() {
           alt="Banner Background"
         />
         <BannerHeader>
-          <BannerTitle>
-            Proyectos de Generación
-            <div className='absolute left-6 top-20 mt-10 text-2xl'>Ventanilla única resolución CREG 075</div>
-          </BannerTitle>
+          <BannerTitle>Proyectos de Generación</BannerTitle>
+          <BannerDescription>
+              Ventanilla única resolución CREG 075
+          </BannerDescription>
         </BannerHeader>
-        <BannerLogo src={GWOff} title="Logo" alt="Logo" />
+        <BannerLogo
+          src={GWOff}
+          title="Logo"
+          alt="Logo"
+        />
       </Banner>
 
       <div className="mb-4 flex flex-wrap items-center justify-between space-y-2">
@@ -41,8 +46,8 @@ export default function Proyectos075() {
             onClick={() => setShowCiclos(false)}
             className={`flex items-center space-x-1 rounded px-3 py-1 font-sans transition ${
               !showCiclos
-                ? 'bg-[#FFC800] text-black hover:bg-[#e6b000]'
-                : 'bg-[#3a3a3a] text-white'
+                ? "bg-[#FFC800] text-black hover:bg-[#e6b000]"
+                : "bg-[#3a3a3a] text-white"
             }`}
           >
             Seguimiento de proyectos 075
@@ -51,8 +56,8 @@ export default function Proyectos075() {
             onClick={() => setShowCiclos(true)}
             className={`flex items-center space-x-1 rounded px-3 py-1 font-sans transition ${
               showCiclos
-                ? 'bg-[#FFC800] text-black hover:bg-[#e6b000]'
-                : 'bg-[#3a3a3a] text-white'
+                ? "bg-[#FFC800] text-black hover:bg-[#e6b000]"
+                : "bg-[#3a3a3a] text-white"
             }`}
           >
             Seguimiento de ciclos de asignación

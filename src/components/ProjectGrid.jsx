@@ -1,19 +1,19 @@
 // src/components/ProjectGrid.jsx
-import React, { useRef, useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
-import Boost from 'highcharts/modules/boost';
 import HighchartsReact from 'highcharts-react-official';
+import Boost from 'highcharts/modules/boost';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import DataTable, { createTheme } from 'react-data-table-component';
-import { Download, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import ojoAmarillo from '../assets/ojoAmarillo.svg';
+import { generatePath, useNavigate } from 'react-router-dom';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
+import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
-import { useNavigate, generatePath } from 'react-router-dom';
 
 // ——— Tema oscuro para DataTable ———
 createTheme('customDark', {
@@ -135,15 +135,15 @@ const LoadingSpinner = ({ message = "Cargando datos..." }) => (
 
 // ——— Opciones base de la Curva S (datetime + tooltip por nodo + performance) ———
 const baseChartOptions = {
-  chart: { 
-    type: 'spline', 
+  chart: {
+    type: 'spline',
     height: 520,
     backgroundColor: '#262626',
     animation: false
   },
-  title: { 
-    text: 'Curva S – Proyecto', 
-    style: { color: '#fff' } 
+  title: {
+    text: 'Curva S – Proyecto',
+    style: { color: '#fff' }
   },
   subtitle: { text: '' },
 
@@ -225,7 +225,7 @@ const baseChartOptions = {
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
   const chartContainerRef = useRef(null);
-  const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
+  const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Licencias ANLA'];
   const [activeTab, setActiveTab]         = useState(tabs[0]);
   const [proyectos, setProyectos]         = useState([]);
   const [loadingList, setLoadingList]     = useState(true);
@@ -970,8 +970,8 @@ const columnsSeguimiento = [
         </div>
       )}
 
-      {/* ——— Proyectos ANLA ——— */}
-      {activeTab==='Proyectos ANLA' && (
+      {/* ——— Licencias ANLA ——— */}
+      {activeTab==='Licencias ANLA' && (
         <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
           <GraficaANLA/>
         </div>

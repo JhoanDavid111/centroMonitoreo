@@ -186,7 +186,7 @@ export function CapacidadInstalada() {
           },
           tooltip: {
             backgroundColor: '#262626',
-            style: { color: '#FFF', fontSize: '13px' },
+            style: { color: '#FFF', fontSize: '14px' },
             shared: true,
             formatter() {
               const fecha = Highcharts.dateFormat('%e %b %Y', this.x);
