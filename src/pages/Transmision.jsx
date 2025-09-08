@@ -55,7 +55,7 @@ export default function Transmision() {
     <div className="space-y-8">
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerCentroMonitoreoTransmision.png"
+          src={bannerTransmision}
           title="Banner Background"
           alt="Banner Background"
         />

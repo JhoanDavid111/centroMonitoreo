@@ -1,4 +1,5 @@
 import bannerResumen from '../../src/assets/bannerResumenEstrategia6GW.png';
+import Plan6Svg from '../../src/assets/Plan6gw+2.svg';
 import {
   Banner,
   BannerAction,
@@ -32,7 +33,7 @@ export default function Resumen() {
             <img
             draggable={false}
               className="w-100 object-cover h-6 md:h-10 lg:h-14 ml-3 shrink-0 inline-block select-none"
-              src="../../src/assets/Plan6gw+2.svg"
+              src={Plan6Svg}
               alt="Plan 6GW+"
             />
           </BannerTitle>
