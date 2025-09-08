@@ -36,6 +36,28 @@ const regionPalette = [
   "#f97316",
 ];
 
+function TrendChip({ dir = 'up', children }) {
+  const isUp = dir === 'up';
+  const bg = isUp ? '#22C55E' : '#EF4444';
+  return (
+    <span
+      className="
+        inline-flex items-center px-3 py-0.5 ml-2
+        rounded-full text-sm font-semibold
+        whitespace-nowrap leading-none
+      "
+      style={{
+        backgroundColor: bg,
+        color: '#fff',
+        border: '1px solid rgba(0,0,0,.15)',
+      }}
+    >
+      <span aria-hidden className="text-base leading-none">{isUp ? '+' : '-'}</span>
+      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+    </span>
+  );
+}
+
 function hashColor(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
@@ -72,7 +94,7 @@ const RegionDialog = ({ coords, damProperties }) => {
   const vgwh = fmtNum(damProperties[VU_GWH_KEY], "GWh"); // Aportes hídricos
   const region = "Centro"; // Region
   const date = "23/08/2025"; // Fecha
-  const damLevel = 90; // %
+  const damLevel = 70; // %
   const damCapacity = 23;
   const damCapacityGeneration = 15.2;
   const damWaterSupply = 198.2;
@@ -98,19 +120,56 @@ const RegionDialog = ({ coords, damProperties }) => {
       <DialogContent>
       {/* ! Contenido */}
         <div className="p-4 space-y-3">
-          <h3 className="text-white text-lg font-bold tracking-wide">{name}</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/10 border border-white/20 rounded-lg p-3">
-              <span className="block text-xs text-gray-400">
-                Volumen útil (Mm³)
-              </span>
-              <span className="font-bold text-sm">{vmm3}</span>
+          <div>
+            <div className="flex justify-between">
+              <h3 className="text-white text-lg font-bold tracking-wide justify-self-start">{name}</h3>
+              <span className="rounded-full border-none text-[11px] text-gray-200 bg-[#EF4444] py-2 px-3 mr-2">Región: {region}</span>
             </div>
-            <div className="bg-white/10 border border-white/20 rounded-lg p-3">
-              <span className="block text-xs text-gray-400">
-                Volumen útil (GWh)
+            <span className="text-[11px] text-[#b0b0b0]">Datos promedio {date}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xl">
+            <div className="bg-white/5 border border-white/20 rounded-lg">
+              <div className="flex justify-between p-3">
+                <span className="block text-sm text-white">
+                  Nivel embalses:
+                </span>
+                <span className="font-bold text-sm">{damLevel}%</span>
+              </div>
+              <div className="flex-1 h-3 rounded-sm overflow-hidden bg-[#575756] mx-3">
+                <div className="h-3" style={{ width: `${damLevel}%`, background: '#22C55E' }} />
+              </div>
+            </div>
+            <div className="bg-white/5 border border-white/20 rounded-lg p-3">
+              <span className="block text-sm text-white">
+                Aportes hídricos:
               </span>
               <span className="font-bold text-sm">{vgwh}</span>
+            </div>
+          </div>
+          <div className="w-full">
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 text-sm flex justify-between">
+              <span className="text-[13px]">● Volumen:</span>
+              <span>{vmm3}
+                <TrendChip dir={'up'}>2.5</TrendChip>
+              </span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Aportes hídricos:</span>
+              <span>{damWaterSupply}
+                <TrendChip dir={'down'}>2.5</TrendChip>
+              </span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Capacidad del embalse:</span> <span>{damCapacity}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Recursos de generación:</span> <span>{name}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Capacidad del recurso de generación:</span> <span>{damCapacityGeneration}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Aportes medios históricos:</span> <span>{damCapacityGeneration}</span>
             </div>
           </div>
         </div>
@@ -136,12 +195,13 @@ function MapEmbalses() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-[#0b1220]">
+    <div className="h-screen w-screen bg-[#0b1220] z-0">
       <MapContainer
         center={[4.6, -74.1]}
         zoom={6}
         className="h-full w-full"
         closePopupOnClick={false}
+        scrollWheelZoom={false}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"

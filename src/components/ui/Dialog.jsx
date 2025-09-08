@@ -4,6 +4,7 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -24,6 +25,22 @@ const Dialog = ({ children, open: controlledOpen, onOpenChange }) => {
       setUncontrolledOpen(value);
     }
   }
+
+  useEffect(() => {
+    if(!open) return;
+    function preventScroll(e) {
+      e.preventDefault();
+    }
+
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+    }
+  }, [open])
+
 
   return (
     <DialogContext.Provider value={{ open, setOpen: handleOpenChange }}>
@@ -63,12 +80,12 @@ const DialogContent = ({ children }) => {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0"
         onClick={() => setOpen(false)}
       />
 
       {/* Content */}
-      <div className="relative z-[10000] max-w-lg w-full bg-[#323232] text-white p-6 rounded-lg shadow-lg">
+      <div className="relative z-[10000] max-w-lg w-full bg-[#1d1d1d] text-white p-2 pt-10 rounded-lg shadow-lg">
         <button
           className="absolute top-4 right-4 p-2"
           onClick={() => setOpen(false)}
