@@ -10,7 +10,7 @@ import { ROLES, ROLE_PERMISSIONS } from './config/roles';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Login from '../src/assets/Login.png';
 import AuthButton from './components/auth/AuthButton';
-
+// comentario prueba
 // Importación de páginas
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
