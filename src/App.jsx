@@ -107,8 +107,13 @@ function AppContent() {
 
                 <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
                     <Sidebar userRole={userRole} />
-
-                    <div className="flex-1 text-white p-6 overflow-auto">
+                    {/* contenedor scrollable con ref */}
+                    <div ref={scrollRef} className="flex-1 text-white p-6 overflow-auto">
+                      {/* ScrollToTop con exclusiones*/}
+                      <ScrollToTop
+                         scrollRef={scrollRef}
+                         //excludedRoutes={["/Transmision","/proyectos075"]}
+                      />
                         <Routes>
                             <Route
                                 path="/"
