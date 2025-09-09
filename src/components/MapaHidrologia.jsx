@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import regionesHidro from '../assets/geojson/RegionesHidro.geojson?url'
-import embalsesHidro from '../assets/geojson/EmbalsesJson.geojson?url'
+import { useEffect, useRef } from "react";
+import embalsesHidro from '../assets/geojson/EmbalsesJson.geojson?url';
+import regionesHidro from '../assets/geojson/RegionesHidro.geojson?url';
 
 export default function MapaHidrologia() {
   const mapRef = useRef(null);
@@ -100,10 +100,15 @@ export default function MapaHidrologia() {
       }
 
       // === Inicializar mapa ===
-      const map = L.map(mapRef.current, { closePopupOnClick: false }).setView(
-        [4.6, -74.1],
-        6
-      );
+      const map = L.map(mapRef.current, {
+        closePopupOnClick: false,
+        zoomControl: false,      // ❌ quita los botones de zoom
+        scrollWheelZoom: false,  // ❌ desactiva zoom con scroll
+        doubleClickZoom: false,  // ❌ desactiva zoom con doble click
+        touchZoom: false,        // ❌ desactiva zoom táctil
+        boxZoom: false,          // ❌ desactiva zoom con selección de caja
+        dragging: true           // ✅ mantiene mover el mapa
+      }).setView([4.6, -74.1], 6);
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         {
@@ -142,7 +147,7 @@ export default function MapaHidrologia() {
             className: "popup-theme",
             maxWidth: 320,
             autoPan: true,
-            autoClose: false,
+            autoClose: true,
             closeButton: true,
           });
         },

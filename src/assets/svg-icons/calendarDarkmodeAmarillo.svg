@@ -1,0 +1,12 @@
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M16.5248 25.3412H6.1633C4.90717 25.3412 3.88889 24.3257 3.88889 23.0729V7.19528C3.88889 5.94256 4.90717 4.92704 6.1633 4.92704H22.0842C23.3403 4.92704 24.3586 5.94256 24.3586 7.19528V23.0729C24.3586 24.3257 23.3403 25.3412 22.0842 25.3412H20.1351" stroke="#FFC800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M18.6725 2.65881V7.19529" stroke="#FFC800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M9.57495 2.65881V7.19529" stroke="#FFC800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M6.87888 11.1655L24.3586 11.1655" stroke="#FFC800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="7.70069" cy="15.4785" r="1.47846" fill="#FFC800"/>
+<circle cx="13.7687" cy="15.4785" r="1.47846" fill="#FFC800"/>
+<circle cx="19.8367" cy="15.4785" r="1.47846" fill="#FFC800"/>
+<ellipse cx="7.70069" cy="20.6616" rx="1.47846" ry="1.47846" fill="#FFC800"/>
+<ellipse cx="13.7687" cy="20.6616" rx="1.47846" ry="1.47846" fill="#FFC800"/>
+<ellipse cx="19.8367" cy="20.6616" rx="1.47846" ry="1.47846" fill="#FFC800"/>
+</svg>

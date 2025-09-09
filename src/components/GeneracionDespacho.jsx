@@ -1,11 +1,11 @@
 // src/components/GeneracionDespacho.jsx
-import React, { useEffect, useState, useRef } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
@@ -96,24 +96,26 @@ Highcharts.setOptions({
 const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
 
 function areaTooltipFormatter() {
-  // this.points contiene cada serie en esa X
   const pts = this.points || [];
   const total = pts.reduce((s, p) => s + p.y, 0);
-
-  const rows = pts.map(p => `
+  const rows = pts
+    .map(
+      (p) => `
     <tr>
-      <td style="padding:0 8px 0 0; white-space:nowrap;">${p.series.name}:</td>
+      <td style="padding:4px 8px 4px 0; white-space:nowrap;">
+        <span style="color:${p.series.color}; fontSize:20px;">● </span>${p.series.name}:
+      </td>
       <td style="text-align:right;"><b>${fmt(p.y, 2)} MWh-día</b></td>
     </tr>
-  `).join('');
-
+  `
+    )
+    .join('');
   return `
     <span style="font-size:12px"><b>${this.x}</b></span>
-    <table>
-      ${rows}
+    <table>${rows}
       <tr>
-        <td colspan="2" style="border-top:1px solid #555; padding-top:4px">
-          Total: <b>${fmt(total, 2)} MWh-día</b>
+        <td colspan="2" style="border-top:1px solid #555; padding-top:8px">
+          Total: <b style="fontSize: 13px;">${fmt(total, 2)} MWh-día</b>
         </td>
       </tr>
     </table>
@@ -208,7 +210,7 @@ export function GeneracionDespacho() {
           tooltip: {
             shared: true,
             useHTML: true,
-            backgroundColor: '#1f2937',
+            backgroundColor: '#262626',
             borderColor: '#666',
             formatter: areaTooltipFormatter
           },

@@ -1,19 +1,19 @@
 // src/components/ProjectGrid.jsx
-import React, { useRef, useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
-import Boost from 'highcharts/modules/boost';
 import HighchartsReact from 'highcharts-react-official';
+import Boost from 'highcharts/modules/boost';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import DataTable, { createTheme } from 'react-data-table-component';
-import { Download, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import ojoAmarillo from '../assets/ojoAmarillo.svg';
+import { generatePath, useNavigate } from 'react-router-dom';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
+import ojoAmarillo from '../assets/ojoAmarillo.svg';
 import { API } from '../config/api';
 import GraficaANLA from './GraficaANLA';
-import { useNavigate, generatePath } from 'react-router-dom';
 
 // ——— Tema oscuro para DataTable ———
 createTheme('customDark', {
@@ -99,28 +99,27 @@ Highcharts.setOptions({
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent',
   },
-  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
   xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
   },
   yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
   },
   legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' },
+    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
+    itemHoverStyle:  { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' },
+    itemHiddenStyle: { color: '#666', fontFamily: 'Nunito Sans, sans-serif' },
   },
   tooltip: {
     backgroundColor: '#1f2937',
-    style:           { color: '#fff', fontSize: '12px' },
+    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
   },
 });
+
 
 // ——— Componente reutilizable de carga ———
 const LoadingSpinner = ({ message = "Cargando datos..." }) => (
@@ -136,15 +135,15 @@ const LoadingSpinner = ({ message = "Cargando datos..." }) => (
 
 // ——— Opciones base de la Curva S (datetime + tooltip por nodo + performance) ———
 const baseChartOptions = {
-  chart: { 
-    type: 'spline', 
+  chart: {
+    type: 'spline',
     height: 520,
     backgroundColor: '#262626',
     animation: false
   },
-  title: { 
-    text: 'Curva S – Proyecto', 
-    style: { color: '#fff' } 
+  title: {
+    text: 'Curva S – Proyecto',
+    style: { color: '#fff' }
   },
   subtitle: { text: '' },
 
@@ -152,30 +151,29 @@ const baseChartOptions = {
     type: 'datetime',
     gridLineColor: '#333',
     tickPixelInterval: 80,
-    dateTimeLabelFormats: {
-      day:   '%e %b %Y',
-      week:  '%e %b %Y',
-      month: '%b %Y',
-      year:  '%Y'
-    },
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    dateTimeLabelFormats: { day: '%e %b %Y', week: '%e %b %Y', month: '%b %Y', year: '%Y' },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
     crosshair: { width: 1 }
   },
-
   yAxis: {
-    title: { text: 'Avance (%)', style: { color: '#ccc' } },
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
+    title:  { text: 'Avance (%)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
     gridLineColor: '#333',
-    min: 0,
-    max: 100,
+    min: 0, max: 100,
     crosshair: { width: 1 }
   },
-
   legend: {
-    itemStyle: { color: '#ccc' },
+    useHTML: true,
+    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
     itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHiddenStyle: { color: '#666' },
+    labelFormatter: function () {
+      const isPH = this.userOptions && this.userOptions.isPlaceholder;
+      const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+      return `<span style="${style}">${this.name}</span>`;
+    }
   },
+
   credits: { enabled: false },
 
   tooltip: {
@@ -184,10 +182,9 @@ const baseChartOptions = {
     followPointer: false,
     stickOnContact: true,
     hideDelay: 60,
-    snap: 16,              // tolerancia alrededor del marcador
+    snap: 16,
     xDateFormat: '%Y-%m-%d',
     formatter: function () {
-      // 'this' es el punto
       const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
       const valor = Highcharts.numberFormat(this.y ?? 0, 1);
       const hito  = this.point?.hito_nombre ? `\n${this.point.hito_nombre}` : '';
@@ -198,7 +195,7 @@ const baseChartOptions = {
   plotOptions: {
     series: {
       turboThreshold: 0,
-      stickyTracking: false,             // obliga pasar por el punto
+      stickyTracking: false,
       animation: { duration: 150 },
       states: { hover: { halo: { size: 7 } } },
       boostThreshold: 2000
@@ -209,10 +206,8 @@ const baseChartOptions = {
     }
   },
 
-  series: [
-    { name: 'Programado', data: [], color: '#60A5FA' }, // referencia
-    { name: 'Cumplido',   data: [], color: '#A3E635' }  // seguimiento
-  ],
+  // Dejamos vacío; se construye dinámicamente en handleViewCurve
+  series: [],
 
   exporting: {
     enabled: true,
@@ -222,17 +217,15 @@ const baseChartOptions = {
   },
 
   responsive: {
-    rules: [{
-      condition: { maxWidth: 640 },
-      chartOptions: { chart: { height: 420 } }
-    }]
+    rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }]
   }
 };
+
 
 export default function ProyectoDetalle() {
   const chartRef = useRef(null);
   const chartContainerRef = useRef(null);
-  const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Proyectos ANLA'];
+  const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Licencias ANLA'];
   const [activeTab, setActiveTab]         = useState(tabs[0]);
   const [proyectos, setProyectos]         = useState([]);
   const [loadingList, setLoadingList]     = useState(true);
@@ -294,72 +287,144 @@ export default function ProyectoDetalle() {
   }, []);
 
   // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-  const handleViewCurve = async (row) => {
-    setLoadingCurve(true);
-    setErrorCurve(null);
-    try {
-      const res = await fetch(
-        `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const payload = await res.json();
+// ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
+const handleViewCurve = async (row) => {
+  setLoadingCurve(true);
+  setErrorCurve(null);
+  const COLOR_REF = '#60A5FA';  // azul
+  const COLOR_SEG = '#A3E635';  // verde
 
-      const refArr = payload?.referencia?.curva ?? [];
-      const segArr = payload?.seguimiento?.curva ?? [];
+  // Helpers
+  const formatDMY = (iso) => {
+    if (!iso) return '';
+    // esperado: YYYY-MM-DD
+    const [y, m, d] = String(iso).split('-');
+    return (y && m && d) ? `${d}/${m}/${y}` : iso;
+  };
 
-      const parse = (arr) =>
-        (arr ?? [])
-          .map(pt => {
-            const iso = (pt.fecha || '').split('T')[0];
-            if (!iso) return null;
-            const t = new Date(iso).getTime(); // timestamp ms
-            const y = Number(pt.avance);
-            return Number.isFinite(t) && Number.isFinite(y)
-              ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-              : null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.x - b.x);
+  const parse = (arr) =>
+    (arr ?? [])
+      .map(pt => {
+        // arr puede venir con strings (mensaje) o con objetos {fecha, avance, ...}
+        if (!pt || typeof pt === 'string') return null;
+        const iso = (pt.fecha || '').split('T')[0];
+        if (!iso) return null;
+        const t = new Date(iso).getTime();
+        const y = Number(pt.avance);
+        return Number.isFinite(t) && Number.isFinite(y)
+          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+          : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.x - b.x);
 
-      const refData = parse(refArr);
-      const segData = parse(segArr);
+  try {
+    const res = await fetch(
+      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
 
-      if (refData.length === 0 && segData.length === 0) {
-        setErrorCurve(`No existe curva S para el proyecto ${row.id}.`);
-        setChartOptions(opts => ({
-          ...opts,
-          title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-          series: [{ ...opts.series[0], data: [] }, { ...opts.series[1], data: [] }]
-        }));
-        return;
-      }
+    const refRaw = payload?.referencia?.curva;
+    const segRaw = payload?.seguimiento?.curva;
+    const refRad = payload?.referencia?.fecha_radicado || null;
+    const segRad = payload?.seguimiento?.fecha_radicado || null;
 
+    const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
+    const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
+
+    const refData = refIsMsg ? [] : parse(refRaw);
+    const segData = segIsMsg ? [] : parse(segRaw);
+
+    const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
+    const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
+
+    // Construimos series en el orden: Referencia -> Seguimiento
+    const newSeries = [];
+
+    if (refIsMsg) {
+      newSeries.push({
+        type: 'spline',
+        name: String(refRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
+        data: [],
+        color: COLOR_REF,          // << azul cuando falta referencia
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (refData.length) {
+      newSeries.push({
+        type: 'spline',
+        name: refName,
+        data: refData,
+        color: COLOR_REF
+      });
+    }
+
+    if (segIsMsg) {
+      newSeries.push({
+        type: 'spline',
+        name: String(segRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
+        data: [],
+        color: COLOR_SEG,          // << VERDE aunque no haya datos
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (segData.length) {
+      newSeries.push({
+        type: 'spline',
+        name: segName,
+        data: segData,
+        color: COLOR_SEG
+      });
+    }
+
+
+    if (newSeries.length === 0) {
+      // No hay ni datos ni mensajes (caso raro)
+      setErrorCurve(`No existe Curva S para el proyecto ${row.id}.`);
       setChartOptions(opts => ({
         ...opts,
         title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-        series: [
-          { ...opts.series[0], name: 'Programado', data: refData, color: '#60A5FA' },
-          { ...opts.series[1], name: 'Cumplido',   data: segData, color: '#A3E635' },
-        ],
+        series: []
       }));
-    } catch (err) {
-      console.error(err);
-      setErrorCurve('No fue posible cargar la curva S.');
-    } finally {
-      setLoadingCurve(false);
-
-      if (chartContainerRef.current) {
-        const OFFSET = 80; // ajusta según altura de tu header
-        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-        window.scrollTo({ top, behavior: 'smooth' });
-
-        setTimeout(() => {
-          chartRef.current?.chart?.reflow();
-        }, 250);
-      }
+      return;
     }
-  };
+
+    setChartOptions(opts => ({
+      ...opts,
+      title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
+      // reforzamos leyenda con useHTML y labelFormatter para placeholders
+      legend: {
+        ...opts.legend,
+        useHTML: true,
+        itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
+        labelFormatter: function () {
+          const isPH = this.userOptions && this.userOptions.isPlaceholder;
+          const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+          return `<span style="${style}">${this.name}</span>`;
+        }
+      },
+      series: newSeries
+    }));
+  } catch (err) {
+    console.error(err);
+    setErrorCurve('No fue posible cargar la Curva S.');
+  } finally {
+    setLoadingCurve(false);
+    if (chartContainerRef.current) {
+      const OFFSET = 80;
+      const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+      window.scrollTo({ top, behavior: 'smooth' });
+      setTimeout(() => chartRef.current?.chart?.reflow(), 250);
+    }
+  }
+};
+
 
   function applyGlobal(row) {
     if (!globalFilter) return true;
@@ -749,7 +814,7 @@ const columnsSeguimiento = [
             const rawId = String(row.id ?? '').trim();
             if (!rawId) return; // evita navegar sin id
             const safeId = encodeURIComponent(rawId); // evita 404 por caracteres especiales
-            const path = generatePath('/proyectos075/:id', { id: safeId });
+            const path = generatePath('/proyectos_generacion/:id', { id: safeId });
             navigate(path, { state: { nombre: row.nombre_proyecto ?? '' } });
           }}
         />
@@ -905,8 +970,8 @@ const columnsSeguimiento = [
         </div>
       )}
 
-      {/* ——— Proyectos ANLA ——— */}
-      {activeTab==='Proyectos ANLA' && (
+      {/* ——— Licencias ANLA ——— */}
+      {activeTab==='Licencias ANLA' && (
         <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
           <GraficaANLA/>
         </div>
