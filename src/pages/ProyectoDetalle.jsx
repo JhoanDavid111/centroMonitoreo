@@ -12,6 +12,12 @@ import ExportData from 'highcharts/modules/export-data';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import HighchartsReact from 'highcharts-react-official';
 import proyectoDetalleImg from '../assets/proyectoDetalle.png';
+import EnergiaElectricaOn from '../assets/svg-icons/EnergiaElectrica-On.svg';
+import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
+import LocationOn from '../assets/svg-icons/location-On.svg';
+import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
+import CalendarDarkmodeAmarillo from '../assets/svg-icons/calendarDarkmodeAmarillo.svg';
+import { API } from '../config/api';
 
 // ===== Inicialización Highcharts =====
 Exporting(Highcharts);
@@ -48,7 +54,10 @@ const Chip = ({ children, className = '' }) => (
 const StatCard = ({ icon, title, value }) => (
   <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 mb-1">
-      <IconPill>{icon}</IconPill>
+      {/* Ícono sin pill/fondo */}
+      <span className="inline-flex items-center justify-center w-5 h-5">
+        {icon}
+      </span>
       <span className="text-sm" style={{ color: LABEL }}>{title}</span>
     </div>
     <div className="text-white text-xl font-semibold">{value}</div>
@@ -58,12 +67,13 @@ const StatCard = ({ icon, title, value }) => (
 const InfoTag = ({ icon, labelText, value }) => (
   <div className="bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 text-sm" style={{ color: LABEL }}>
-      <IconPill>{icon}</IconPill>{labelText}
-    </div>
-    <div className="mt-2">
-      <span className="inline-block rounded-md px-3 py-1 bg-[#1f1f1f] border" style={{ borderColor: BORDER }}>
-        {value}
+      <span className="inline-flex items-center justify-center w-5 h-5">
+        {icon}
       </span>
+      {labelText}
+    </div>
+    <div className="mt-2 text-white font-semibold leading-snug whitespace-normal break-words">
+      {value ?? '-'}
     </div>
   </div>
 );
@@ -88,15 +98,17 @@ const fmtFPO = (iso) => {
 };
 
 // ===== Opciones BASE de Curva S (igual que ProjectGrid) =====
+// ===== Opciones BASE de Curva S (placeholders en leyenda, fechas en nombre) =====
 const baseCurveOptions = {
   chart: {
     type: 'spline',
-    height: 520,                 // más alto
+    height: 520,
     backgroundColor: '#262626',
     animation: false
   },
   title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
   subtitle: { text: '' },
+
   xAxis: {
     type: 'datetime',
     gridLineColor: '#333',
@@ -110,6 +122,7 @@ const baseCurveOptions = {
     labels: { style: { color: '#ccc', fontSize: '10px' } },
     crosshair: { width: 1 }
   },
+
   yAxis: {
     title: { text: 'Avance (%)', style: { color: '#ccc' } },
     labels: { style: { color: '#ccc', fontSize: '10px' } },
@@ -118,15 +131,26 @@ const baseCurveOptions = {
     max: 100,
     crosshair: { width: 1 }
   },
+
   legend: {
+    useHTML: true,
     itemStyle: { color: '#ccc' },
     itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHiddenStyle: { color: '#666' },
+    // si la "serie" es un placeholder (mensaje), pintamos el texto en rojo
+    labelFormatter: function () {
+      if (this.userOptions && this.userOptions.isPlaceholder) {
+        return `<span style="color:#ef4444">${this.name}</span>`;
+      }
+      return this.name;
+    }
   },
+
   credits: { enabled: false },
+
   tooltip: {
-    shared: false,         // por punto (como en ProjectGrid)
-    useHTML: false,        // etiqueta SVG rápida
+    shared: false,
+    useHTML: false,
     followPointer: false,
     stickOnContact: true,
     hideDelay: 60,
@@ -139,6 +163,7 @@ const baseCurveOptions = {
       return `${fecha}\n${this.series.name}: ${valor} %${hito}`;
     }
   },
+
   plotOptions: {
     series: {
       turboThreshold: 0,
@@ -152,10 +177,10 @@ const baseCurveOptions = {
       connectNulls: false
     }
   },
-  series: [
-    { name: 'Programado', data: [], color: '#60A5FA' },
-    { name: 'Cumplido',   data: [], color: '#A3E635' }
-  ],
+
+  // Se arma dinámicamente al cargar la curva
+  series: [],
+
   exporting: {
     enabled: true,
     buttons: {
@@ -166,6 +191,7 @@ const baseCurveOptions = {
     rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }]
   }
 };
+
 
 export default function ProyectoDetalle() {
   const { id } = useParams();
@@ -188,6 +214,7 @@ export default function ProyectoDetalle() {
 
   // Fetch info de proyecto
   useEffect(() => {
+
     let alive = true;
     (async () => {
       try {
@@ -210,78 +237,137 @@ export default function ProyectoDetalle() {
     return () => { alive = false; };
   }, [id]);
 
-  // Fetch Curva S — datetime puro (evita duplicados de categorías)
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setCurveLoading(true);
-        setCurveError('');
+// Fetch Curva S — construye series (referencia/seguimiento) o mensajes en leyenda
+useEffect(() => {
+  let alive = true;
 
-        const res = await fetch(
-          `${API}/v1/graficas/proyectos_075/grafica_curva_s/${encodeURIComponent(id)}`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const formatDMY = (iso) => {
+    if (!iso) return '';
+    const [y, m, d] = String(iso).split('-');
+    return (y && m && d) ? `${d}/${m}/${y}` : iso;
+  };
 
-        const payload = await res.json();
-        const refArr = payload?.referencia?.curva ?? [];
-        const segArr = payload?.seguimiento?.curva ?? [];
+  const parse = (arr) =>
+    (arr ?? [])
+      .map(pt => {
+        if (!pt || typeof pt === 'string') return null; // ignora mensajes
+        const iso = (pt.fecha || '').split('T')[0];
+        if (!iso) return null;
+        const t = new Date(iso).getTime();
+        const y = Number(pt.avance);
+        return Number.isFinite(t) && Number.isFinite(y)
+          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+          : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.x - b.x);
 
-        // Parse a puntos datetime {x: timestamp, y, hito_nombre}
-        const parse = (arr) =>
-          (arr ?? [])
-            .map(pt => {
-              const iso = (pt.fecha || '').split('T')[0];
-              if (!iso) return null;
-              const t = new Date(iso).getTime();
-              const y = Number(pt.avance);
-              return Number.isFinite(t) && Number.isFinite(y)
-                ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-                : null;
-            })
-            .filter(Boolean)
-            .sort((a, b) => a.x - b.x);
+  (async () => {
+    try {
+      setCurveLoading(true);
+      setCurveError('');
 
-        const refData = parse(refArr);
-        const segData = parse(segArr);
+      const res = await fetch(
+        `${API}/v1/graficas/proyectos_075/grafica_curva_s/${encodeURIComponent(id)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json();
 
-        if (refData.length === 0 && segData.length === 0) {
-          throw new Error('Sin datos de Curva S para este proyecto.');
-        }
+      const refRaw = payload?.referencia?.curva;
+      const segRaw = payload?.seguimiento?.curva;
+      const refRad = payload?.referencia?.fecha_radicado || null;
+      const segRad = payload?.seguimiento?.fecha_radicado || null;
 
-        // Actualiza opciones conservando estilos base
-        if (alive) {
-          setCurveOptions(opts => ({
-            ...opts,
-            title: { ...opts.title, text: (state?.nombre || `Proyecto ${id}`).toString() },
-            series: [
-              { ...opts.series[0], name: 'Programado', data: refData, color: '#60A5FA' },
-              { ...opts.series[1], name: 'Cumplido',   data: segData, color: '#A3E635' },
-            ]
-          }));
-        }
-      } catch (e) {
-        if (alive) setCurveError(e.message || 'Error cargando Curva S.');
-      } finally {
-        if (alive) {
-          setCurveLoading(false);
+      const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
+      const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
 
-          // Scroll automático a la gráfica + reflow (como en ProjectGrid)
-          if (chartContainerRef.current) {
-            const OFFSET = 80; // ajusta según tu header fijo
-            const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-            window.scrollTo({ top, behavior: 'smooth' });
-            setTimeout(() => {
-              chartRef.current?.chart?.reflow();
-            }, 250);
-          }
+      const refData = refIsMsg ? [] : parse(refRaw);
+      const segData = segIsMsg ? [] : parse(segRaw);
+
+      const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
+      const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
+
+      const series = [];
+
+      const COLOR_REF = '#60A5FA';  // azul referencia
+      const COLOR_SEG = '#A3E635';  // verde seguimiento
+
+    // Referencia
+    if (refIsMsg) {
+      series.push({
+        type: 'spline',
+        name: String(refRaw[0]),   // mensaje del servicio
+        data: [],
+        color: COLOR_REF,          // << azul aunque no haya datos
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (refData.length) {
+      series.push({
+        type: 'spline',
+        name: refName,
+        data: refData,
+        color: COLOR_REF
+      });
+    }
+
+    // Seguimiento
+    if (segIsMsg) {
+      series.push({
+        type: 'spline',
+        name: String(segRaw[0]),   // mensaje del servicio
+        data: [],
+        color: COLOR_SEG,          // << VERDE aunque no haya datos
+        showInLegend: true,
+        enableMouseTracking: false,
+        isPlaceholder: true,
+        marker: { enabled: true, symbol: 'circle' }
+      });
+    } else if (segData.length) {
+      series.push({
+        type: 'spline',
+        name: segName,
+        data: segData,
+        color: COLOR_SEG
+      });
+    }
+
+
+      if (!alive) return;
+
+      if (series.length === 0) {
+        setCurveError('Sin datos de Curva S para este proyecto.');
+        setCurveOptions(o => ({ ...o, series: [] }));
+        return;
+      }
+
+      setCurveOptions(o => ({
+        ...o,
+        title: { ...o.title, text: (state?.nombre || `Proyecto ${id}`).toString() },
+        legend: { ...o.legend, useHTML: true }, // asegura el rojo en placeholders
+        series
+      }));
+    } catch (e) {
+      if (alive) setCurveError(e.message || 'Error cargando Curva S.');
+    } finally {
+      if (alive) {
+        setCurveLoading(false);
+        if (chartContainerRef.current) {
+          const OFFSET = 80;
+          const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+          window.scrollTo({ top, behavior: 'smooth' });
+          setTimeout(() => chartRef.current?.chart?.reflow(), 250);
         }
       }
-    })();
+    }
+  })();
 
-    return () => { alive = false; };
-  }, [id, state?.nombre]);
+  return () => { alive = false; };
+}, [id, state?.nombre]);
+
 
   // Reflow en resize
   useEffect(() => {
@@ -366,13 +452,29 @@ export default function ProyectoDetalle() {
             </div>
           </div>
 
-          {/* 4 stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard icon={<Sun size={16} />} title="Tecnología" value={data?.tecnologia ?? '-'} />
-            <StatCard icon={<Layers size={16} />} title="Ciclo de asignación" value={data?.ciclo_asignacion ?? '-'} />
-            <StatCard icon={<Gauge size={16} />} title="Capacidad asignada" value={`${data?.capacidad_instalada_mw ?? 0} MW`} />
-            <StatCard icon={<CalendarDays size={16} />} title="FPO vigente" value={fpo} />
-          </div>
+        {/* 4 stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <StatCard
+            icon={<img src={AutogeneracionOn} alt="Autogeneración" className="w-4 h-4" draggable="false" />}
+            title="Tecnología"
+            value={data?.tecnologia ?? '-'}
+          />
+          <StatCard
+            icon={<img src={EnergiaElectricaOn} alt="Ciclo" className="w-4 h-4" draggable="false" />}
+            title="Ciclo de asignación"
+            value={data?.ciclo_asignacion ?? '-'}
+          />
+          <StatCard
+            icon={<img src={EnergiaElectricaOn} alt="Capacidad" className="w-4 h-4" draggable="false" />}
+            title="Capacidad asignada"
+            value={`${data?.capacidad_instalada_mw ?? 0} MW`}
+          />
+          <StatCard
+            icon={<img src={CalendarDarkmodeAmarillo} alt="Calendario" className="w-4 h-4" draggable="false" />}
+            title="FPO vigente"
+            value={fpo}
+          />
+        </div>
         </div>
 
         {/* Avance */}
@@ -399,13 +501,33 @@ export default function ProyectoDetalle() {
 
         {/* Ubicación y detalles */}
         <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>Ubicación y detalles</div>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <InfoTag icon={<CircleAlert size={16} />} labelText="Departamento" value={data?.departamento ?? '-'} />
-          <InfoTag icon={<MapPin size={16} />} labelText="Municipio" value={data?.municipio ?? '-'} />
-          <InfoTag icon={<BadgeCheck size={16} />} labelText="Área operativa" value={data?.area_operativa ?? '-'} />
-          <InfoTag icon={<BadgeCheck size={16} />} labelText="Subárea" value={data?.subarea ?? '-'} />
-          <InfoTag icon={<BadgeCheck size={16} />} labelText="Punto de conexión" value={data?.punto_conexion_seleccionado ?? '-'} />
-        </div>
+<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+  <InfoTag
+    icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
+    labelText="Departamento"
+    value={data?.departamento ?? '-'}
+  />
+  <InfoTag
+    icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
+    labelText="Municipio"
+    value={data?.municipio ?? '-'}
+  />
+  <InfoTag
+    icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
+    labelText="Área operativa"
+    value={data?.area_operativa ?? '-'}
+  />
+  <InfoTag
+    icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
+    labelText="Subárea"
+    value={data?.subarea ?? '-'}
+  />
+  <InfoTag
+    icon={<img src={EnergiaElectricaOn} alt="Energía eléctrica" className="w-4 h-4" draggable="false" />}
+    labelText="Punto de conexión"
+    value={data?.punto_conexion_seleccionado ?? '-'}
+  />
+</div>
 
         <div className="h-8" />
       </div>

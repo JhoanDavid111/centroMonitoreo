@@ -1,11 +1,11 @@
 // src/components/GeneracionHoraria.jsx
-import React, { useEffect, useState } from 'react';
 import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
+import ExportData from 'highcharts/modules/export-data';
+import Exporting from 'highcharts/modules/exporting';
+import FullScreen from 'highcharts/modules/full-screen';
+import OfflineExporting from 'highcharts/modules/offline-exporting';
+import { useEffect, useState } from 'react';
 import { API } from '../config/api';
 
 // Carga módulos
@@ -24,7 +24,7 @@ Highcharts.setOptions({
     itemHoverStyle: { color: '#fff' },
     itemHiddenStyle: { color: '#666' }
   },
-  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' }, useHTML: true }
+  tooltip: { backgroundColor: '#262626', style: { color: '#fff', fontSize: '13px' }, useHTML: true, },
 });
 
 const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
@@ -33,20 +33,26 @@ const SCALE = 1000;
 function areaTooltipFormatter() {
   const pts = this.points || [];
   const total = pts.reduce((s, p) => s + p.y, 0);
-  const rows = pts.map(p => `
+  const rows = pts
+    .map(
+      (p) => `
     <tr>
-      <td style="padding:0 8px 0 0;white-space:nowrap;">
-        <span style="color:${p.series.color}">●</span> ${p.series.name}:
+      <td style="padding:4px 8px 4px 0; white-space:nowrap;">
+        <span style="color:${p.series.color}; fontSize:20px;">● </span> ${p.series.name}:
       </td>
-      <td style="text-align:right;"><b>${fmt(p.y)} MW/h</b></td>
+      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
     </tr>
-  `).join('');
+  `
+    )
+    .join('');
   return `
     <span style="font-size:12px"><b>Hora: ${this.x}</b></span>
     <table>${rows}
-      <tr><td colspan="2" style="border-top:1px solid #555;padding-top:4px">
-        Total: <b>${fmt(total)} MW/h</b>
-      </td></tr>
+      <tr>
+        <td colspan="2" style="border-top:1px solid #555;padding-top:8px">
+          Total: <b style="fontSize: 13px;">${fmt(total, 2)} MW/h</b>
+        </td>
+      </tr>
     </table>
   `;
 }
@@ -124,7 +130,7 @@ export function GeneracionHoraria() {
             labels:{style:{color:'#ccc'},formatter(){return fmt(this.value,0);}},
             gridLineColor:'#333'
           },
-          tooltip:{ shared:true, formatter:areaTooltipFormatter, borderColor:'#666' },
+          tooltip:{ shared:true, backgroundColor: '#262626', style: { color: '#FFF', fontSize: '13px' }, formatter:areaTooltipFormatter },
           plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
           series: series1,
           responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
