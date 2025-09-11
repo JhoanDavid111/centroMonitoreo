@@ -1,16 +1,17 @@
+import bannerTransmision from '../../src/assets/bannerCentroMonitoreoTransmision.png';
 import {
   Banner,
   BannerBackground,
   BannerHeader,
-  BannerTitle,
   BannerLogo,
+  BannerTitle,
 } from '../components/ui/Banner';
 
 import { useTransmisionData } from '../components/transmision/hooks/useTransmisionData';
 import TotalProyectos from '../components/transmision/TotalProyectos';
+import ErrorMessage from '../components/ui/ErrorMessage';
 import IndicatorCard from '../components/ui/IndicatorCard';
 import SkeletonLoader from '../components/ui/SkeletonLoader';
-import ErrorMessage from '../components/ui/ErrorMessage';
 import { TRANSMISION_CONFIG } from '../config/transmision';
 
 //componentes especificos de la página
@@ -33,7 +34,7 @@ export default function Transmision() {
       <div className="space-y-8">
         <Banner>
           <BannerBackground
-            src="../../src/assets/bannerCentroMonitoreoTransmision.png"
+            src={bannerTransmision}
             title="Banner Background"
             alt="Banner Background"
           />
@@ -54,7 +55,7 @@ export default function Transmision() {
     <div className="space-y-8">
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerCentroMonitoreoTransmision.png"
+          src={bannerTransmision}
           title="Banner Background"
           alt="Banner Background"
         />

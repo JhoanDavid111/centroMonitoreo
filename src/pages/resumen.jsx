@@ -1,19 +1,19 @@
+import bannerResumen from '../../src/assets/bannerResumenEstrategia6GW.png';
+import Plan6Svg from '../../src/assets/Plan6gw+2.svg';
 import {
   Banner,
+  BannerAction,
   BannerBackground,
   BannerHeader,
-  BannerTitle,
-  BannerAction,
-  BannerLogo,
+  BannerTitle
 } from '../components/ui/Banner';
-import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 
-import { ResumenCharts } from '../components/ResumenCharts';
 import { CapacidadInstalada } from '../components/CapacidadInstalada';
-import { GeneracionHoraria } from '../components/GeneracionHoraria';
-import { GeneracionDespacho } from '../components/GeneracionDespacho';
 import ComunidadesResumen from '../components/ComunidadesResumen';
+import { GeneracionDespacho } from '../components/GeneracionDespacho';
+import { GeneracionHoraria } from '../components/GeneracionHoraria';
 import MapasCreg from '../components/MapasCreg';
+import { ResumenCharts } from '../components/ResumenCharts';
 
 
 import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
@@ -24,15 +24,16 @@ export default function Resumen() {
       {/* Banner */}
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerResumenEstrategia6GW.png"
+          src={bannerResumen}
           title="Banner Background"
           alt="Banner Background"
         />
         <BannerHeader>
           <BannerTitle>Seguimiento
             <img
-              className="w-100 object-cover h-6 md:h-10 lg:h-14 ml-3 shrink-0"
-              src="../../src/assets/Plan6gw+2.svg"
+            draggable={false}
+              className="w-100 object-cover h-6 md:h-10 lg:h-14 ml-3 shrink-0 inline-block select-none"
+              src={Plan6Svg}
               alt="Plan 6GW+"
             />
           </BannerTitle>

@@ -1,30 +1,29 @@
+import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
 import {
   Banner,
+  BannerAction,
   BannerBackground,
   BannerHeader,
-  BannerTitle,
-  BannerLogo,
-  BannerAction,
+  BannerTitle
 } from '../components/ui/Banner';
 
 // src/pages/Hidrologia.jsx
-import React, { useMemo, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 // HTML embebidos
+import AutogeneracionIcon from '../assets/svg-icons/Autogeneracion-On.svg';
+import GeneracionTermicaIcon from '../assets/svg-icons/GeneracionTermica-On.svg';
+import hidrologiaIcon from '../assets/svg-icons/Hidrologia-On.svg';
+import OfertaDemandaIcon from '../assets/svg-icons/OfertaDemanda-On.svg';
+import arrowUpDarkmodeAmarilloIcon from '../assets/svg-icons/arrowUpDarkmodeAmarillo.svg';
+import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmarillo.svg';
 import chart1Html from '../data/Chart1.html?raw';
 import chart2Html from '../data/Chart2.html?raw';
 import chart3Html from '../data/Chart3.html?raw'; // Información general
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
-import bannerHidrologia from '../assets/bannerHidrologia.png';
-import hidrologiaIcon from '../assets/svg-icons/Hidrologia-On.svg';
-import OfertaDemandaIcon from '../assets/svg-icons/OfertaDemanda-On.svg';
-import AutogeneracionIcon from '../assets/svg-icons/Autogeneracion-On.svg';
-import GeneracionTermicaIcon from '../assets/svg-icons/GeneracionTermica-On.svg';
-import arrowUpDarkmodeAmarilloIcon from '../assets/svg-icons/arrowUpDarkmodeAmarillo.svg';
-import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmarillo.svg';
 
 import MapaHidrologia from '../components/MapaHidrologia';
 
@@ -273,10 +272,10 @@ function useAportesOptionsFromHtml() {
       spacingBottom: 40,
       type: 'column'
     },
-    title: { 
-      text: 'Aportes y nivel útil de embalses por mes', 
-      align: 'left', 
-      style: { color: '#fff', fontSize: '1.65em' } 
+    title: {
+      text: 'Aportes y nivel útil de embalses por mes',
+      align: 'left',
+      style: { color: '#fff', fontSize: '1.65em' }
     },
     subtitle: { text: '', align: 'left', style: { color: COLORS.gray } },
     xAxis: {
@@ -302,28 +301,32 @@ function useAportesOptionsFromHtml() {
       { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', marker: { radius: 3 }, lineWidth: 2, data: aportes.s2, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: aportes.s3, tooltip: { valueSuffix: '%' } },
     ],
-    tooltip: { 
-      backgroundColor: 'rgba(0,0,0,.50)',
-      style: { color: '#FFF', fontSize: '12px' },
+    tooltip: {
+      backgroundColor: '#262626',
+      style: { color: '#FFF', fontSize: '14px' },
       xDateFormat: '%Y-%m',
       shared: true,
       useHTML: true,
       formatter: function () {
-        let header = `<b>${Highcharts.dateFormat("%e %b %Y", this.x)}</b><br/>`;
+        let header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
         let rows = this.points
           .map((point) => {
-            const suffix =
+            let suffix =
               (point.series.options.tooltip &&
-                point.series.options.tooltip.valueSuffix) || "";
+                point.series.options.tooltip.valueSuffix) ||
+              '';
             return `
-              <div style="user-select:text;pointer-events:auto;margin:2px 0;">
-                <span style="color:${point.color}">●</span>
-                ${point.series.name}: <b>${Highcharts.numberFormat(point.y, 2)}${suffix}</b>
-              </div>
-            `;
+            <div style="user-select:text;pointer-events:auto;margin:10px 0;">
+              <span style="color:${point.color};  fontSize:20px;">● </span>
+              ${point.series.name}: <b>${Highcharts.numberFormat(
+                point.y,
+                2
+              )}${suffix}</b>
+            </div>
+          `;
           })
-          .join("");
-        return `<div style="padding:6px;">${header}${rows}</div>`;
+          .join('');
+        return `<div style="padding:5px;">${header}${rows}</div>`;
       },
     },
   }), [aportes]);
@@ -333,8 +336,6 @@ function useDesabastecimientoOptionsFromHtml() {
   const LABEL_STEP = 2;
   const LABEL_STEP_MONTHS = 2;
   const PX_PER_LABEL = 80;
-
-
 
   const parsed = useMemo(() => {
     const seriesBlocks = extractAllSeriesUTCGeneric(chart1Html);
@@ -379,91 +380,112 @@ function useDesabastecimientoOptionsFromHtml() {
           style: { color: '#fff', fontSize: '1.65em' },
         },
 
-xAxis: {
-  type: 'datetime',
-  min: Number.isFinite(minX) ? minX : undefined,
-  max: HARD_MAX_JUL2025,
-  ordinal: false,
-  startOnTick: false,
-  endOnTick: false,
-  minPadding: 0,
-  maxPadding: 0,
+        xAxis: {
+          type: 'datetime',
+          min: Number.isFinite(minX) ? minX : undefined,
+          max: HARD_MAX_JUL2025,
+          ordinal: false,
+          startOnTick: false,
+          endOnTick: false,
+          minPadding: 0,
+          maxPadding: 0,
 
-  // Ticks mensuales con salto dinámico según ancho del eje
-  tickPositioner: function () {
-    const { dataMin, dataMax } = this.getExtremes();
-    if (!Number.isFinite(dataMin) || !Number.isFinite(dataMax) || dataMin >= dataMax) {
-      return this.tickPositions || [];
-    }
-    const localMin = Math.max(dataMin, EPOCH_FLOOR);
-    const localMax = Math.min(dataMax, HARD_MAX_JUL2025);
+          // Ticks mensuales con salto dinámico según ancho del eje
+          tickPositioner: function () {
+            const { dataMin, dataMax } = this.getExtremes();
+            if (!Number.isFinite(dataMin) || !Number.isFinite(dataMax) || dataMin >= dataMax) {
+              return this.tickPositions || [];
+            }
+            const localMin = Math.max(dataMin, EPOCH_FLOOR);
+            const localMax = Math.min(dataMax, HARD_MAX_JUL2025);
 
-    // primer día de mes en min y max
-    const s = new Date(localMin);
-    const e = new Date(localMax);
-    let t = Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), 1);
-    const end = Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), 1);
+            // primer día de mes en min y max
+            const s = new Date(localMin);
+            const e = new Date(localMax);
+            let t = Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), 1);
+            const end = Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), 1);
 
-    // meses totales en el rango
-    const months =
-      (e.getUTCFullYear() - s.getUTCFullYear()) * 12 +
-      (e.getUTCMonth() - s.getUTCMonth()) + 1;
+            // meses totales en el rango
+            const months =
+              (e.getUTCFullYear() - s.getUTCFullYear()) * 12 +
+              (e.getUTCMonth() - s.getUTCMonth()) + 1;
 
-    // paso dinámico en meses ≈ (N etiquetas) = len / PX_PER_LABEL
-    const len = Math.max(1, this.len || 800);
-    const step = Math.max(1, Math.ceil((months * PX_PER_LABEL) / len));
+            // paso dinámico en meses ≈ (N etiquetas) = len / PX_PER_LABEL
+            const len = Math.max(1, this.len || 800);
+            const step = Math.max(1, Math.ceil((months * PX_PER_LABEL) / len));
 
-    const pos = [];
-    let i = 0;
-    while (t <= end) {
-      if (i % step === 0 && t >= EPOCH_FLOOR) pos.push(t);
-      const d = new Date(t);
-      t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
-      i++;
-    }
-    return pos;
-  },
+            const pos = [];
+            let i = 0;
+            while (t <= end) {
+              if (i % step === 0 && t >= EPOCH_FLOOR) pos.push(t);
+              const d = new Date(t);
+              t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+              i++;
+            }
+            return pos;
+          },
 
-  gridLineWidth: 1,
-  gridLineColor: '#444',
-  lineColor: '#666',
-  tickColor: '#666',
-  lineWidth: 1,
-  tickLength: 6,
+          gridLineWidth: 1,
+          gridLineColor: '#444',
+          lineColor: '#666',
+          tickColor: '#666',
+          lineWidth: 1,
+          tickLength: 6,
 
-  labels: {
-    // ¡Importante! No usar labels.step aquí
-    rotation: -45,
-    align: 'right',
-    autoRotation: undefined,
-    style: { color: COLORS.gray, fontSize: '12px' },
-    formatter() {
-      if (this.value < EPOCH_FLOOR) return ''; // nunca 1970
-      return Highcharts.dateFormat('%Y-%m', this.value);
-    },
-  },
-  title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
-},
+          labels: {
+            // ¡Importante! No usar labels.step aquí
+            rotation: -45,
+            align: 'right',
+            autoRotation: undefined,
+            style: { color: COLORS.gray, fontSize: '12px' },
+            formatter() {
+              if (this.value < EPOCH_FLOOR) return ''; // nunca 1970
+              return Highcharts.dateFormat('%Y-%m', this.value);
+            },
+          },
+          title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
+        },
 
         yAxis: [
           { title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { style: { color: COLORS.gray, fontSize: '12px' } } },
           { title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } }, labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } }, opposite: true },
         ],
-        legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
-        tooltip: {
-          shared: true,
-          useHTML: true,
-          backgroundColor: 'rgba(0,0,0,.50)',
-          style: { color: '#FFF', fontSize: '12px' },
-          xDateFormat: '%Y-%m',
+        legend: {
+          layout: 'horizontal',
+          align: 'center',
+          verticalAlign: 'bottom',
+          y: 20,
+          itemStyle: { color: COLORS.gray, fontSize: '16px' },
         },
-        plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
         series: [
           { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline',     yAxis: 0, color: '#05d80a',                      data: p1 },
           { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline',     yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: p2 },
           { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue,   fillOpacity: 0.2,        data: p3, tooltip: { valueSuffix: '%' } },
           { name: 'Senda de referencia (%)',                     type: 'spline',     yAxis: 1, color: COLORS.down,   dashStyle: 'Dot',        data: p4, tooltip: { valueSuffix: '%' } },
         ],
+        tooltip: {
+          backgroundColor: '#262626',
+          valueDecimals: 2,
+          style: { color: '#FFF', fontSize: '14px' },
+          shared: true,
+          useHTML: true,
+          formatter: function () {
+            let header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
+            let rows = this.points
+              .map(
+                (point) => `
+                <div style="user-select:text;pointer-events:auto; margin:5px 0 10px 0;">
+                  <span style="color:${point.color}; fontSize:20px;">● </span>
+                  ${point.series.name}: <b>${Highcharts.numberFormat(point.y, 2)}</b>
+                </div>
+              `
+              )
+              .join('');
+            return `<div style="padding:0px;">${header}${rows}</div>`;
+          },
+        },
+        plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+
       };
     }
 
@@ -544,17 +566,17 @@ xAxis: {
       tooltip: {
         shared: true,
         useHTML: true,
-        backgroundColor: 'rgba(0,0,0,.50)',
-        style: { color: '#FFF', fontSize: '12px' },
+        backgroundColor: '#262626',
+        style: { color: '#FFF', fontSize: '14px' },
         formatter() {
           const idx = this.points?.[0]?.point?.index ?? 0;
           const header = `<b>${(catsCut ?? [])[idx] ?? ''}</b><br/>`;
           const rows = (this.points || [])
-            .map(p => `<div style="user-select:text;pointer-events:auto;margin:2px 0;">
-              <span style="color:${p.color}">●</span>
+            .map(p => `<div style="user-select:text;pointer-events:auto; margin:5px 0 10px 0;">
+              <span style="color:${p.color}; fontSize:20px;">● </span>
               ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}</b>
             </div>`).join('');
-          return `<div style="padding:6px;">${header}${rows}</div>`;
+          return `<div style="padding:0px;">${header}${rows}</div>`;
         },
       },
       plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
@@ -1057,7 +1079,7 @@ export default function Hidrologia() {
       <section className="space-y-6" ref={printRef}>
       <Banner>
         <BannerBackground
-          src="../../src/assets/bannerHidrologia.png"
+          src={bannerHidrologia}
           title="Banner Background"
           alt="Banner Background"
         />
@@ -1070,9 +1092,9 @@ export default function Hidrologia() {
           </BannerAction>
         </BannerHeader>
       </Banner>
-        
+
     {/* ÍNDICES */}
-    <h2 className="text-lg text-gray-300 avoid-break">Índices</h2>
+    <h2 className="text-2xl font-semibold text-gray-300 avoid-break">Índices</h2>
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Card 1: Nivel de embalse actual */}
@@ -1095,9 +1117,9 @@ export default function Hidrologia() {
 
     {/* Card 2: Aportes mensuales promedio */}
     <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-      <TitleRow 
-        title="Aportes mensuales promedio" 
-        updated={indices[1].updated} 
+      <TitleRow
+        title="Aportes mensuales promedio"
+        updated={indices[1].updated}
         icon={OfertaDemandaIcon}
       />
 

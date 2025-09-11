@@ -23,325 +23,325 @@ import HidroOff from '../assets/svg-icons/Hidrologia-Off.svg';
 import HidroOn from '../assets/svg-icons/Hidrologia-On.svg';
 
 const WIDTHS = {
-  open: "18rem",
-  closed: "4.5rem",
+    open: "18rem",
+    closed: "4.5rem",
 }
 
 const sections = [
-   /*  {
-      title: 'Inicio',
-      path: '/',
-      icon: DashboardOff,
-      activeIcon: DashboardOn,
-      permission: 'dashboard',
-    }, */
-   {
-     title: "Seguimiento plan 6GW+",
-     items: [
-       {
-         title: "Resumen",
-         path: "/6GW+",
-         icon: GWOff,
-         activeIcon: GWOn,
-         permission: "dashboard",
-       },
-       {
-         title: "Proyectos de Generación",
-         path: "/proyectos_generacion",
-         icon: Proyecto075Off,
-         activeIcon: Proyecto075On,
-         permission: "proyectos",
-       },
-       {
-         title: "Transmisión",
-         path: "/Transmision",
-         icon: ProyectosTransmisionOff,
-         activeIcon: ProyectosTransmisionOn,
-         roles: [ROLES.ADMIN],
-       },
-       {
-         title: "Comunidades energéticas",
-         path: "/en_construccion",
-         icon: ComunidadesEnergOff,
-         activeIcon: ComunidadesEnergOn,
-         permission: "comunidades",
-       },
-       {
-         title: "Acciones 6GW+",
-         path: "http://192.168.1.74:8065/boards/",
-         icon: AccionesEstrategicasOff,
-         activeIcon: AccionesEstrategicasOn,
-         roles: [ROLES.ADMIN],
-         external: true,
-       },
-     ],
-   },
-   {
-     title: "Abastecimiento",
-     items: [
-       {
-         title: "Hidrología",
-         path: "/hidrologia",
-         icon: HidroOff,
-         activeIcon: HidroOn,
-         permission: "dashboard",
-       },
-       {
-         title: "Energía firme",
-         path: "/en_construccion",
-         icon: EnergiaFirmeOff,
-         activeIcon: EnergiaFirmeOn,
-         permission: "dashboard",
-       },
-     ],
-   },
- ];
+    /*  {
+       title: 'Inicio',
+       path: '/',
+       icon: DashboardOff,
+       activeIcon: DashboardOn,
+       permission: 'dashboard',
+     }, */
+    {
+        title: "Seguimiento plan 6GW+",
+        items: [
+            {
+                title: "Resumen",
+                path: "/6GW+",
+                icon: GWOff,
+                activeIcon: GWOn,
+                permission: "dashboard",
+            },
+            {
+                title: "Proyectos de Generación",
+                path: "/proyectos_generacion",
+                icon: Proyecto075Off,
+                activeIcon: Proyecto075On,
+                permission: "proyectos",
+            },
+            {
+                title: "Transmisión",
+                path: "/Transmision",
+                icon: ProyectosTransmisionOff,
+                activeIcon: ProyectosTransmisionOn,
+                roles: [ROLES.ADMIN],
+            },
+            {
+                title: "Comunidades energéticas",
+                path: "/en_construccion",
+                icon: ComunidadesEnergOff,
+                activeIcon: ComunidadesEnergOn,
+                permission: "comunidades",
+            },
+            {
+                title: "Acciones 6GW+",
+                path: "https://www.upme.gov.co/acciones_6gw/login",
+                icon: AccionesEstrategicasOff,
+                activeIcon: AccionesEstrategicasOn,
+                roles: [ROLES.ADMIN],
+                external: true,
+            },
+        ],
+    },
+    {
+        title: "Abastecimiento",
+        items: [
+            {
+                title: "Hidrología",
+                path: "/hidrologia",
+                icon: HidroOff,
+                activeIcon: HidroOn,
+                permission: "dashboard",
+            },
+            {
+                title: "Energía firme",
+                path: "/en_construccion",
+                icon: EnergiaFirmeOff,
+                activeIcon: EnergiaFirmeOn,
+                permission: "dashboard",
+            },
+        ],
+    },
+];
 
- export const Sidebar = ({ userRole }) => {
-  const { logout } = useAuth();
+export const Sidebar = ({ userRole }) => {
+    const { logout } = useAuth();
 
-  const { isMobile } = useMobile();
-  const { open, setOpen } = useSidebar();
+    const { isMobile } = useMobile();
+    const { open, setOpen } = useSidebar();
 
-  // -------- helpers de permisos/roles --------
-  const hasPermission = (permission) => {
-    if (!userRole || !ROLE_PERMISSIONS[userRole]) return false;
-    const userPermissions = ROLE_PERMISSIONS[userRole];
-    if (userPermissions.includes('*')) return true;
-    return userPermissions.includes(permission);
-  };
+    // -------- helpers de permisos/roles --------
+    const hasPermission = (permission) => {
+        if (!userRole || !ROLE_PERMISSIONS[userRole]) return false;
+        const userPermissions = ROLE_PERMISSIONS[userRole];
+        if (userPermissions.includes('*')) return true;
+        return userPermissions.includes(permission);
+    };
 
-  const isInAllowedRoles = (allowedRolesArray) => {
-    if (!userRole) return false;
-    if (!allowedRolesArray || allowedRolesArray.length === 0) return true;
-    return allowedRolesArray.includes(userRole);
-  };
+    const isInAllowedRoles = (allowedRolesArray) => {
+        if (!userRole) return false;
+        if (!allowedRolesArray || allowedRolesArray.length === 0) return true;
+        return allowedRolesArray.includes(userRole);
+    };
 
-  return isMobile ? (
-    <>
-      <div
-        data-state={open ? "open" : "closed"}
-        className="fixed top-0 right-0 w-screen h-screen data-[state=open]:bg-black/75 bg-transparent transition-all duration-300 z-20 data-[state=open]:backdrop-blur-sm"
-      />
-      <aside
-        data-state={open ? "open" : "closed"}
-        className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-[#262626] data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-30 border-l border-gray-600"
-      >
-        <nav className="flex-1 flex-col py-6 h-full">
-          <ul className="flex flex-col gap-y-6 mb-auto">
-            {sections.map((section, index) => (
-              <SidebarItem
-                key={index}
-                section={section}
-                hasPermission={hasPermission}
-                isInAllowedRoles={isInAllowedRoles}
-                open={open}
-              />
-            ))}
-          </ul>
-
-          <ul className="flex flex-col gap-y-6 mt-auto pt-6">
-            <li className="w-full px-4">
-              <button
-                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#374151] transition text-[#d1d5db] w-full"
-                title="Ayuda"
-              >
-                <HelpCircleIcon
-                  size={24}
-                  className="w-6 h-6 flex-shrink-0 "
-                />
-                <span>Ayuda</span>
-              </button>
-            </li>
-
-            <li className="w-full px-4">
-              <button
-                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#410f00] transition text-[#d1d5db] w-full"
-                title="Cerrar sesión"
-                onClick={async () => {await logout()}}
-              >
-                <LogOutIcon
-                  size={24}
-                  className="w-6 h-6 flex-shrink-0"
-                />
-                <span>Cerrar sesión</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
-    </>
-  ) : (
-    <aside
-      className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-100"
-      style={{
-        width: open ? WIDTHS.open : WIDTHS.closed,
-      }}
-    >
-      {/* Botón toggle */}
-      <div
-        data-state={open ? "open" : "closed"}
-        className="flex justify-end mb-2 px-4 py-2 w-full data-[state=closed]:justify-center"
-      >
-        <button
-          onClick={() => {
-            setOpen((prev) => !prev);
-          }}
-          className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8 flex items-center justify-center"
-          title={open ? "Contraer" : "Expandir"}
-        >
-          <ChevronRight
-            size={24}
-            className={
-              open
-                ? "rotate-180 text-gray-300 group-hover:text-white transition-all duration-100"
-                : ""
-            }
-          />
-        </button>
-      </div>
-
-      <nav className="flex-1 flex-col">
-        <ul className="flex flex-col gap-y-6 h-full">
-          {sections.map((section, index) => (
-            <SidebarItem
-              key={index}
-              section={section}
-              hasPermission={hasPermission}
-              isInAllowedRoles={isInAllowedRoles}
-              open={open}
+    return isMobile ? (
+        <>
+            <div
+                data-state={open ? "open" : "closed"}
+                className="fixed top-0 right-0 w-screen h-screen data-[state=open]:bg-black/75 bg-transparent transition-all duration-300 z-20 data-[state=open]:backdrop-blur-sm"
             />
-          ))}
-        </ul>
-      </nav>
-    </aside>
-  );
+            <aside
+                data-state={open ? "open" : "closed"}
+                className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-[#262626] data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-30 border-l border-gray-600"
+            >
+                <nav className="flex-1 flex-col py-6 h-full">
+                    <ul className="flex flex-col gap-y-6 mb-auto">
+                        {sections.map((section, index) => (
+                            <SidebarItem
+                                key={index}
+                                section={section}
+                                hasPermission={hasPermission}
+                                isInAllowedRoles={isInAllowedRoles}
+                                open={open}
+                            />
+                        ))}
+                    </ul>
+
+                    <ul className="flex flex-col gap-y-6 mt-auto pt-6">
+                        <li className="w-full px-4">
+                            <button
+                                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#374151] transition text-[#d1d5db] w-full"
+                                title="Ayuda"
+                            >
+                                <HelpCircleIcon
+                                    size={24}
+                                    className="w-6 h-6 flex-shrink-0 "
+                                />
+                                <span>Ayuda</span>
+                            </button>
+                        </li>
+
+                        <li className="w-full px-4">
+                            <button
+                                className="flex items-center px-2 py-3 gap-x-3 rounded hover:bg-[#410f00] transition text-[#d1d5db] w-full"
+                                title="Cerrar sesión"
+                                onClick={async () => {await logout()}}
+                            >
+                                <LogOutIcon
+                                    size={24}
+                                    className="w-6 h-6 flex-shrink-0"
+                                />
+                                <span>Cerrar sesión</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+        </>
+    ) : (
+        <aside
+            className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-100"
+            style={{
+                width: open ? WIDTHS.open : WIDTHS.closed,
+            }}
+        >
+            {/* Botón toggle */}
+            <div
+                data-state={open ? "open" : "closed"}
+                className="flex justify-end mb-2 px-4 py-2 w-full data-[state=closed]:justify-center"
+            >
+                <button
+                    onClick={() => {
+                        setOpen((prev) => !prev);
+                    }}
+                    className="group hover:bg-gray-500/50 hover:border-gray-500/70 transition-all duration-100 size-8 flex items-center justify-center"
+                    title={open ? "Contraer" : "Expandir"}
+                >
+                    <ChevronRight
+                        size={24}
+                        className={
+                            open
+                                ? "rotate-180 text-gray-300 group-hover:text-white transition-all duration-100"
+                                : ""
+                        }
+                    />
+                </button>
+            </div>
+
+            <nav className="flex-1 flex-col">
+                <ul className="flex flex-col gap-y-6 h-full">
+                    {sections.map((section, index) => (
+                        <SidebarItem
+                            key={index}
+                            section={section}
+                            hasPermission={hasPermission}
+                            isInAllowedRoles={isInAllowedRoles}
+                            open={open}
+                        />
+                    ))}
+                </ul>
+            </nav>
+        </aside>
+    );
 }
 
 const SidebarContext = createContext({
-  open: true,
-  setOpen: () => {},
+    open: true,
+    setOpen: () => {},
 });
 
 export const SidebarProvider = ({ children }) => {
-  const [open, setOpen] = useState(false);
-  const { isMobile } = useMobile();
+    const [open, setOpen] = useState(false);
+    const { isMobile } = useMobile();
 
-  useEffect(() => {
-    setOpen(!isMobile);
-  }, [isMobile, setOpen]);
+    useEffect(() => {
+        setOpen(!isMobile);
+    }, [isMobile, setOpen]);
 
-  return (
-    <SidebarContext.Provider value={{ open, setOpen }}>
-      {children}
-    </SidebarContext.Provider>
-  );
+    return (
+        <SidebarContext.Provider value={{ open, setOpen }}>
+            {children}
+        </SidebarContext.Provider>
+    );
 };
 
 export const useSidebar = () => useContext(SidebarContext)
 
 const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
-  const { pathname } = useLocation();
-  let showSection = false;
+    const { pathname } = useLocation();
+    let showSection = false;
 
-          if (section.items) {
-            showSection = section.items.some((item) =>
-              (item.permission && hasPermission(item.permission)) ||
-              (item.roles && isInAllowedRoles(item.roles)) ||
-              (!item.permission && !item.roles)
-            );
-          } else {
-            showSection =
-              (section.permission && hasPermission(section.permission)) ||
-              (section.roles && isInAllowedRoles(section.roles)) ||
-              (!section.permission && !section.roles);
-          }
+    if (section.items) {
+        showSection = section.items.some((item) =>
+            (item.permission && hasPermission(item.permission)) ||
+            (item.roles && isInAllowedRoles(item.roles)) ||
+            (!item.permission && !item.roles)
+        );
+    } else {
+        showSection =
+            (section.permission && hasPermission(section.permission)) ||
+            (section.roles && isInAllowedRoles(section.roles)) ||
+            (!section.permission && !section.roles);
+    }
 
-        if(!showSection) return null;
+    if(!showSection) return null;
 
     return (
-              <li
-                className="w-full space-y-2 px-4"
-              >
-                {section.items ? (
-                  <>
+        <li
+            className="w-full space-y-2 px-4"
+        >
+            {section.items ? (
+                <>
                     <span
-                    data-state={open ? "show" : "hidden"}
-                      className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:hidden"
+                        data-state={open ? "show" : "hidden"}
+                        className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:hidden"
                     >
                       {section.title}
                     </span>
                     <ul className="space-y-1">
-                      {section.items.map((item, itemIndex) => {
-                        const showItem =
-                          (item.permission && hasPermission(item.permission)) ||
-                          (item.roles && isInAllowedRoles(item.roles)) ||
-                          (!item.permission && !item.roles);
+                        {section.items.map((item, itemIndex) => {
+                            const showItem =
+                                (item.permission && hasPermission(item.permission)) ||
+                                (item.roles && isInAllowedRoles(item.roles)) ||
+                                (!item.permission && !item.roles);
 
-                        const isActive = pathname === item.path;
-                        const IconSVG = isActive ? item.activeIcon : item.icon;
-                        return (
-                          showItem && (
-                            <li key={itemIndex}>
-                              {item.external ? (
-                                <a
-                                  href={item.path}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition  ${
-                                    isActive ? 'bg-[#333333]' : ''
-                                  }`}
-                                >
-                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 shrink-0" />
-                                    <span
-                                    data-state={open ? "show" : "hidden"}
-                                    data-active={isActive}
-                                      className="ml-3 text-base whitespace-nowrap text-gray-300 data-[active=true]:text-[#FFC800] data-[state=hidden]:hidden"
-                                    >
+                            const isActive = pathname === item.path;
+                            const IconSVG = isActive ? item.activeIcon : item.icon;
+                            return (
+                                showItem && (
+                                    <li key={itemIndex}>
+                                        {item.external ? (
+                                            <a
+                                                href={item.path}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition  ${
+                                                    isActive ? 'bg-[#333333]' : ''
+                                                }`}
+                                            >
+                                                <img src={IconSVG} alt={item.title} className="w-6 h-6 shrink-0" />
+                                                <span
+                                                    data-state={open ? "show" : "hidden"}
+                                                    data-active={isActive}
+                                                    className="ml-3 text-base whitespace-nowrap text-gray-300 data-[active=true]:text-[#FFC800] data-[state=hidden]:hidden"
+                                                >
                                       {item.title}
                                     </span>
-                                </a>
-                              ) : (
-                                <Link
-                                  to={item.path}
-                                  className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
-                                    isActive ? 'bg-[#333333]' : ''
-                                  }`}
-                                >
-                                  <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
-                                  {open && (
-                                    <span
-                                      className={`ml-3 text-base whitespace-nowrap ${
-                                        isActive ? 'text-[#FFC800]' : 'text-gray-300'
-                                      }`}
-                                    >
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={item.path}
+                                                className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
+                                                    isActive ? 'bg-[#333333]' : ''
+                                                }`}
+                                            >
+                                                <img src={IconSVG} alt={item.title} className="w-6 h-6 flex-shrink-0" />
+                                                {open && (
+                                                    <span
+                                                        className={`ml-3 text-base whitespace-nowrap ${
+                                                            isActive ? 'text-[#FFC800]' : 'text-gray-300'
+                                                        }`}
+                                                    >
                                       {item.title}
                                     </span>
-                                  )}
-                                </Link>
-                              )}
-                            </li>
-                          )
-                        );
-                      })}
+                                                )}
+                                            </Link>
+                                        )}
+                                    </li>
+                                )
+                            );
+                        })}
                     </ul>
-                  </>
-                ) : (
-                  <Link
+                </>
+            ) : (
+                <Link
                     to={section.path}
                     className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
-                      pathname === section.path ? 'text-[#FFC800]' : 'text-gray-300'
+                        pathname === section.path ? 'text-[#FFC800]' : 'text-gray-300'
                     }`}
-                  >
+                >
                     <img
-                      src={section.activeIcon || section.icon}
-                      alt={section.title}
-                      className="w-5 h-5 flex-shrink-0"
+                        src={section.activeIcon || section.icon}
+                        alt={section.title}
+                        className="w-5 h-5 flex-shrink-0"
                     />
                     {open && <span className="ml-3">{section.title}</span>}
-                  </Link>
-                )}
-              </li>
-            );
+                </Link>
+            )}
+        </li>
+    );
 }
 // <3 ¯\_( ͡❛ ͜ʖ ͡❛)_/¯ js08
