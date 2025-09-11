@@ -28,12 +28,12 @@ import iconEolico from '../assets/svg-icons/Eolica-On.svg';
 import IndicatorCard from '../components/ui/IndicatorCard';
 
 const CONNECTIONS_CONFIG = {
-  totalProyectos: { label: "Número total", icon: <img src={iconNumProyectos} alt="Total Proyectos" className="h-6 w-6"/>, suffix: " proyectos", showHelp: true },
-  totalMW: { label: "Total en MW", icon: <img src={iconTotalMW} alt="Total en MW" className="h-6 w-6"/>, suffix: " MW" , showHelp: true },
-  solares: { label: "Solares", icon: <img src={iconSolar} alt="Solar" className="h-6 w-6" />, suffix: " proyectos" , showHelp: true },
-  eolicos: { label: "Eólicos", icon: <img src={iconEolico} alt="Eólico" className="h-6 w-6" />, suffix: " proyectos" , showHelp: true }
+  totalProyectos: { label: "Número total", icon: <img src={iconNumProyectos} alt="Total Proyectos" className="h-6 w-6" />, suffix: " proyectos", showHelp: true },
+  totalMW: { label: "Total en MW", icon: <img src={iconTotalMW} alt="Total en MW" className="h-6 w-6" />, suffix: " MW", showHelp: true },
+  solares: { label: "Solares", icon: <img src={iconSolar} alt="Solar" className="h-6 w-6" />, suffix: " proyectos", showHelp: true },
+  eolicos: { label: "Eólicos", icon: <img src={iconEolico} alt="Eólico" className="h-6 w-6" />, suffix: " proyectos", showHelp: true }
 
-  
+
 };
 
 /* ===== Design tokens ===== */
@@ -185,7 +185,7 @@ const PageProjectTransmision = () => {
   return (
     <div className="min-h-screen" style={{ background: COLORS.pageBg, color: COLORS.white }}>
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 pt-4">
+      <div className="w-full px-2 pt-4">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-2xl font-semibold">{projectData.header.title}</h1>
           <button
@@ -211,12 +211,12 @@ const PageProjectTransmision = () => {
       </div>
 
       {/* Fechas de puesta en operación */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full px-2">
         <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Fechas de puesta en operación</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen + botón */}
-          <div className="lg:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+          <div className="xl:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
             <div className="overflow-hidden rounded-lg">
               <img
                 src={imgsubestacion}
@@ -229,7 +229,7 @@ const PageProjectTransmision = () => {
                 onClick={() => window.open(projectData.documents, '_blank')}
                 className="inline-flex items-center gap-2 font-medium px-3 py-2 rounded-md hover:brightness-95"
                 style={{ background: COLORS.yellow, color: '#000' }}>
-                <FileText size={16} /> Documentos del proyecto
+                <FileText size={16} /> Documentos convocatoria
               </button>
             </div>
           </div>
@@ -256,7 +256,7 @@ const PageProjectTransmision = () => {
         {/* Avances */}
         <h3 className="text-xl font-semibold mt-7 mb-3" style={{ color: COLORS.heading }}>Avances</h3>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {projectData.progressSummary.map((progress, index) => (
             <IndicatorCard
               key={index}
@@ -270,7 +270,7 @@ const PageProjectTransmision = () => {
           ))}
 
           {/* Carrusel */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 relative overflow-hidden">
+          <div className="md:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 relative overflow-hidden">
             <img src={carouselImgs[slide]} alt="Galería" className="w-full h-56 object-cover rounded-lg" />
             <button
               onClick={prev}
@@ -328,7 +328,7 @@ const PageProjectTransmision = () => {
         {projectData.subestaciones.length > 0 && (
           <>
             <h3 className="text-xl font-semibold mt-7 mb-3" style={{ color: COLORS.heading }}>Subestaciones</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
               {projectData.subestaciones.map((subestacion, i) => (
                 <ProgressCard key={i} title={subestacion.title} bars={subestacion.barras} />
               ))}
@@ -337,7 +337,7 @@ const PageProjectTransmision = () => {
         )}
 
         {/* Ubicación */}
-        <div className="max-w-7xl mx-auto px-4 mt-10">
+        <div className="w-full mt-10">
           {/* <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2> */}
 
 
@@ -358,26 +358,49 @@ const PageProjectTransmision = () => {
           ) */
           }
 
-        
 
-          {/* KPIs generación */}
-          <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>
-            Proyectos de generación que se conectarán
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(projectData.connections).map(([key, value]) => {
-              const config = CONNECTIONS_CONFIG[key];
-              if (!config) return null; // Si hay campos nuevos que no tengan config, los ignoramos
-              return (
-                <IndicatorCard
-                  key={key}
-                  icon={config.icon}
-                  label={config.label}
-                  value={`${value}${config.suffix || ""}`}
-                  showHelp={config.showHelp || false}
-                />
-              );
-            })}
+
+          {/* KPIs generación - Solo se mostrara si hay al menos un valor diferente de 0 o null*/}
+
+          {Object.values(projectData.connections).some(value => value !== 0 && value !== null) && (
+            <>
+
+
+              <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>
+                Proyectos de generación que se conectarán
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.entries(projectData.connections).map(([key, value]) => {
+                  const config = CONNECTIONS_CONFIG[key];
+                  if (!config) return null; // Si hay campos nuevos que no tengan config, los ignoramos
+                  return (
+                    <IndicatorCard
+                      key={key}
+                      icon={config.icon}
+                      label={config.label}
+                      value={`${value}${config.suffix || ""}`}
+                      showHelp={config.showHelp || false}
+
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Nueva card de beneficios del proyecto */}
+          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-6 mt-6">
+            <h3 className="text-xl font-semibold mb-4" style={{ color: COLORS.heading }}>Beneficios del proyecto</h3>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <span className="text-yellow-400 mr-2">•</span>
+                <span style={{ color: COLORS.label }}>Reducir necesidad de generación local y mejorar la confiabilidad y seguridad.</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-yellow-400 mr-2">•</span>
+                <span style={{ color: COLORS.label }}>Habilitará proyectos de generación en la región.</span>
+              </li>
+            </ul>
           </div>
 
           <div className="h-8" />
