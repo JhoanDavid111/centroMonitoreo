@@ -4,40 +4,46 @@ import { HelpCircle } from 'lucide-react';
 
 // Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
+import EnergiaAmarillo     from '../assets/svg-icons/Energia-Amarillo.svg';
+import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
+import Proyecto075On       from '../assets/svg-icons/Proyecto075-On.svg';
+import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
+import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
 
 // Textos (quemados por ahora)
 const LABEL_MAP = {
   total_proyectos_bd075: {
     label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
-    icon: DemandaOn,
+    icon: EnergiaAmarillo, // (opcional, no se usa en cards; el hero ya toma el icono directo)
     value: '145 proyectos (4430 MW)',
   },
   total_proyectos_aprobados_bd075: {
-    label: 'Solicitudes totales',
-    icon: DemandaOn,
+    label: 'Solicitudes totales',          // (en tu UI aparece como “No. de proyectos aprobados”)
+    icon: Proyecto075On,                   // ✅ Proyecto075-On
     value: '2802',
   },
   total_capacidad_instalada_bd075: {
-    label: 'Proyectos en operación',
-    icon: DemandaOn,
+    label: 'Proyectos en operación',       // (en tu UI aparece como “Capacidad vigente total”)
+    icon: EnergiaElectricaOn,              // ✅ EnergiaElectrica-On
     value: '35  (2998 MW)',
   },
   total_capacidad_instalada_aprobados_bd075: {
-    label: 'Proyectos en operación FNCER',
-    icon: DemandaOn,
+    label: 'Proyectos en operación FNCER', // (en tu UI aparece como “Capacidad vigente total proyectos”)
+    icon: EnergiaElectricaOn,              // ✅ EnergiaElectrica-On
     value: '20 (1303 MW)',
   },
   total_proyectos_curva_s: {
-    label: 'Solicitudes aprobadas FNCER por entrar',
-    icon: DemandaOn,
+    label: 'Solicitudes aprobadas FNCER por entrar', // (en tu UI: “No. de proyectos con curva S”)
+    icon: OfertaDemandaOn,                           // ✅ OfertaDemanda-On
     value: '385 (16789 MW)',
   },
   proyectos_aprobados_no_curva_s: {
-    label: 'Proyectos FNCER con FPO vencida',
-    icon: DemandaOn,
+    label: 'Proyectos FNCER con FPO vencida', // (en tu UI: “No. de proyectos sin curva S”)
+    icon: MinusDarkOn,                        // ✅ minusDark-On
     value: '83  (1561 MW)',
   },
 };
+
 
 // Orden de tarjetas (se muestran TODAS; 3 por fila)
 const ORDER = [
@@ -104,22 +110,20 @@ export default function IndicadoresProyectos075() {
             style={{ width: 64, height: 64, background: '#FFC800' }}
           >
             <img
-              src={DemandaOn}
-              alt="Icono"
-              className="w-7 h-7"
-              style={{ filter: 'brightness(0) saturate(100%)' }} // vuelve el svg negro
+              src={EnergiaAmarillo}
+              alt="Energía"
+              className="w-12 h-12 md:w-14 md:h-14"
+              style={{ background: 'transparent' }}
             />
           </span>
-
           <span
-            className="font-semibold leading-tight"
-            style={{ color: '#FFC800', fontSize: '44px' }}
+            className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold"
           >
             {heroValue}
           </span>
         </div>
 
-        <div className="mt-2 text-[#D1D1D0] text-[20px]">
+        <div className="mt-2 text-[#D1D1D0] text-1xl lg:text-[20px]">
           {heroSubtitle}
         </div>
       </div>

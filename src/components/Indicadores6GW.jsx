@@ -183,10 +183,10 @@ export default function Indicadores6GW() {
       {/* Encabezado total */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
         <div>
-          <p style={{ color: '#FFC800' }} className="mb-1 text-2xl">
+          <p style={{ color: '#FFC800' }} className="mb-1 text-3xl lg:text-5xl font-semibold">
             Capacidad instalada 6GW+ total:
           </p>
-          <p className="text-6xl font-semibold text-white" style={{ lineHeight: '36px' }}>
+          <p className="text-4xl lg:text-5xl font-semibold text-white" style={{ lineHeight: '36px' }}>
             {formatMW(totalMW)} MW
           </p>
         </div>
