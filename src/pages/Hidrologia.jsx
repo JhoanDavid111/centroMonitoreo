@@ -1,4 +1,5 @@
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
+import { HidrologiaComponent } from "../components/SideInfoHidrologia";
 import {
   Banner,
   BannerAction,
@@ -1233,12 +1234,10 @@ export default function Hidrologia() {
       </button>
     </div>
     </div>
-
         {/* Mapa */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-2 md:p-3 lg:p-4 avoid-break">
-          <div className="py-4 rounded-xl bg-[#1f1f1f] flex items-center justify-center text-gray-400 text-lg">
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col md:flex-row">
+              <HidrologiaComponent />
             <MapaHidrologia/>
-          </div>
         </div>
 
         {/* Tabla + Gráfica Aportes */}

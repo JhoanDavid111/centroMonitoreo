@@ -1,7 +1,7 @@
 export const Banner = ({ children, ...props }) => {
   return (
     <div
-      className="relative my-6 flex max-h-44 min-h-44 w-full items-center justify-between overflow-hidden rounded-2xl px-6 bg-green-500"
+      className="relative my-6 flex max-h-44 min-h-44 w-full items-center justify-between overflow-hidden rounded-2xl px-6"
       {...props}
     >
       {children}
