@@ -1,168 +1,247 @@
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef } from "react";
-import embalsesHidro from '../assets/geojson/EmbalsesJson.geojson?url';
-import regionesHidro from '../assets/geojson/RegionesHidro.geojson?url';
+import { useEffect, useState } from "react";
+import { CircleMarker, GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 
-export default function MapaHidrologia() {
-  const mapRef = useRef(null);
+import { Dialog, DialogContent, DialogTrigger } from "./ui/Dialog";
 
-  useEffect(() => {
-    if (mapRef.current && !mapRef.current._leaflet_id) {
-      // === Config ===
-      const REGIONES_URL = regionesHidro;
-      const EMBALSES_URL = embalsesHidro;
-      const NOMBRE_KEY = "Nombre_del_embalse";
-      const VU_MM3_KEY = "Volumen_útil___Mm3_";
-      const VU_GWH_KEY = "Volumen_útil___GWh_";
-      const REGION_NAME_CANDIDATES = [
-        "Región__hidrológica",
-        "region",
-        "Region",
-        "REGION",
-        "nombre",
-        "Nombre",
-        "NOMBRE",
-        "name",
-        "Name",
-      ];
+import EMBALSES_URL from "../assets/geojson/EmbalsesJson.geojson?url";
+import REGIONES_URL from "../assets/geojson/RegionesHidro.geojson?url";
 
-      const regionPalette = [
-        "#22c55e",
-        "#f59e0b",
-        "#3b82f6",
-        "#8b5cf6",
-        "#ef4444",
-        "#14b8a6",
-        "#eab308",
-        "#06b6d4",
-        "#84cc16",
-        "#f97316",
-      ];
-      function hashColor(str) {
-        let h = 0;
-        for (let i = 0; i < str.length; i++) {
-          h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-        }
-        const idx = Math.abs(h) % regionPalette.length;
-        return regionPalette[idx];
-      }
+const NOMBRE_KEY = "Nombre_del_embalse";
+const VU_MM3_KEY = "Volumen_útil___Mm3_";
+const VU_GWH_KEY = "Volumen_útil___GWh_";
 
-      function findRegionName(props) {
-        for (const k of REGION_NAME_CANDIDATES) {
-          if (Object.prototype.hasOwnProperty.call(props, k) && props[k])
-            return String(props[k]);
-        }
-        for (const k in props) {
-          if (typeof props[k] === "string" && props[k]) return String(props[k]);
-        }
-        return "Región";
-      }
+const REGION_NAME_CANDIDATES = [
+  "Región__hidrológica",
+  "region",
+  "Region",
+  "REGION",
+  "nombre",
+  "Nombre",
+  "NOMBRE",
+  "name",
+  "Name",
+];
 
-      function fmtNum(val, suf) {
-        const n = Number(val);
-        return Number.isFinite(n)
-          ? n.toLocaleString("es-CO", { maximumFractionDigits: 2 }) +
-              (suf ? " " + suf : "")
-          : "N/D";
-      }
-      function embalsePopup(props) {
-        const nombre = props[NOMBRE_KEY] ?? "Sin nombre";
-        const vmm3 = fmtNum(props[VU_MM3_KEY], "Mm³");
-        const vgwh = fmtNum(props[VU_GWH_KEY], "GWh");
+const regionPalette = [
+  "#22c55e",
+  "#f59e0b",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ef4444",
+  "#14b8a6",
+  "#eab308",
+  "#06b6d4",
+  "#84cc16",
+  "#f97316",
+];
 
-        // * Wrapper style in index.css
-        // * Modify index.css to change styles of the popup container.
+function TrendChip({ dir = 'up', children }) {
+  const isUp = dir === 'up';
+  const bg = isUp ? '#22C55E' : '#EF4444';
+  return (
+    <span
+      className="
+        inline-flex items-center px-3 py-0.5 ml-2
+        rounded-full text-sm font-semibold
+        whitespace-nowrap leading-none
+      "
+      style={{
+        backgroundColor: bg,
+        color: '#fff',
+        border: '1px solid rgba(0,0,0,.15)',
+      }}
+    >
+      <span aria-hidden className="text-base leading-none">{isUp ? '+' : '-'}</span>
+      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+    </span>
+  );
+}
 
-        return `
-          <article class="popup-card *:text-white">
-            <div class="popup-card__body">
-              <h3 class="popup-card__title">${nombre}</h3>
-              <div class="kpis">
-                <div class="kpi">
-                  <span class="kpi__label">Volumen útil (Mm³)</span>
-                  <span class="kpi__val">${vmm3}</span>
-                </div>
-                <div class="kpi">
-                  <span class="kpi__label">Volumen útil (GWh)</span>
-                  <span class="kpi__val">${vgwh}</span>
-                </div>
+function hashColor(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return regionPalette[Math.abs(h) % regionPalette.length];
+}
+
+function findRegionName(props) {
+  for (const k of REGION_NAME_CANDIDATES) {
+    if (Object.prototype.hasOwnProperty.call(props, k) && props[k])
+      return String(props[k]);
+  }
+  for (const k in props) {
+    if (typeof props[k] === "string" && props[k]) return String(props[k]);
+  }
+  return "Región";
+}
+
+function fmtNum(val, suf) {
+  const n = Number(val);
+  return Number.isFinite(n)
+    ? n.toLocaleString("es-CO", { maximumFractionDigits: 2 }) +
+        (suf ? " " + suf : "")
+    : "N/D";
+}
+
+const RegionDialog = ({ coords, damProperties }) => {
+  const [open, setOpen] = useState(false);
+
+
+  const name = damProperties[NOMBRE_KEY] ?? "Sin Nombre";
+  const vmm3 = fmtNum(damProperties[VU_MM3_KEY], "Mm³"); // Volumen
+  const vgwh = fmtNum(damProperties[VU_GWH_KEY], "GWh"); // Aportes hídricos
+  const region = "Centro"; // Region
+  const date = "23/08/2025"; // Fecha
+  const damLevel = 70; // %
+  const damCapacity = 23;
+  const damCapacityGeneration = 15.2;
+  const damWaterSupply = 198.2;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+          <CircleMarker
+            center={[coords[1], coords[0]]}
+            radius={6}
+            pathOptions={{
+              color: "#60a5fa",
+              weight: 1.4,
+              fillColor: "#3b82f6",
+              fillOpacity: 0.9,
+            }}
+            eventHandlers={{
+              click: () => {
+                setOpen(true)},
+            }}
+          />
+      </DialogTrigger>
+      <DialogContent>
+      {/* ! Contenido */}
+        <div className="p-4 space-y-3">
+          <div>
+            <div className="flex justify-between">
+              <h3 className="text-white text-lg font-bold tracking-wide justify-self-start">{name}</h3>
+              <span className="rounded-full border-none text-[11px] text-gray-200 bg-[#EF4444] py-2 px-3 mr-2">Región: {region}</span>
+            </div>
+            <span className="text-[11px] text-[#b0b0b0]">Datos promedio {date}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xl">
+            <div className="bg-white/5 border border-white/20 rounded-lg">
+              <div className="flex justify-between p-3">
+                <span className="block text-sm text-white">
+                  Nivel embalses:
+                </span>
+                <span className="font-bold text-sm">{damLevel}%</span>
+              </div>
+              <div className="flex-1 h-3 rounded-sm overflow-hidden bg-[#575756] mx-3">
+                <div className="h-3" style={{ width: `${damLevel}%`, background: '#22C55E' }} />
               </div>
             </div>
-          </article>
-        `;
-      }
+            <div className="bg-white/5 border border-white/20 rounded-lg p-3">
+              <span className="block text-sm text-white">
+                Aportes hídricos:
+              </span>
+              <span className="font-bold text-sm">{vgwh}</span>
+            </div>
+          </div>
+          <div className="w-full">
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 text-sm flex justify-between">
+              <span className="text-[13px]">● Volumen:</span>
+              <span>{vmm3}
+                <TrendChip dir={'up'}>2.5</TrendChip>
+              </span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Aportes hídricos:</span>
+              <span>{damWaterSupply}
+                <TrendChip dir={'down'}>2.5</TrendChip>
+              </span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Capacidad del embalse:</span> <span>{damCapacity}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Recursos de generación:</span> <span>{name}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Capacidad del recurso de generación:</span> <span>{damCapacityGeneration}</span>
+            </div>
+            <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
+              <span className="text-[13px]">● Aportes medios históricos:</span> <span>{damCapacityGeneration}</span>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-      // === Inicializar mapa ===
-      const map = L.map(mapRef.current, {
-        closePopupOnClick: false,
-        zoomControl: false,      // ❌ quita los botones de zoom
-        scrollWheelZoom: false,  // ❌ desactiva zoom con scroll
-        doubleClickZoom: false,  // ❌ desactiva zoom con doble click
-        touchZoom: false,        // ❌ desactiva zoom táctil
-        boxZoom: false,          // ❌ desactiva zoom con selección de caja
-        dragging: true           // ✅ mantiene mover el mapa
-      }).setView([4.6, -74.1], 6);
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        {
-          attribution: "&copy; OpenStreetMap & CARTO",
-          subdomains: "abcd",
-          maxZoom: 19,
-        }
-      ).addTo(map);
+function MapEmbalses() {
+  const [regiones, setRegiones] = useState(null);
+  // * New state with data API, then search for information in the "regiones" array, if not info set a not found element
+  const [embalses, setEmbalses] = useState(null);
 
-      // Capas
-      const regionesLayer = L.geoJSON(null, {
-        style: (feature) => {
-          const name = findRegionName(feature.properties || {});
-          const color = hashColor(name);
-          return {
-            color,
-            weight: 1.4,
-            fillColor: color,
-            fillOpacity: 0.25,
-          };
-        },
-      }).addTo(map);
-      regionesLayer.once("add", () => regionesLayer.bringToBack());
-
-      const embalsesLayer = L.geoJSON(null, {
-        pointToLayer: (feature, latlng) =>
-          L.circleMarker(latlng, {
-            radius: 6,
-            color: "#60a5fa",
-            weight: 1.4,
-            fillColor: "#3b82f6",
-            fillOpacity: 0.9,
-          }),
-        onEachFeature: (feature, layer) => {
-          layer.bindPopup(embalsePopup(feature.properties || {}), {
-            className: "popup-theme",
-            maxWidth: 320,
-            autoPan: true,
-            autoClose: true,
-            closeButton: true,
-          });
-        },
-      }).addTo(map);
-
-      // === Cargar datos ===
-      Promise.all([
-        fetch(REGIONES_URL).then((r) => r.json()),
-        fetch(EMBALSES_URL).then((r) => r.json()),
-      ])
-        .then(([regiones, embalses]) => {
-          regionesLayer.addData(regiones);
-          embalsesLayer.addData(embalses);
-
-          const group = L.featureGroup([regionesLayer, embalsesLayer]);
-          const b = group.getBounds();
-          if (b.isValid()) map.fitBounds(b.pad(0.08));
-        })
-        .catch((err) => console.error("Error al cargar datos:", err));
-    }
+  useEffect(() => {
+    Promise.all([fetch(REGIONES_URL), fetch(EMBALSES_URL)])
+      .then(async ([r1, r2]) => {
+        const regionesJson = await r1.json();
+        const embalsesJson = await r2.json();
+        setRegiones(regionesJson);
+        setEmbalses(embalsesJson);
+      })
+      .catch((err) => console.error("Error cargando GeoJSON:", err));
   }, []);
 
-  return <div id="map" ref={mapRef} style={{ height: "80vh", width: "100%", zIndex:'1' }} />;
+  return (
+    <div className="h-screen w-screen bg-[#0b1220] z-0">
+      <MapContainer
+        center={[4.6, -74.1]}
+        zoom={6}
+        className="h-full w-full"
+        closePopupOnClick={false}
+        scrollWheelZoom={false}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+          subdomains="abcd"
+          maxZoom={19}
+        />
+
+        {regiones && (
+          <GeoJSON
+            data={regiones}
+            style={(feature) => {
+              const name = findRegionName(feature.properties || {});
+              const color = hashColor(name);
+              return {
+                color,
+                weight: 1.4,
+                fillColor: color,
+                fillOpacity: 0.25,
+              };
+            }}
+          />
+        )}
+
+        {embalses &&
+          embalses.features.map((f, index) => {
+            const coords = f.geometry.coordinates;
+            return (
+              <RegionDialog
+                key={index}
+                props={f.properties || {}}
+                coords={coords}
+                damProperties={f.properties}
+                index={index}
+              />
+            );
+          })}
+      </MapContainer>
+    </div>
+  );
 }
+
+export default MapEmbalses;
