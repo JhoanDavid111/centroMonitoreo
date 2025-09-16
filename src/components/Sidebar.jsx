@@ -66,14 +66,13 @@ const sections = [
         activeIcon: ComunidadesEnergOn,
         permission: "comunidades",
       },
-      {
-        title: "Acciones 6GW+",
-        path: "https://www.upme.gov.co/acciones_6gw/login",
-        icon: AccionesEstrategicasOff,
-        activeIcon: AccionesEstrategicasOn,
-        roles: [ROLES.ADMIN],
-        external: true,
-      },
+            {
+                title: "Acciones 6GW+",
+                path: "/en_construccion",
+                icon: AccionesEstrategicasOff,
+                activeIcon: AccionesEstrategicasOn,
+                roles: [ROLES.ADMIN],
+            },
     ],
   },
   {
