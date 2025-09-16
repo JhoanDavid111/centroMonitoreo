@@ -28,7 +28,7 @@ export default function Proyectos075() {
           alt="Banner Background"
         />
         <BannerHeader>
-          <BannerTitle>Generación (GREG 075)</BannerTitle>
+          <BannerTitle>Proyectos de Generación</BannerTitle>
           <BannerDescription>
               Ventanilla única resolución CREG 075
           </BannerDescription>

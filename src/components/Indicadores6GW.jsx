@@ -13,6 +13,8 @@ import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CasaOn from '../assets/svg-icons/Casa-On.svg';
 import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
+import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
+
 import { API } from '../config/api';
 
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +48,11 @@ function canonicalKey(raw = '') {
 }
 
 const LABEL_MAP = {
+  total_proyectos_bd075: {
+      label: 'Capacidad total instalada 6GW+ =',
+      icon: EnergiaAmarillo, // (opcional, no se usa en cards; el hero ya toma el icono directo)
+    
+    },
   'EN OPERACIÓN': { label: 'Capacidad instalada en operación', icon: DemandaOn },
   'PRUEBAS': { label: 'Capacidad instalada en pruebas', icon: ProcessOn },
   'CAPACIDAD A ENTRAR 075': { label: 'MW por entrar a julio de 2026', icon: Proyecto075On },
@@ -67,6 +74,12 @@ const ORDER = [
   'ZNI', // Añadir ZNI al orden
 ];
 
+// Helpers
+function cleanSubtitle(raw) {
+  // quita el " =" final del label para usarlo como subtítulo
+  return String(raw || '').replace(/\s*=\s*$/, '');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Utilidades
 // ─────────────────────────────────────────────────────────────────────────────
@@ -87,6 +100,9 @@ export default function Indicadores6GW() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
+  
 
   useEffect(() => {
     let alive = true;
@@ -184,27 +200,55 @@ export default function Indicadores6GW() {
   return (
     <>
       {/* Encabezado total */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
-        <div>
-          <p style={{ color: '#FFC800' }} className="mb-1 text-3xl lg:text-5xl font-semibold">
-            Capacidad total instalada 6GW+:
-          </p>
-          <p className="text-4xl lg:text-5xl font-semibold text-white" style={{ lineHeight: '36px' }}>
-            {formatMW(totalMW)} MW
-          </p>
-        </div>
+      <div className="px-4 pt-6 text-center">
+      <div className="inline-flex items-center gap-4">
+                {/* círculo amarillo + icono negro (forzado con filter) */}
+                <span
+                  className="inline-flex items-center justify-center rounded-full"
+                  style={{ width: 64, height: 64, background: '#FFC800' }}
+                >
+                  <img
+                    src={EnergiaAmarillo}
+                    alt="Energía"
+                    className="w-12 h-12 md:w-14 md:h-14"
+                    style={{ background: 'transparent' }}
+                  />
+                </span>
+                <span
+                  className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold"
+                >
+                   {formatMW(totalMW)} MW
+                   
+                </span>
 
-        <button
+                <button
           onClick={() => navigate('/proyectos_generacion')}
           className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
         >
           Ver seguimiento de proyectos
         </button>
+                
+              </div>
+      
+              <div className="mt-2 text-[#D1D1D0] text-1xl lg:text-[20px]">
+                {heroSubtitle}
+
+              
+
+              </div>
+
+              
+                 
+              
+
+       
       </div>
+
+      
 
       {/* Tarjetas */}
       <div className="px-2">
-        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices plan 6GW plus</h2>
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices Plan 6GW Plus</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card, i) => (

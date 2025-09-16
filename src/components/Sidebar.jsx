@@ -46,7 +46,7 @@ const sections = [
                 permission: "dashboard",
             },
             {
-                title: "Proyectos de Generación",
+                title: "Generación (GREG 075)",
                 path: "/proyectos_generacion",
                 icon: Proyecto075Off,
                 activeIcon: Proyecto075On,
