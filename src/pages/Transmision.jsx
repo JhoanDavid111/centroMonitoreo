@@ -60,7 +60,7 @@ export default function Transmision() {
           alt="Banner Background"
         />
         <BannerHeader>
-          <BannerTitle>Proyectos de transmisión en construccción</BannerTitle>
+          <BannerTitle>Proyectos de transmisión en construcción</BannerTitle>
         </BannerHeader>
 
         <BannerLogo src={GWOff} title="Logo" alt="Logo" />
