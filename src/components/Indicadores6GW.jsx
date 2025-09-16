@@ -15,6 +15,8 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
 import { API } from '../config/api';
 
+import { useNavigate } from 'react-router-dom';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
 // ─────────────────────────────────────────────────────────────────────────────
@@ -84,6 +86,7 @@ export default function Indicadores6GW() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let alive = true;
@@ -184,7 +187,7 @@ export default function Indicadores6GW() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-6 text-center md:text-left">
         <div>
           <p style={{ color: '#FFC800' }} className="mb-1 text-3xl lg:text-5xl font-semibold">
-            Capacidad instalada 6GW+ total:
+            Capacidad total instalada 6GW+:
           </p>
           <p className="text-4xl lg:text-5xl font-semibold text-white" style={{ lineHeight: '36px' }}>
             {formatMW(totalMW)} MW
@@ -192,7 +195,7 @@ export default function Indicadores6GW() {
         </div>
 
         <button
-          onClick={() => (window.location.href = '/CentroMonitoreo/proyectos075')}
+          onClick={() => navigate('/proyectos_generacion')}
           className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
         >
           Ver seguimiento de proyectos
@@ -201,7 +204,7 @@ export default function Indicadores6GW() {
 
       {/* Tarjetas */}
       <div className="px-2">
-        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índice plan 6gw plus</h2>
+        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices plan 6GW plus</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card, i) => (

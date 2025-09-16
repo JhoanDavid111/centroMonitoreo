@@ -233,6 +233,7 @@ export default function ProyectoDetalle() {
   const [chartOptions, setChartOptions]   = useState(baseChartOptions);
   const [loadingCurve, setLoadingCurve]   = useState(false);
   const [errorCurve, setErrorCurve]       = useState(null);
+   const [showChart, setShowChart]         = useState(false); // Estado para controlar la visibilidad de la gráfica
   const navigate = useNavigate();
 
   // **Estados de filtros por columna**
@@ -289,6 +290,7 @@ export default function ProyectoDetalle() {
   // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
 // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
 const handleViewCurve = async (row) => {
+  setShowChart(true); // Mostrar la gráfica
   setLoadingCurve(true);
   setErrorCurve(null);
   const COLOR_REF = '#60A5FA';  // azul
@@ -913,7 +915,8 @@ const columnsSeguimiento = [
             />
           </div>
 
-          {/* Curva S */}
+          {/* Curva S Solo se muestra si showChart es true */}
+          {showChart && (
           <div
             ref={chartContainerRef}
             className="mt-6 bg-[#262626] p-4 rounded-lg shadow min-h-[600px] scroll-mt-24"
@@ -929,6 +932,8 @@ const columnsSeguimiento = [
                   />
             }
           </div>
+          )
+          }
         </div>
       )}
 

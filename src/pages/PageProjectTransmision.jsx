@@ -229,7 +229,7 @@ const PageProjectTransmision = () => {
                 onClick={() => window.open(projectData.documents, '_blank')}
                 className="inline-flex items-center gap-2 font-medium px-3 py-2 rounded-md hover:brightness-95"
                 style={{ background: COLORS.yellow, color: '#000' }}>
-                <FileText size={16} /> Documentos convocatoria
+                <FileText size={16} /> Documentos de la convocatoria
               </button>
             </div>
           </div>

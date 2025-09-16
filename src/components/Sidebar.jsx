@@ -59,13 +59,13 @@ const sections = [
                 activeIcon: ProyectosTransmisionOn,
                 roles: [ROLES.ADMIN],
             },
-            {
-                title: "Comunidades energéticas",
-                path: "/en_construccion",
-                icon: ComunidadesEnergOff,
-                activeIcon: ComunidadesEnergOn,
-                permission: "comunidades",
-            },
+            // {
+            //     title: "Comunidades energéticas",
+            //     path: "/en_construccion",
+            //     icon: ComunidadesEnergOff,
+            //     activeIcon: ComunidadesEnergOn,
+            //     permission: "comunidades",
+            // },
             {
                 title: "Acciones 6GW+",
                 path: "https://www.upme.gov.co/acciones_6gw/login",
