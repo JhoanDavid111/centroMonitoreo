@@ -35,37 +35,37 @@ const sections = [
        activeIcon: DashboardOn,
        permission: 'dashboard',
      }, */
-  {
-    title: "Seguimiento plan 6GW+",
-    items: [
-      {
-        title: "Resumen",
-        path: "/6GW+",
-        icon: GWOff,
-        activeIcon: GWOn,
-        permission: "dashboard",
-      },
-      {
-        title: "Proyectos de Generación",
-        path: "/proyectos_generacion",
-        icon: Proyecto075Off,
-        activeIcon: Proyecto075On,
-        permission: "proyectos",
-      },
-      {
-        title: "Transmisión",
-        path: "/Transmision",
-        icon: ProyectosTransmisionOff,
-        activeIcon: ProyectosTransmisionOn,
-        roles: [ROLES.ADMIN],
-      },
-      {
-        title: "Comunidades energéticas",
-        path: "/en_construccion",
-        icon: ComunidadesEnergOff,
-        activeIcon: ComunidadesEnergOn,
-        permission: "comunidades",
-      },
+    {
+        title: "Seguimiento plan 6GW+",
+        items: [
+            {
+                title: "Resumen",
+                path: "/6GW+",
+                icon: GWOff,
+                activeIcon: GWOn,
+                permission: "dashboard",
+            },
+            {
+                title: "Generación (GREG 075)",
+                path: "/proyectos_generacion",
+                icon: Proyecto075Off,
+                activeIcon: Proyecto075On,
+                permission: "proyectos",
+            },
+            {
+                title: "Transmisión",
+                path: "/Transmision",
+                icon: ProyectosTransmisionOff,
+                activeIcon: ProyectosTransmisionOn,
+                roles: [ROLES.ADMIN],
+            },
+            // {
+            //     title: "Comunidades energéticas",
+            //     path: "/en_construccion",
+            //     icon: ComunidadesEnergOff,
+            //     activeIcon: ComunidadesEnergOn,
+            //     permission: "comunidades",
+            // },
             {
                 title: "Acciones 6GW+",
                 path: "/en_construccion",
