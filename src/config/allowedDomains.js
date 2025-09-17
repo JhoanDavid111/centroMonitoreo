@@ -10,7 +10,8 @@ export const ALLOWED_DOMAINS = [
   'ecopetrol.com.co',// no transmision
   'anla.gov.co',
   'anh.gov.co',
-  'isa.com.co' // no transmision
+  'isa.com.co', // no transmision
+  'procuraduria.gov.co'//no focalboard ni acciones  6g, transmision
 
 
 
