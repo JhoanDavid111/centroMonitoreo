@@ -221,7 +221,7 @@ const indices = [
     bottomDir: 'up',
   },
   {
-    title: 'Precios de Energía – Julio vs junio 2025',
+    title: 'Precios de energía – Julio vs junio 2025',
     updated: 'Promedios mensuales diarios (COP/kWh)',
     groups: [
       { name: 'Mínimo\nDiario', value: '102.96', unit: 'COP/kWh', delta: '−3.82 (−3.7%)', dir: 'down' },
@@ -239,7 +239,7 @@ function TrendChip({ dir = 'up', children }) {
   return (
     <span
       className="
-        inline-flex items-center gap-2 px-3 py-1
+        inline-flex items-center gap-1 px-3 py-1
         rounded-full text-sm font-semibold
         whitespace-nowrap leading-none
       "
@@ -247,6 +247,7 @@ function TrendChip({ dir = 'up', children }) {
         backgroundColor: bg,
         color: '#fff',
         border: '1px solid rgba(0,0,0,.15)',
+        fontSize: '12px'
       }}
     >
       <span aria-hidden className="text-base leading-none">{isUp ? '↑' : '↓'}</span>
@@ -710,7 +711,7 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
 
 function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
   return (
-    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626]">
+    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626]w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
         <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
@@ -1146,7 +1147,7 @@ export default function Hidrologia() {
         <span className="text-xs text-gray-400">{indices[2].updated}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {indices[2].groups.map((g) => {
           let customIcon = null;
 
@@ -1188,7 +1189,7 @@ export default function Hidrologia() {
     <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
       <div className="mb-2 flex items-center justify-between">
         {/* 👇 sin icono en el título */}
-        <span className="font-semibold text-gray-300">Precios de Energía – Julio vs junio 2025</span>
+        <span className="font-semibold text-gray-300">Precios de energía – Julio vs junio 2025</span>
         <span className="text-xs text-gray-400">{indices[3].updated}</span>
       </div>
 
@@ -1236,7 +1237,7 @@ export default function Hidrologia() {
     </div>
         {/* Mapa */}
         <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col md:flex-row">
-              <HidrologiaComponent />
+            <HidrologiaComponent />
             <MapaHidrologia/>
         </div>
 
