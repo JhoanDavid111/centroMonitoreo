@@ -15,9 +15,9 @@ export const HidrologiaComponent = () => {
   if (loading) return <div>Cargando datos...</div>;
 
   return (
-    <div className="p-2 pr-4 pt-6 z-20 min-w-sm w-full md:w-2/6 border-r border-[#898989]  flex flex-col gap-y-4 bg-[#323232]">
+    <div className="p-2 pr-4 pt-6 min-w-sm w-full md:w-2/6 border-r border-[#898989]  flex flex-col gap-y-4 bg-[#323232]">
       <span className="text-xl text-center font-semibold">
-        Regiones Hidrológicas
+        Regiones hidrológicas
       </span>
 
       <ul className="w-full overflow-y-auto max-h-[500px] md:max-h-none">

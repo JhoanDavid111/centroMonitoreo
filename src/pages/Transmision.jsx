@@ -94,7 +94,7 @@ export default function Transmision() {
 
       <MapaProyectosTransmision
         mapUrl={MAPA_URL}
-        title="Mapa de Proyectos de Transmisión"
+        title="Mapa de proyectos de transmisión"
       />
     </div>
   );

@@ -157,7 +157,7 @@ export function CapacidadInstalada() {
             marginBottom: 100,
           },
           title: {
-            text: 'Evolución Capacidad Instalada por Tecnología',
+            text: 'Evolución capacidad instalada por tecnología',
             align: 'left',
             style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' }
           },
@@ -232,7 +232,7 @@ export function CapacidadInstalada() {
 
   if (loading) {
     return (
-      <div className="w-full bg-[#262626] p-4 rounded rounded-lg border-[#666666] shadow flex flex-col items-center justify-center h-64">
+      <div className="w-full bg-[#262626] p-4 rounded-lg border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)' }} />
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }} />
