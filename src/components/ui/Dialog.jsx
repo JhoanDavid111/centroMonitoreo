@@ -4,7 +4,8 @@ import {
   createContext,
   isValidElement,
   useContext,
-  useState,
+  useEffect,
+  useState
 } from "react";
 
 const DialogContext = createContext({
@@ -57,18 +58,32 @@ const DialogTrigger = ({ children, asChild = false }) => {
 const DialogContent = ({ children }) => {
   const { open, setOpen } = useContext(DialogContext);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleScroll = () => {
+      setOpen(false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [open, setOpen]);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/80"
         onClick={() => setOpen(false)}
       />
 
       {/* Content */}
-      <div className="relative z-[30000] max-w-lg sm:w-11/12 lg:w-full bg-[#323232] text-white p-6 rounded-lg shadow-lg">
+      <div className="relative z-[30000] max-w-lg sm:w-11/12 md: 11/12 lg:w-full bg-[#323232] text-white p-6 rounded-lg shadow-lg">
         <button
           className="absolute top-4 right-4 p-2"
           onClick={() => setOpen(false)}

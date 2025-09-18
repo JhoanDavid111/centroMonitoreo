@@ -9,7 +9,7 @@ const COLORS_SCHEMES = {
   GREEN: { bg: 'bg-green-900', text: 'text-green-300' },
 };
 
-//Limites de meses para clasificacion 
+//Limites de meses para clasificacion
 const MESES_THRESHOLDS = {
   MAYOR_SEIS: 6,
   ENTRE_TRES_Y_SEIS: 3,
@@ -98,7 +98,7 @@ const mesesDeAtrasoColumn = {
 
 
 export const TRANSMISION_GRID_CONFIG = {
-  title: "Proyectos de Transmisión",
+  title: "Proyectos de transmisión",
   tabs: [
     {
       label: "Proyectos por Convocatorias",
@@ -161,7 +161,7 @@ export const TRANSMISION_GRID_CONFIG = {
                   offsetX={0}     // 10px a la derecha
                   maxWidth="max-w-md" // Ancho máximo mayor
                   width="max-w-none" // Esto permite que el tooltip se expanda según el contenido
-                  tooltipClass="whitespace-nowrap" // Forzar una sola línea   
+                  tooltipClass="whitespace-nowrap" // Forzar una sola línea
                 >
                   <span className="block truncate max-w-[150px]">{visible}</span>
                 </TooltipPer>
