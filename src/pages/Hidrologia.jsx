@@ -1147,7 +1147,7 @@ export default function Hidrologia() {
         <span className="text-xs text-gray-400">{indices[2].updated}</span>
       </div>
 
-      <div className="grid  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {indices[2].groups.map((g) => {
           let customIcon = null;
 
@@ -1193,7 +1193,7 @@ export default function Hidrologia() {
         <span className="text-xs text-gray-400">{indices[3].updated}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {indices[3].groups.map((g) => {
           let customIcon = null;
 
