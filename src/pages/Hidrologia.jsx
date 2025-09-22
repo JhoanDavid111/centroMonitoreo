@@ -10,7 +10,7 @@ import {
 // src/pages/Hidrologia.jsx
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 // HTML embebidos

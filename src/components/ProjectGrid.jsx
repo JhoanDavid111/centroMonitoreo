@@ -246,7 +246,8 @@ export default function ProyectoDetalle() {
     ciclo: '',
     promotor: '',
     departamento: '',
-    municipio: ''
+    municipio: '',
+    estado: ''           // ← nuevo filtro para “Estado”
   });
   const [globalFilter, setGlobalFilter] = useState('');
   const [openFilter, setOpenFilter]       = useState('');
@@ -267,6 +268,7 @@ export default function ProyectoDetalle() {
           ...p,
           fpo: p.fpo ? p.fpo.split('T')[0] : '-',
           porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
+          estado: 'pendiente', // ← valor quemado temporalmente
         }));
         setProyectos(formatted);
       } catch (err) {
@@ -434,7 +436,8 @@ const handleViewCurve = async (row) => {
       capacidad: row.capacidad_instalada_mw,
       fpo: row.fpo,
       avance: row.porcentaje_avance_display,
-      promotor: row.promotor
+      promotor: row.promotor,
+      estado: row.estado, // ← incluido en búsqueda global
     })
     .some(v => String(v).toLowerCase().includes(globalFilter.toLowerCase()));
   }
@@ -465,6 +468,7 @@ const handleViewCurve = async (row) => {
     .filter(r => String(r.promotor ?? '').toLowerCase().includes(columnFilters.promotor.toLowerCase()))
     .filter(r => String(r.departamento ?? '').toLowerCase().includes(columnFilters.departamento.toLowerCase()))
     .filter(r => String(r.municipio ?? '').toLowerCase().includes(columnFilters.municipio.toLowerCase()))
+    .filter(r => String(r.estado ?? '').toLowerCase().includes(columnFilters.estado.toLowerCase())) // ← filtro por estado
     .filter(applyGlobal);
 
   const initialFilters = {
@@ -477,7 +481,8 @@ const handleViewCurve = async (row) => {
     ciclo: '',
     promotor: '',
     departamento: '',
-    municipio: ''
+    municipio: '',
+    estado: '' // ← inicial
   };
 
   // Función helper para capitalizar cada palabra omitiendo conectores
@@ -494,7 +499,7 @@ const handleViewCurve = async (row) => {
       .join(' ');
   }
 
-  // ——— Columnas compartidas ———
+  // ——— Columnas compartidas (para tablas sin “Estado”) ———
   const columnsSimple = [
     {
       name: (
@@ -799,6 +804,45 @@ const handleViewCurve = async (row) => {
     },
   ];
 
+  // ——— Columna “Estado” (solo para la pestaña “Todos los proyectos”) ———
+  const estadoColumn = {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Estado</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.estado ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='estado'?'':'estado')}
+        />
+        {openFilter === 'estado' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.estado}
+              onChange={e => setColumnFilters({ ...columnFilters, estado: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.estado,
+    sortable: false,
+    wrap: true,
+    width: '140px',
+    cell: row => (
+      <span
+        className={`px-2 py-1 rounded text-xs font-semibold border
+          ${String(row.estado).toLowerCase()==='pendiente'
+            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+            : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'}`}
+      >
+        {row.estado ?? '-'}
+      </span>
+    ),
+  };
+
   // ——— Columnas para Seguimiento Curva S ———
 const columnsSeguimiento = [
   {
@@ -833,6 +877,12 @@ const columnsSeguimiento = [
     width: '100px',
   },
     ...columnsSimple
+  ];
+
+  // ——— Columnas para “Todos los proyectos” (agrega Estado) ———
+  const columnsAll = [
+    ...columnsSimple,
+    estadoColumn, // ← nueva columna al final (ajústala de posición si lo prefieres)
   ];
 
   // ——— Estilos de filas alternadas ———
@@ -952,7 +1002,7 @@ const columnsSeguimiento = [
           </div>
           <div className="relative overflow-visible">
             <DataTable
-              columns={columnsSimple}
+              columns={columnsAll}               // ← usa las columnas con “Estado”
               data={filteredAll}
               theme="customDark"
               conditionalRowStyles={conditionalRowStyles}
@@ -999,3 +1049,4 @@ function exportToCSV(data) {
   link.click();
   document.body.removeChild(link);
 }
+

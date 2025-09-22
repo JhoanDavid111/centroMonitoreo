@@ -60,9 +60,9 @@ export default function Resumen() {
         <ComunidadesResumen />
       </div>
       <ResumenCharts />
-      <MapasCreg />
-      <GeneracionDespacho />
+      <MapasCreg />      
       <GeneracionHoraria />
+      <GeneracionDespacho />
     </div>
   );
 }
