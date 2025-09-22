@@ -188,7 +188,7 @@ export function GeneracionDespacho() {
 
         const chartOptions = {
           chart: { type: 'area', height: 400, backgroundColor: '#262626' },
-          title: { text: 'Generación Real Diaria por Tecnología' },
+          title: { text: 'Generación real diaria por tecnología' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {

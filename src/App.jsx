@@ -1,6 +1,8 @@
 // src/App.jsx
-import { useState } from 'react';
+
+import { use, useRef, useState } from 'react';
 import { Sidebar, SidebarProvider } from './components/Sidebar';
+
 import { Header } from './components/Header';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -30,12 +32,18 @@ import PageProjectTransmision from './pages/PageProjectTransmision';
 import ProyectoDetalle from './pages/ProyectoDetalle';
 import ComunidadesEnergeticasReplica from './pages/ComunidadesEnergeticasReplica';
 import Hidrologia from './pages/Hidrologia';
+import ScrollToTop from './components/ScrollToTop';
 
 
 
 function AppContent() {
-    const { currentUser, loading, userRole } = useAuth();
-    const location = useLocation();
+
+  const { currentUser, loading, userRole } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
+  const scrollRef=useRef(null);
+
+
 
     if (loading) {
         return (
@@ -76,6 +84,7 @@ function AppContent() {
     const emailDomain = currentUser.email?.split('@')[1];
     const isAuthorized = ALLOWED_DOMAINS.some(domain =>
         emailDomain === domain || emailDomain?.endsWith(`.${domain}`)
+
     );
 
     if (!isAuthorized) {
@@ -98,8 +107,13 @@ function AppContent() {
 
                 <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
                     <Sidebar userRole={userRole} />
-
-                    <div className="flex-1 text-white p-6 overflow-auto">
+                    {/* contenedor scrollable con ref */}
+                    <div ref={scrollRef} className="flex-1 text-white p-6 overflow-auto">
+                      {/* ScrollToTop con exclusiones*/}
+                      <ScrollToTop
+                         scrollRef={scrollRef}
+                         //excludedRoutes={["/Transmision","/proyectos075"]}
+                      />
                         <Routes>
                             <Route
                                 path="/"
@@ -218,6 +232,7 @@ function AppContent() {
             </div>
         </SidebarProvider>
     );
+
 }
 
 export default function App() {

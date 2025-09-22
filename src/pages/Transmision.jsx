@@ -60,14 +60,14 @@ export default function Transmision() {
           alt="Banner Background"
         />
         <BannerHeader>
-          <BannerTitle>Proyectos de Transmisión</BannerTitle>
+          <BannerTitle>Proyectos de transmisión en construcción</BannerTitle>
         </BannerHeader>
 
         <BannerLogo src={GWOff} title="Logo" alt="Logo" />
       </Banner>
       <TotalProyectos total={data.total_proyectos} />
       <div className="px-2">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {TRANSMISION_CONFIG.indicators
             .filter(
               (indicator) => indicator.key !== 'convocatorias_proyectadas'
@@ -94,7 +94,7 @@ export default function Transmision() {
 
       <MapaProyectosTransmision
         mapUrl={MAPA_URL}
-        title="Mapa de Proyectos de Transmisión"
+        title="Mapa de proyectos de transmisión"
       />
     </div>
   );

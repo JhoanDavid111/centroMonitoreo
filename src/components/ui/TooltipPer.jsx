@@ -1,4 +1,4 @@
-// src/components/ui/TooltipPer.jsx (versión sin portal)
+
 // src/components/ui/TooltipPer.jsx
 import React, { useState } from 'react';
 

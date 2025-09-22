@@ -358,9 +358,9 @@ export function ResumenCharts() {
 
         // 4) Columnas apiladas histórico anual – altura uniforme
         const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
-        opts.push(withHeight({
-          chart: { type: 'column', backgroundColor: '#262626' },
-          title: { text: 'Evolución Anual Matriz Energética Despachada Centralmente', align: 'left' },
+        opts.push({
+          chart: { type: 'column', height: 350, backgroundColor: '#262626' },
+          title: { text: 'Evolución anual matriz energética despachada centralmente', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
@@ -390,7 +390,7 @@ export function ResumenCharts() {
             formatter: columnTooltipFormatter
           },
           exporting: { enabled: true }
-        }));
+        });
 
         if (isMounted) {
           setCharts(opts);
