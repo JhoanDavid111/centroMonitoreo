@@ -1244,7 +1244,7 @@ export default function Hidrologia() {
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 👉 Nueva tabla con 3 pestañas */}
-          {/*<HidroTabs data={hidroRows} />*/}
+          <HidroTabs data={hidroRows} />
 
           {/* Gráfica Aportes (igual que la tienes) */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
