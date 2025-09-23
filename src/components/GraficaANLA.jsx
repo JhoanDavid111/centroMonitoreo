@@ -261,7 +261,7 @@ const tiempoPromedioANLAOptions = {
     spacing: [10, 10, 30, 10]
   },
   title: {
-    text: 'Tiempo Promedio de Aprobación de Licencias por Departamento',
+    text: 'Tiempo promedio de aprobación de licencias por departamento',
     style: {
       fontSize: '20px',
       fontWeight: 'bold',

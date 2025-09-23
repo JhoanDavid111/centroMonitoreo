@@ -605,7 +605,7 @@ const capacidadDeptoC2Options = {
     }
   },
   series: [{
-    name: 'Capacidad Instalada (MW)',
+    name: 'Capacidad instalada (MW)',
     data: capacidadDeptoC2Data
   }],
     tooltip: TOOLTIP_CONFIG(this)
