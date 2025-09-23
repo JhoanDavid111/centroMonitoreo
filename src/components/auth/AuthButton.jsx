@@ -210,7 +210,7 @@ export default function AuthButton() {
             fontSize: '28px',
             fontStyle: 'normal',
             fontWeight: 400,
-            lineHeight: '28px'
+            lineHeight: '35px'
           }}
         >
           Datos en acción que impulsan la<br />
