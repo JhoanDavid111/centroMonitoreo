@@ -39,7 +39,7 @@ export default function Transmision() {
             alt="Banner Background"
           />
           <BannerHeader>
-            <BannerTitle>Proyectos de Transmisión</BannerTitle>
+            <BannerTitle>Proyectos de transmisión en construcción</BannerTitle>
           </BannerHeader>
 
           <BannerLogo src={GWOff} title="Logo" alt="Logo" />
@@ -94,7 +94,7 @@ export default function Transmision() {
 
       <MapaProyectosTransmision
         mapUrl={MAPA_URL}
-        title="Mapa de Proyectos de Transmisión"
+        title="Mapa de proyectos de transmisión"
       />
     </div>
   );
