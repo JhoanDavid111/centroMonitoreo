@@ -2,16 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useFilters } from './useFilters';
 import { useExport } from './useExport';
+import { useDataGridCache } from './useDataGridCache';
 
 export const useDataGrid = (config) => {
     const [activeTab, setActiveTab] = useState(0);
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+   
     const [chartOptions, setChartOptions] = useState(null);
     const [globalFilter, setGlobalFilter] = useState('');
     const [columnFilters, setColumnFilters] = useState({});
     const [openFilter, setOpenFilter] = useState(''); 
+
+
+    // Usar el hook de cache
+    const { data, loading, error, refetchTab, refetchAll } = useDataGridCache(config, activeTab);
     
     const { filteredData, filters, setFilters, applyFilters } = useFilters(data);
     const { exportToCSV } = useExport();
