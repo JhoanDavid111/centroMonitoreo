@@ -11,6 +11,7 @@ export const useDataGrid = (config) => {
     const [chartOptions, setChartOptions] = useState(null);
     const [globalFilter, setGlobalFilter] = useState('');
     const [columnFilters, setColumnFilters] = useState({});
+    const [openFilter, setOpenFilter] = useState(''); 
     
     const { filteredData, filters, setFilters, applyFilters } = useFilters(data);
     const { exportToCSV } = useExport();
@@ -104,6 +105,8 @@ export const useDataGrid = (config) => {
         setGlobalFilter,
         handleTabChange,
         handleViewChart,
+        openFilter, 
+        setOpenFilter, 
         exportToCSV: () => exportToCSV(applyAllFilters(filteredData), config.tabs[activeTab].columns)
     };
 };
