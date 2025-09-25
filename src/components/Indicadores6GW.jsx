@@ -200,51 +200,45 @@ export default function Indicadores6GW() {
   return (
     <>
       {/* Encabezado total */}
-      <div className="px-4 pt-6 text-center">
-      <div className="inline-flex items-center gap-4">
-                {/* círculo amarillo + icono negro (forzado con filter) */}
-                <span
-                  className="inline-flex items-center justify-center rounded-full"
-                  style={{ width: 64, height: 64, background: '#FFC800' }}
-                >
-                  <img
-                    src={EnergiaAmarillo}
-                    alt="Energía"
-                    className="w-12 h-12 md:w-14 md:h-14"
-                    style={{ background: 'transparent' }}
-                  />
-                </span>
-                <span
-                  className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold"
-                >
-                   {formatMW(totalMW)} MW
-                   
-                </span>
+      <div className="px-4 pt-6">
+        {/* contenedor centrador */}
+        <div className="flex justify-center">
+          {/* grupo contenido (icono + número/subtítulo + botón) */}
+          <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-center">
+            
+            {/* círculo amarillo + icono */}
+            <span
+              className="inline-flex items-center justify-center rounded-full"
+              style={{ width: 64, height: 64, background: '#FFC800' }}
+            >
+              <img
+                src={EnergiaAmarillo}
+                alt="Energía"
+                className="w-12 h-12 md:w-14 md:h-14"
+                style={{ background: 'transparent' }}
+              />
+            </span>
 
-                <button
-          onClick={() => navigate('/proyectos_generacion')}
-          className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
-        >
-          Ver seguimiento de proyectos
-        </button>
-                
-              </div>
-      
-              <div className="mt-2 text-[#D1D1D0] text-1xl lg:text-[20px]">
+            {/* número + subtítulo (subtítulo debajo, alineado a la izquierda) */}
+            <div className="flex flex-col leading-tight text-left">
+              <span className="text-[#FFC800] text-3xl lg:text-5xl font-semibold">
+                {formatMW(totalMW)} MW
+              </span>
+              <span className="mt-1 text-[#D1D1D0] text-1xl lg:text-[20px]">
                 {heroSubtitle}
+              </span>
+            </div>
 
-              
-
-              </div>
-
-              
-                 
-              
-
-       
+            {/* botón a la derecha */}
+            <button
+              onClick={() => navigate('/proyectos_generacion')}
+              className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
+            >
+              Ver seguimiento de proyectos
+            </button>
+          </div>
+        </div>
       </div>
-
-      
 
       {/* Tarjetas */}
       <div className="px-2">

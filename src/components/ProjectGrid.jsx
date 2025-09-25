@@ -6,7 +6,7 @@ import ExportData from 'highcharts/modules/export-data';
 import Exporting from 'highcharts/modules/exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
-import { ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Filter, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import DataTable, { createTheme } from 'react-data-table-component';
 import { generatePath, useNavigate } from 'react-router-dom';
@@ -253,6 +253,49 @@ export default function ProyectoDetalle() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [openFilter, setOpenFilter]       = useState('');
 
+  // --- Ordenamiento por columna (una columna activa a la vez) ---
+  const [sortState, setSortState] = useState({ key: '', direction: '' }); // direction: 'asc' | 'desc' | ''
+
+  const toggleSort = (key) => {
+    setSortState((prev) => {
+      if (prev.key !== key) return { key, direction: 'asc' };
+      if (prev.direction === 'asc') return { key, direction: 'desc' };
+      return { key: '', direction: '' }; // sin orden
+    });
+  };
+
+  const getSortValue = (row, key) => {
+    switch (key) {
+      case 'id':           return Number(row.id) || 0;
+      case 'nombre':       return String(row.nombre_proyecto ?? '');
+      case 'capacidad':    return Number(row.capacidad_instalada_mw) || 0;
+      case 'fpo':          return row.fpo && row.fpo !== '-' ? new Date(row.fpo).getTime() : -Infinity;
+      case 'avance':       return Number(row.porcentaje_avance ?? (String(row.porcentaje_avance_display||'').replace('%',''))) || 0;
+      case 'priorizado':   return String(row.priorizado ?? '');
+      case 'ciclo':        return String(row.ciclo_asignacion ?? '');
+      case 'promotor':     return String(row.promotor ?? '');
+      case 'departamento': return String(row.departamento ?? '');
+      case 'municipio':    return String(row.municipio ?? '');
+      case 'estado':       return String(row.estado ?? '');
+      default:             return '';
+    }
+  };
+
+  const applySort = (data) => {
+    if (!sortState.key || !sortState.direction) return data;
+    const dir = sortState.direction === 'asc' ? 1 : -1;
+    return [...data].sort((a, b) => {
+      const va = getSortValue(a, sortState.key);
+      const vb = getSortValue(b, sortState.key);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+      return String(va).localeCompare(String(vb), 'es', { numeric: true, sensitivity: 'base' }) * dir;
+    });
+  };
+
+
   // ——— Carga inicial de proyectos ———
   useEffect(() => {
     async function fetchList() {
@@ -473,6 +516,10 @@ const handleViewCurve = async (row) => {
     .filter(r => String(r.estado ?? '').toLowerCase().includes(columnFilters.estado.toLowerCase())) // ← filtro por estado
     .filter(applyGlobal);
 
+  const sortedSeguimiento = applySort(filteredSeguimiento);
+  const sortedAll = applySort(filteredAll);
+
+
   const initialFilters = {
     id: '',
     nombre: '',
@@ -502,348 +549,434 @@ const handleViewCurve = async (row) => {
   }
 
   // ——— Columnas compartidas (para tablas sin “Estado”) ———
-  const columnsSimple = [
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>ID</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.id ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
-          />
-          {openFilter==='id' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.id}
-                onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-16"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.id,
-      sortable: false,
-      wrap: true,
-      width: '120px',
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Nombre</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.nombre ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
-          />
-          {openFilter==='nombre' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.nombre}
-                onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.nombre_proyecto,
-      sortable: false,
-      wrap: true,
-      minWidth: '200px',
-      cell: row => {
-        const raw = row.nombre_proyecto || '';
-        const formatted = titleCase(raw);
-        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-        return <span title={formatted}>{disp}</span>;
-      }
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Capacidad</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.capacidad ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
-          />
-          {openFilter==='capacidad' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.capacidad}
-                onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-16"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.capacidad_instalada_mw,
-      sortable: false,
-      wrap: true,
-      width: '130px',
-      cell: row => (`${row.capacidad_instalada_mw} MW`),
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>FPO</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.fpo ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
-          />
-          {openFilter==='fpo' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.fpo}
-                onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.fpo,
-      sortable: false,
-      wrap: true,
-      width: '150px',
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Avance</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.avance ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
-          />
-          {openFilter==='avance' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.avance}
-                onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-16"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.porcentaje_avance_display,
-      sortable: false,
-      wrap: true,
-      width: '120px',
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Priorizado</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.priorizado ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='priorizado'?'':'priorizado')}
-          />
-          {openFilter === 'priorizado' && (
-            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.priorizado}
-                onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-16"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.priorizado,
-      sortable: false,
-      wrap: true,
-      width: '130px',
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Ciclo</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.ciclo ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='ciclo'?'':'ciclo')}
-          />
-          {openFilter === 'ciclo' && (
-            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.ciclo}
-                onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-24"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.ciclo_asignacion,
-      sortable: false,
-      wrap: true,
-      width: '150px',
-      cell: row => {
-        const raw = row.ciclo_asignacion || '';
-        const formatted = titleCase(raw);
-        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-        return <span title={formatted}>{disp}</span>;
-      }
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Promotor</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.promotor ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
-          />
-          {openFilter==='promotor' && (
-            <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.promotor}
-                onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.promotor,
-      sortable: false,
-      wrap: true,
-      minWidth: '200px',
-      cell: row => {
-        const raw = row.promotor || '';
-        const formatted = titleCase(raw);
-        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-        return <span title={formatted}>{disp}</span>;
-      }
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Departamento</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.departamento ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='departamento'?'':'departamento')}
-          />
-          {openFilter === 'departamento' && (
-            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.departamento}
-                onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.departamento,
-      sortable: false,
-      wrap: true,
-      minWidth: '180px',
-      cell: row => {
-        const raw = row.departamento || '';
-        const formatted = titleCase(raw);
-        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-        return <span title={formatted}>{disp}</span>;
-      }
-    },
-    {
-      name: (
-        <div className="relative inline-block pb-11">
-          <span>Municipio</span>
-          <Filter
-            className={`inline ml-1 cursor-pointer ${columnFilters.municipio ? 'text-yellow-400' : 'text-gray-500'}`}
-            size={16}
-            onClick={() => setOpenFilter(openFilter==='municipio'?'':'municipio')}
-          />
-          {openFilter === 'municipio' && (
-            <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={columnFilters.municipio}
-                onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
-                className="bg-[#262626] text-white p-1 text-sm w-32"
-              />
-            </div>
-          )}
-        </div>
-      ),
-      selector: row => row.municipio,
-      sortable: false,
-      wrap: true,
-      minWidth: '180px',
-      cell: row => {
-        const raw = row.municipio || '';
-        const formatted = titleCase(raw);
-        const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
-        return <span title={formatted}>{disp}</span>;
-      }
-    },
-  ];
-
-  // ——— Columna “Estado” (solo para la pestaña “Todos los proyectos”) ———
-  const estadoColumn = {
+const columnsSimple = [
+  {
     name: (
       <div className="relative inline-block pb-11">
-        <span>Estado</span>
+        <span>ID</span>
         <Filter
-          className={`inline ml-1 cursor-pointer ${columnFilters.estado ? 'text-yellow-400' : 'text-gray-500'}`}
+          className={`inline ml-1 cursor-pointer ${columnFilters.id ? 'text-yellow-400' : 'text-gray-500'}`}
           size={16}
-          onClick={() => setOpenFilter(openFilter==='estado'?'':'estado')}
+          onClick={() => setOpenFilter(openFilter==='id'?'':'id')}
         />
-        {openFilter === 'estado' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='id' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('id')}
+          title={sortState.key!=='id'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='id' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
-              value={columnFilters.estado}
-              onChange={e => setColumnFilters({ ...columnFilters, estado: e.target.value })}
+              value={columnFilters.id}
+              onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-16"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.id,
+    sortable: false,
+    wrap: true,
+    width: '120px',
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Nombre</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.nombre ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='nombre'?'':'nombre')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='nombre' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('nombre')}
+          title={sortState.key!=='nombre'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='nombre' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.nombre}
+              onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.nombre_proyecto,
+    sortable: false,
+    wrap: true,
+    minWidth: '200px',
+    cell: row => {
+      const raw = row.nombre_proyecto || '';
+      const formatted = titleCase(raw);
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Capacidad</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.capacidad ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='capacidad'?'':'capacidad')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='capacidad' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('capacidad')}
+          title={sortState.key!=='capacidad'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='capacidad' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.capacidad}
+              onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-16"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.capacidad_instalada_mw,
+    sortable: false,
+    wrap: true,
+    width: '180px',
+    cell: row => (`${row.capacidad_instalada_mw} MW`),
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>FPO</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.fpo ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='fpo'?'':'fpo')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='fpo' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('fpo')}
+          title={sortState.key!=='fpo'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='fpo' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.fpo}
+              onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
               className="bg-[#262626] text-white p-1 text-sm w-24"
             />
           </div>
         )}
       </div>
     ),
-    selector: row => row.estado,
+    selector: row => row.fpo,
     sortable: false,
     wrap: true,
-    width: '140px',
-    cell: row => (
-      <span
-        className={`px-2 py-1 rounded text-xs font-semibold border
-          ${String(row.estado).toLowerCase()==='pendiente'
-            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
-            : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'}`}
-      >
-        {row.estado ?? '-'}
-      </span>
+    width: '150px',
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Avance</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.avance ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='avance'?'':'avance')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='avance' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('avance')}
+          title={sortState.key!=='avance'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='avance' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.avance}
+              onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-16"
+            />
+          </div>
+        )}
+      </div>
     ),
-  };
+    selector: row => row.porcentaje_avance_display,
+    sortable: false,
+    wrap: true,
+    width: '160px',
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Priorizado</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.priorizado ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='priorizado'?'':'priorizado')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='priorizado' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('priorizado')}
+          title={sortState.key!=='priorizado'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter === 'priorizado' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.priorizado}
+              onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-16"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.priorizado,
+    sortable: false,
+    wrap: true,
+    width: '180px',
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Ciclo</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.ciclo ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='ciclo'?'':'ciclo')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='ciclo' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('ciclo')}
+          title={sortState.key!=='ciclo'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter === 'ciclo' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.ciclo}
+              onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-24"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.ciclo_asignacion,
+    sortable: false,
+    wrap: true,
+    width: '150px',
+    cell: row => {
+      const raw = row.ciclo_asignacion || '';
+      const formatted = titleCase(raw);
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Promotor</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.promotor ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='promotor'?'':'promotor')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='promotor' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('promotor')}
+          title={sortState.key!=='promotor'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter==='promotor' && (
+          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.promotor}
+              onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.promotor,
+    sortable: false,
+    wrap: true,
+    minWidth: '200px',
+    cell: row => {
+      const raw = row.promotor || '';
+      const formatted = titleCase(raw);
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Departamento</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.departamento ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='departamento'?'':'departamento')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='departamento' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('departamento')}
+          title={sortState.key!=='departamento'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter === 'departamento' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.departamento}
+              onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.departamento,
+    sortable: false,
+    wrap: true,
+    minWidth: '180px',
+    cell: row => {
+      const raw = row.departamento || '';
+      const formatted = titleCase(raw);
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+  {
+    name: (
+      <div className="relative inline-block pb-11">
+        <span>Municipio</span>
+        <Filter
+          className={`inline ml-1 cursor-pointer ${columnFilters.municipio ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => setOpenFilter(openFilter==='municipio'?'':'municipio')}
+        />
+        <ChevronsUpDown
+          className={`inline ml-1 cursor-pointer ${sortState.key==='municipio' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'}`}
+          size={16}
+          onClick={() => toggleSort('municipio')}
+          title={sortState.key!=='municipio'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
+        />
+        {openFilter === 'municipio' && (
+          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={columnFilters.municipio}
+              onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
+              className="bg-[#262626] text-white p-1 text-sm w-32"
+            />
+          </div>
+        )}
+      </div>
+    ),
+    selector: row => row.municipio,
+    sortable: false,
+    wrap: true,
+    minWidth: '180px',
+    cell: row => {
+      const raw = row.municipio || '';
+      const formatted = titleCase(raw);
+      const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+      return <span title={formatted}>{disp}</span>;
+    }
+  },
+];
+
+
+  // ——— Columna “Estado” (solo para la pestaña “Todos los proyectos”) ———
+const estadoColumn = {
+  name: (
+    <div className="relative inline-block pb-11">
+      <span>Estado</span>
+
+      {/* Filtro por texto */}
+      <Filter
+        className={`inline ml-1 cursor-pointer ${
+          columnFilters.estado ? 'text-yellow-400' : 'text-gray-500'
+        }`}
+        size={16}
+        onClick={() => setOpenFilter(openFilter === 'estado' ? '' : 'estado')}
+        title="Filtrar columna"
+      />
+
+      {/* Icono de orden asc/desc/sin orden */}
+      <ChevronsUpDown
+        className={`inline ml-1 cursor-pointer ${
+          sortState.key === 'estado' && sortState.direction
+            ? 'text-yellow-400'
+            : 'text-gray-500'
+        }`}
+        size={16}
+        onClick={() => toggleSort('estado')}
+        title={
+          sortState.key !== 'estado' || !sortState.direction
+            ? 'Ordenar ascendente'
+            : sortState.direction === 'asc'
+              ? 'Cambiar a descendente'
+              : 'Quitar orden'
+        }
+      />
+
+      {/* Popover del filtro */}
+      {openFilter === 'estado' && (
+        <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={columnFilters.estado}
+            onChange={e => setColumnFilters({ ...columnFilters, estado: e.target.value })}
+            className="bg-[#262626] text-white p-1 text-sm w-24"
+          />
+        </div>
+      )}
+    </div>
+  ),
+  selector: row => row.estado,
+  sortable: false,
+  wrap: true,
+  width: '140px',
+  cell: row => (
+    <span
+      className={`px-2 py-1 rounded text-xs font-semibold border
+        ${String(row.estado).toLowerCase() === 'pendiente'
+          ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'}`}
+    >
+      {row.estado ?? '-'}
+    </span>
+  ),
+};
 
   // ——— Columnas para Seguimiento Curva S ———
 const columnsSeguimiento = [
@@ -917,6 +1050,7 @@ const columnsSeguimiento = [
               setColumnFilters(initialFilters);
               setGlobalFilter('');
               setOpenFilter('');
+              setSortState({ key: '', direction: '' });
             }}
             className={`pb-2 font-medium ${
               activeTab===tab
@@ -942,7 +1076,7 @@ const columnsSeguimiento = [
             />
             <button
               className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-              onClick={() => exportToCSV(filteredSeguimiento)}
+              onClick={() => exportToCSV(sortedSeguimiento)}
             >
               <Download size={16} /> Exportar CSV
             </button>
@@ -950,7 +1084,7 @@ const columnsSeguimiento = [
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsSeguimiento}
-              data={filteredSeguimiento}
+              data={sortedSeguimiento}
               theme="customDark"
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
@@ -1000,7 +1134,7 @@ const columnsSeguimiento = [
             />
             <button
               className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
-              onClick={() => exportToCSV(filteredAll)}
+              onClick={() => exportToCSV(sortedAll)}
             >
               <Download size={16} /> Exportar CSV
             </button>
@@ -1008,7 +1142,7 @@ const columnsSeguimiento = [
           <div className="relative overflow-visible">
             <DataTable
               columns={columnsAll}               // ← usa las columnas con “Estado”
-              data={filteredAll}
+              data={sortedAll}
               theme="customDark"
               conditionalRowStyles={conditionalRowStyles}
               highlightOnHover
