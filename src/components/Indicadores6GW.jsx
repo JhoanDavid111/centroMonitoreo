@@ -1,5 +1,4 @@
 // src/components/Indicadores6GW.jsx
-// src/components/Indicadores6GW.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 
@@ -15,7 +14,9 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
 import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
 
-import { API } from '../config/api';
+
+
+import { use6GWCache } from './DataGrid/hooks/use6GWCache';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -96,9 +97,8 @@ async function fetchIndicadores6GW() {
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+
+  const { data, loading, error, refetch } = use6GWCache();
   const navigate = useNavigate();
 
   const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);

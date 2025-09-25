@@ -1,5 +1,5 @@
 // src/pages/PageProjectTransmision.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchProjectData } from '../service/apiServiceConvocatoriaTransmision';
 import {
@@ -27,13 +27,27 @@ import iconEolico from '../assets/svg-icons/Eolica-On.svg';
 
 import IndicatorCard from '../components/ui/IndicatorCard';
 
+import Carousel from "../components/Carousel";
+
+// Definir imágenes
+const mainCarouselImgs = [
+  imgsubestacion,
+  imgSliderTransm1,
+  imgSliderTransm2,
+  imgSliderTransm3
+];
+
+const secondaryCarouselImgs = [
+  imgSliderTransm1,
+  imgSliderTransm2,
+  imgSliderTransm3
+];
+
 const CONNECTIONS_CONFIG = {
   totalProyectos: { label: "Número total", icon: <img src={iconNumProyectos} alt="Total Proyectos" className="h-6 w-6" />, suffix: " proyectos", showHelp: true },
   totalMW: { label: "Total en MW", icon: <img src={iconTotalMW} alt="Total en MW" className="h-6 w-6" />, suffix: " MW", showHelp: true },
   solares: { label: "Solares", icon: <img src={iconSolar} alt="Solar" className="h-6 w-6" />, suffix: " proyectos", showHelp: true },
   eolicos: { label: "Eólicos", icon: <img src={iconEolico} alt="Eólico" className="h-6 w-6" />, suffix: " proyectos", showHelp: true }
-
-
 };
 
 /* ===== Design tokens ===== */
@@ -72,7 +86,6 @@ const Chip = ({ children, className = '' }) => (
 );
 
 /* ===== Cards ===== */
-
 const ProgressCard = ({ title, bars = [] }) => (
   <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
     <h4 className="text-white font-semibold mb-2">{title}</h4>
@@ -87,12 +100,23 @@ const ProgressCard = ({ title, bars = [] }) => (
   </div>
 );
 
+const SmallMetricCard = ({ icon, title, value, updated }) => (
+  <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+    <div className="flex items-center gap-2 mb-2">
+      {icon}
+      <span className="text-sm font-medium" style={{ color: COLORS.label }}>{title}</span>
+    </div>
+    <p className="text-lg font-semibold">{value}</p>
+    {updated && <p className="text-xs mt-1" style={{ color: COLORS.label }}>Actualizado: {fmtDate(updated)}</p>}
+  </div>
+);
+
+
+
 const PageProjectTransmision = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const projectId = searchParams.get('projectId');
-
-
 
   const [state, setState] = useState({
     projectData: null,
@@ -100,18 +124,12 @@ const PageProjectTransmision = () => {
     error: null
   });
 
-  const [slide, setSlide] = useState(0);
   const carouselImgs = [imgSliderTransm1, imgSliderTransm2, imgSliderTransm3];
 
-  const prev = () => setSlide((s) => (s - 1 + carouselImgs.length) % carouselImgs.length);
-  const next = () => setSlide((s) => (s + 1) % carouselImgs.length);
-
-  {/* Se adiciona para que se cargue la información o ancle cada vez que cambia el projectId*/ }
+  // Se adiciona para que se cargue la información o ancle cada vez que cambia el projectId
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-
   }, [projectId]);
-
 
   useEffect(() => {
     const getProject = async () => {
@@ -123,7 +141,6 @@ const PageProjectTransmision = () => {
         }
 
         const data = await fetchProjectData(projectId);
-        //console.log("Jagreda Datos del proyecto:", data);
         setState({
           projectData: data,
           loading: false,
@@ -192,7 +209,6 @@ const PageProjectTransmision = () => {
             onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg"
             style={{ background: COLORS.yellow, color: '#000' }}
-
           >
             <ChevronLeft size={18} /> Volver
           </button>
@@ -215,15 +231,9 @@ const PageProjectTransmision = () => {
         <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Fechas de puesta en operación</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Imagen + botón */}
+          {/* Imagen + botón - Ahora con carrusel */}
           <div className="xl:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
-            <div className="overflow-hidden rounded-lg">
-              <img
-                src={imgsubestacion}
-                alt="Proyecto"
-                className="w-full h-56 md:h-72 object-cover"
-              />
-            </div>
+            <Carousel images={mainCarouselImgs} height="h-72 md:h-96" interval={5000} />
             <div className="mt-3">
               <button
                 onClick={() => window.open(projectData.documents, '_blank')}
@@ -269,28 +279,9 @@ const PageProjectTransmision = () => {
             />
           ))}
 
-          {/* Carrusel */}
-          <div className="md:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3 relative overflow-hidden">
-            <img src={carouselImgs[slide]} alt="Galería" className="w-full h-56 object-cover rounded-lg" />
-            <button
-              onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80"
-              aria-label="Anterior"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80"
-              aria-label="Siguiente"
-            >
-              <ChevronRight size={18} />
-            </button>
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-              {carouselImgs.map((_, i) => (
-                <span key={i} className={`w-2 h-2 rounded-full ${i === slide ? 'bg-white' : 'bg-white/40'}`} />
-              ))}
-            </div>
+          {/* Carrusel adicional - Manteniendo el mismo tamaño */}
+          <div className="md:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+           <Carousel images={secondaryCarouselImgs} height="h-56" interval={5000} />
           </div>
         </div>
 
@@ -338,41 +329,23 @@ const PageProjectTransmision = () => {
 
         {/* Ubicación */}
         <div className="w-full mt-10">
-          {/* <h2 className="text-xl font-semibold mb-3" style={{ color: COLORS.heading }}>Ubicación y detalles</h2> */}
-
-
           {projectData.mapEmbedUrl && (
-
             <MapaProyectosTransmision
               mapUrl={projectData.mapEmbedUrl}
               title={`Ubicación del proyecto: ${projectData.header.title}`}
             />
-          ) /* : (
-            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
-              <img
-                src={imgMapaInterno}
-                alt="Mapa"
-                className="w-full object-cover rounded-lg"
-              />
-            </div>
-          ) */
-          }
-
-
+          )}
 
           {/* KPIs generación - Solo se mostrara si hay al menos un valor diferente de 0 o null*/}
-
           {Object.values(projectData.connections).some(value => value !== 0 && value !== null) && (
             <>
-
-
               <h3 className="text-xl font-semibold mt-6 mb-3" style={{ color: COLORS.heading }}>
                 Proyectos de generación que se conectarán
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(projectData.connections).map(([key, value]) => {
                   const config = CONNECTIONS_CONFIG[key];
-                  if (!config) return null; // Si hay campos nuevos que no tengan config, los ignoramos
+                  if (!config) return null;
                   return (
                     <IndicatorCard
                       key={key}
@@ -380,7 +353,6 @@ const PageProjectTransmision = () => {
                       label={config.label}
                       value={`${value}${config.suffix || ""}`}
                       showHelp={config.showHelp || false}
-
                     />
                   );
                 })}
@@ -410,4 +382,4 @@ const PageProjectTransmision = () => {
   );
 };
 
-export default PageProjectTransmision;
+export default PageProjectTransmision;        

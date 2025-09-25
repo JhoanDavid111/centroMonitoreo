@@ -15,6 +15,8 @@ const DataGrid = ({ config }) => {
         setFilters,
         globalFilter,
         setGlobalFilter,
+        openFilter, 
+        setOpenFilter, 
         handleTabChange,
         handleViewChart,
         exportToCSV
@@ -42,6 +44,8 @@ const DataGrid = ({ config }) => {
                     setFilters={setFilters}
                     globalFilter={globalFilter}
                     setGlobalFilter={setGlobalFilter}
+                    openFilter={openFilter}
+                    setOpenFilter={setOpenFilter}
                     showActionsColumn={activeTab === 0} // Mostrar acciones solo en primera pestaña
                     showCurveButton={activeTab === 0} // Mostrar boton de grafico
                     isSTR={activeTab === 1} // Indicar si es STR
