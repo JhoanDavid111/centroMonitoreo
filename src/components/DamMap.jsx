@@ -11,32 +11,16 @@ const NOMBRE_KEY = "Nombre_del_embalse";
 const VU_MM3_KEY = "Volumen_útil___Mm3_";
 const VU_GWH_KEY = "Volumen_útil___GWh_";
 
-const REGION_NAME_CANDIDATES = [
-  "Región__hidrológica",
-  "region",
-  "Region",
-  "REGION",
-  "nombre",
-  "Nombre",
-  "NOMBRE",
-  "name",
-  "Name",
-];
+const regionBackground = {
+  antioquia: "#9168EA",
+  caldas: "#F06B6B",
+  caribe: "#3B82F6",
+  centro: "#F97316",
+  oriente: "#FFC800",
+  valle: "#32BF6F",
+};
 
-const regionPalette = [
-  "#22c55e",
-  "#f59e0b",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ef4444",
-  "#14b8a6",
-  "#eab308",
-  "#06b6d4",
-  "#84cc16",
-  "#f97316",
-];
-
-function TrendChip({ dir = 'up', children }) {
+const TrendChip = ({ dir = 'up', children }) => {
   const isUp = dir === 'up';
   const bg = isUp ? '#22C55E' : '#EF4444';
   return (
@@ -58,25 +42,6 @@ function TrendChip({ dir = 'up', children }) {
   );
 }
 
-function hashColor(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-  }
-  return regionPalette[Math.abs(h) % regionPalette.length];
-}
-
-function findRegionName(props) {
-  for (const k of REGION_NAME_CANDIDATES) {
-    if (Object.prototype.hasOwnProperty.call(props, k) && props[k])
-      return String(props[k]);
-  }
-  for (const k in props) {
-    if (typeof props[k] === "string" && props[k]) return String(props[k]);
-  }
-  return "Región";
-}
-
 function fmtNum(val, suf) {
   const n = Number(val);
   return Number.isFinite(n)
@@ -88,11 +53,12 @@ function fmtNum(val, suf) {
 const RegionDialog = ({ coords, damProperties }) => {
   const [open, setOpen] = useState(false);
 
+  const region = damProperties["Región__hidrológica"];
+  const color = region ? regionBackground[region.toLowerCase()] : '#22c55e';
 
   const name = damProperties[NOMBRE_KEY] ?? "Sin Nombre";
   const vmm3 = fmtNum(damProperties[VU_MM3_KEY], "Mm³"); // Volumen
   const vgwh = fmtNum(damProperties[VU_GWH_KEY], "GWh"); // Aportes hídricos
-  const region = "Centro"; // Region
   const date = "23/08/2025"; // Fecha
   const damLevel = 70; // %
   const damCapacity = 23;
@@ -100,32 +66,49 @@ const RegionDialog = ({ coords, damProperties }) => {
   const damWaterSupply = 198.2;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DialogTrigger asChild>
-          <CircleMarker
-            center={[coords[1], coords[0]]}
-            radius={6}
-            pathOptions={{
-              color: "#60a5fa",
-              weight: 1.4,
-              fillColor: "#3b82f6",
-              fillOpacity: 0.9,
-            }}
-            eventHandlers={{
-              click: () => {
-                setOpen(true)},
-            }}
-          />
+        <CircleMarker
+          center={[coords[1], coords[0]]}
+          radius={6}
+          pathOptions={{
+            color: "#000",
+            fillColor: color,
+            weight: 1.4,
+            fillOpacity: 0.9,
+          }}
+          eventHandlers={{
+            click: () => {
+              setOpen(true);
+            },
+          }}
+        />
       </DialogTrigger>
       <DialogContent>
-      {/* ! Contenido */}
+        {/* ! Contenido */}
         <div className="p-4 space-y-3">
           <div>
             <div className="flex justify-between">
-              <h3 className="text-white text-lg font-bold tracking-wide justify-self-start">{name}</h3>
-              <span className="rounded-full border-none text-[11px] text-gray-200 bg-[#EF4444] py-2 px-3 mr-2">Región: {region}</span>
+              <h3 className="text-white text-lg font-bold tracking-wide justify-self-start">
+                {name}
+              </h3>
+              <span
+                className="rounded-full border-none text-[11px] text-gray-200 py-2 px-3 mr-2"
+                style={{
+                  backgroundColor: color,
+                  mixBlendMode: "difference",
+                  color: "white",
+                }}
+              >
+                Región: {region}
+              </span>
             </div>
-            <span className="text-[11px] text-[#b0b0b0]">Datos promedio {date}</span>
+            <span className="text-[11px] text-[#b0b0b0]">
+              Datos promedio {date}
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-3 text-xl">
             <div className="bg-white/5 border border-white/20 rounded-lg">
@@ -136,7 +119,10 @@ const RegionDialog = ({ coords, damProperties }) => {
                 <span className="font-bold text-sm">{damLevel}%</span>
               </div>
               <div className="flex-1 h-3 rounded-sm overflow-hidden bg-[#575756] mx-3">
-                <div className="h-3" style={{ width: `${damLevel}%`, background: '#22C55E' }} />
+                <div
+                  className="h-3"
+                  style={{ width: `${damLevel}%`, background: "#22C55E" }}
+                />
               </div>
             </div>
             <div className="bg-white/5 border border-white/20 rounded-lg p-3">
@@ -149,27 +135,35 @@ const RegionDialog = ({ coords, damProperties }) => {
           <div className="w-full">
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 text-sm flex justify-between">
               <span className="text-[13px]">● Volumen:</span>
-              <span>{vmm3}
-                <TrendChip dir={'up'}>2.5</TrendChip>
+              <span>
+                {vmm3}
+                <TrendChip dir={"up"}>2.5</TrendChip>
               </span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
               <span className="text-[13px]">● Aportes hídricos:</span>
-              <span>{damWaterSupply}
-                <TrendChip dir={'down'}>2.5</TrendChip>
+              <span>
+                {damWaterSupply}
+                <TrendChip dir={"down"}>2.5</TrendChip>
               </span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
-              <span className="text-[13px]">● Capacidad del embalse:</span> <span>{damCapacity}</span>
+              <span className="text-[13px]">● Capacidad del embalse:</span>{" "}
+              <span>{damCapacity}</span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
-              <span className="text-[13px]">● Recursos de generación:</span> <span>{name}</span>
+              <span className="text-[13px]">● Recursos de generación:</span>{" "}
+              <span>{name}</span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
-              <span className="text-[13px]">● Capacidad del recurso de generación:</span> <span>{damCapacityGeneration}</span>
+              <span className="text-[13px]">
+                ● Capacidad del recurso de generación:
+              </span>{" "}
+              <span>{damCapacityGeneration}</span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
-              <span className="text-[13px]">● Aportes medios históricos:</span> <span>{damCapacityGeneration}</span>
+              <span className="text-[13px]">● Aportes medios históricos:</span>{" "}
+              <span>{damCapacityGeneration}</span>
             </div>
           </div>
         </div>
@@ -178,7 +172,7 @@ const RegionDialog = ({ coords, damProperties }) => {
   );
 }
 
-function MapEmbalses() {
+const DamMap = () => {
   const [regiones, setRegiones] = useState(null);
   // * New state with data API, then search for information in the "regiones" array, if not info set a not found element
   const [embalses, setEmbalses] = useState(null);
@@ -195,7 +189,7 @@ function MapEmbalses() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-[#0b1220] z-0">
+    <div className="max-h-[800px] h-screen  w-screen bg-[#0b1220] z-0 ">
       <MapContainer
         center={[4.6, -74.1]}
         zoom={6}
@@ -214,8 +208,9 @@ function MapEmbalses() {
           <GeoJSON
             data={regiones}
             style={(feature) => {
-              const name = findRegionName(feature.properties || {});
-              const color = hashColor(name);
+              const name = feature.properties.Region || null;
+              const color = name ? regionBackground[name.toLowerCase()] : '#22c55e';
+
               return {
                 color,
                 weight: 1.4,
@@ -229,13 +224,14 @@ function MapEmbalses() {
         {embalses &&
           embalses.features.map((f, index) => {
             const coords = f.geometry.coordinates;
+
+            console.log(f.properties)
+
             return (
               <RegionDialog
                 key={index}
-                props={f.properties || {}}
                 coords={coords}
                 damProperties={f.properties}
-                index={index}
               />
             );
           })}
@@ -244,4 +240,4 @@ function MapEmbalses() {
   );
 }
 
-export default MapEmbalses;
+export { DamMap };
