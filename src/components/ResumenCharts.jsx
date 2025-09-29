@@ -14,6 +14,7 @@ import { CACHE_CONFIG } from '../config/cacheConfig';
 const CACHE_PREFIX = 'resumen-charts-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
 const memoryCache = new Map();
+const CHART_HEIGHT = 380;
 
 const getFromCache = (key) => {
   if (memoryCache.has(key)) return memoryCache.get(key);
@@ -50,6 +51,37 @@ const setToCache = (key, data) => {
     localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
   }
 };
+
+const withHeight = (opts) => ({
+  ...opts,
+  chart: {
+    backgroundColor: 'transparent',
+    spacing: [10, 10, 10, 10],
+    ...(opts.chart || {}),
+    height: CHART_HEIGHT,
+  },
+  credits: { enabled: false },
+});
+
+const pieTecnologia = withHeight({
+  chart: { type: 'pie' },
+  // ... resto de opciones
+});
+
+const pieTipoProyecto = withHeight({
+  chart: { type: 'pie' },
+  // ... resto de opciones
+});
+
+const colCapacidadEntranteMes = withHeight({
+  chart: { type: 'column' },
+  // ... resto de opciones de columnas
+});
+
+const colEvolucionMatriz = withHeight({
+  chart: { type: 'column' },
+  // ... resto de opciones de columnas
+});
 
 // ────────────────────────────────────────────────
 // Highcharts modules & theme
@@ -200,9 +232,9 @@ export function ResumenCharts() {
 
         const opts = [];
 
-        // 1) Pie tecnología (tooltip SOLO 1 slice)
-        opts.push({
-          chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+        // 1) Pie tecnología (tooltip SOLO 1 slice) – altura uniforme
+        opts.push(withHeight({
+          chart: { type: 'pie', backgroundColor: '#262626' },
           title: { text: 'Distribución actual por tecnología', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -232,11 +264,11 @@ export function ResumenCharts() {
             formatter: singlePieTooltipFormatter
           },
           exporting: { enabled: true }
-        });
+        }));
 
-        // 2) Pie categoría (tooltip SOLO 1 slice)
-        opts.push({
-          chart: { type: 'pie', height: 500, backgroundColor: '#262626' },
+        // 2) Pie categoría (tooltip SOLO 1 slice) – altura uniforme
+        opts.push(withHeight({
+          chart: { type: 'pie', backgroundColor: '#262626' },
           title: { text: 'Distribución de capacidad instalada por tipo de proyecto', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           plotOptions: {
@@ -266,9 +298,9 @@ export function ResumenCharts() {
             formatter: singlePieTooltipFormatter,
           },
           exporting: { enabled: true }
-        });
+        }));
 
-        // 3) Columnas apiladas capacidad entrante por mes (tooltip compartido)
+        // 3) Columnas apiladas capacidad entrante por mes – altura uniforme
         const meses = entradaJson.map(item => item.mes);
         const tecnologias = Object.keys(entradaJson[0]).filter(k => k !== 'mes');
         const seriesData = tecnologias.map(tec => ({
@@ -291,8 +323,8 @@ export function ResumenCharts() {
           };
         });
 
-        opts.push({
-          chart: { type: 'column', height: 350, backgroundColor: '#262626' },
+        opts.push(withHeight({
+          chart: { type: 'column', backgroundColor: '#262626' },
           title: { text: 'Capacidad entrante por mes', align: 'left' },
           subtitle: { text: isCached ? '(Datos en caché)' : '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -322,9 +354,9 @@ export function ResumenCharts() {
             formatter: columnTooltipFormatter
           },
           exporting: { enabled: true }
-        });
+        }));
 
-        // 4) Columnas apiladas histórico anual
+        // 4) Columnas apiladas histórico anual – altura uniforme
         const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
@@ -415,7 +447,11 @@ export function ResumenCharts() {
     <section className="mt-8">
       <div className={`grid ${gridClasses} gap-4`}>
         {displayed.map(({ opt, idx }) => (
-          <div key={idx} className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+          <div
+            key={idx}
+            className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
+            style={{ minHeight: CHART_HEIGHT + 32 }} // asegura tarjetas iguales
+          >
             <button
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
               style={{ width: 30, height: 30 }}
@@ -435,6 +471,7 @@ export function ResumenCharts() {
               highcharts={Highcharts}
               options={opt}
               ref={el => (chartRefs.current[idx] = el)}
+              containerProps={{ style: { height: CHART_HEIGHT, width: '100%' } }} // altura uniforme en el contenedor
             />
           </div>
         ))}
@@ -444,6 +481,7 @@ export function ResumenCharts() {
 }
 
 export default ResumenCharts;
+
 
 
 
