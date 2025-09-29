@@ -1,5 +1,5 @@
 //  DOCS
-import { useEffect, useState} from "react"
+import { useEffect, useState } from "react";
 
 const MOBILE_WIDTH = 768;
 
@@ -17,10 +17,11 @@ export const useMobile = () => {
 
     handleResize();
 
-    window.addEventListener("resize", handleResize);
+    const mtl = window.matchMedia(`(max-width: ${MOBILE_WIDTH - 1}px)`);
+    mtl.addEventListener("change", handleResize);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      mtl.removeEventListener("change", handleResize);
     }
   }, [])
 

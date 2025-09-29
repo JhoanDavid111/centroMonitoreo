@@ -1,5 +1,5 @@
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
-import { HidrologiaComponent } from "../components/SideInfoHidrologia";
+import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
 import {
   Banner,
   BannerAction,
@@ -26,7 +26,7 @@ import chart2Html from '../data/Chart2.html?raw';
 import chart3Html from '../data/Chart3.html?raw'; // Información general
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
 
-import MapaHidrologia from '../components/MapaHidrologia';
+import { DamMap } from '../components/DamMap';
 
 // ===== Paleta =====
 const COLORS = {
@@ -1236,9 +1236,9 @@ export default function Hidrologia() {
     </div>
     </div>
         {/* Mapa */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col md:flex-row">
-            <HidrologiaComponent />
-            <MapaHidrologia/>
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
+            <SideInfoHidrologia />
+            <DamMap/>
         </div>
 
         {/* Tabla + Gráfica Aportes */}
