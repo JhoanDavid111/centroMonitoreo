@@ -19,6 +19,7 @@ import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
 import { use6GWCache } from './DataGrid/hooks/use6GWCache';
 
 import { useNavigate } from 'react-router-dom';
+import TooltipModal from './ui/TooltipModal';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -46,6 +47,21 @@ function canonicalKey(raw = '') {
   if (clean === 'CAPACIDAD TOTAL') return 'CAPACIDAD TOTAL';
 
   return clean; // fallback
+}
+
+// AGREGAR MAPEO DE CLAVE CANONICA A IDENTIFICADOR DE TOOLTIP
+
+const TOOLTIP_IDENTIFIERS_MAP={
+  'EN OPERACIÓN': 'res_card_capacidad_inst_operacion',
+  'PRUEBAS': 'res_card_capacidad_inst_prueba',
+  'CAPACIDAD A ENTRAR 075': 'res_card_mw',
+  'FNCER GRAN ESCALA': 'res_card_fncer',
+  'AGGE': 'res_card_agge',
+  'GENERACION DISTRIBUIDA': 'res_card_gd',
+  'AGPE': 'res_card_agpe',
+  'ZNI': 'res_card_zni', // Añadir ZNI al mapeo
+
+
 }
 
 const LABEL_MAP = {
@@ -93,6 +109,15 @@ async function fetchIndicadores6GW() {
   return resp.json();
 }
 
+// NUEVA FUNCION PARA OBTENER TOOLTIPS
+async function fetchTooltips(){
+  //remplaza 'localhost:3000' por la url de la api
+  const API_URL='http://localhost:3001';
+  const resp=await fetch(`${API_URL}/v1/tooltips/tooltips`,{method:'POST'});
+  if(!resp.ok) throw new Error('Error al consultar tooltips');
+  return resp.json();
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
@@ -101,10 +126,54 @@ export default function Indicadores6GW() {
   const { data, loading, error, refetch } = use6GWCache();
   const navigate = useNavigate();
 
+  // ** ESTADOS FALTANTES PARA LA MODAL **
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+
+  // ** FUNCIÓN PARA CERRAR LA MODAL **
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
+  //**ESTADO PARA LOS TOOLTIPS **
+  const [tooltips, setTooltips] = useState({});
+  const [loadingTooltips, setLoadingTooltips] = useState(true); 
+  // Se remueve tooltipsError ya que es redundante con errorTooltips
+  const [errorTooltips,setErrorTooltips]=useState(null);
+
   const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
   
-
+    // **USE EFFECT PARA CARGAR TOOLTIPS**
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const resTooltips = await fetchTooltips();
+        if (alive) {
+          // Normalizar la respuesta de la API a un mapa para fácil acceso: { identificador: Texto }
+          const normalizedTooltips = {};
+          resTooltips.forEach(seccion => {
+            seccion.elementos.forEach(elemento => {
+              normalizedTooltips[elemento.identificador] = elemento.Texto;
+            });
+          });
+          setTooltips(normalizedTooltips);
+          setLoadingTooltips(false);
+        }
+      } catch (e) {
+        if (alive) {
+          setErrorTooltips(e.message || 'Error al consultar tooltips');
+          setLoadingTooltips(false);
+        }
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+/*   useEffect(() => {
     let alive = true;
     (async () => {
       try {
@@ -121,7 +190,7 @@ export default function Indicadores6GW() {
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, []); */
 
   const normalized = useMemo(() => {
     if (!Array.isArray(data)) return [];
@@ -153,12 +222,15 @@ export default function Indicadores6GW() {
       .filter((x) => x.key !== 'CAPACIDAD TOTAL')
       .map((x) => {
         const meta = LABEL_MAP[x.key];
+        const tooltipId=TOOLTIP_IDENTIFIERS_MAP[x.key];
         return {
           order: ORDER.indexOf(x.key) === -1 ? 999 : ORDER.indexOf(x.key),
           icon: meta?.icon ?? GWOff,
           label: meta?.label ?? x.original,
           value: x.mw,
           special: meta?.special || false,
+          tooltipId:tooltipId,
+          key:x.key,
         };
       })
       .sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
@@ -176,7 +248,29 @@ export default function Indicadores6GW() {
     return [...apiCards, zniCard].sort((a, b) => a.order - b.order);
   }, [normalized]);
 
-  if (loading) {
+  //** NUEVA FUNCION PARA MOSTRAR EL TOOLTIP **
+  const handleHelpClick=(cardKey)=>{
+    const tooltipId=TOOLTIP_IDENTIFIERS_MAP[cardKey];
+    const title=LABEL_MAP[cardKey]?.label || cardKey;
+    const content = tooltips[tooltipId]; // Obtener el contenido del tooltip
+
+    if(tooltipId && tooltips[tooltipId]){
+      //temporal: usar alert para mostrar el tooltip
+      // alert(`${LABEL_MAP[cardKey].label}:\n\n${tooltips[tooltipId]}`);
+      setModalTitle(cleanSubtitle(title));
+      setModalContent(cleanSubtitle(content));
+      setIsModalOpen(true);
+    }else{
+      setModalTitle('Información no disponible');
+      setModalContent('No hay información de ayuda disponible para este indicador.');
+      setIsModalOpen(true);
+      // alert('No hay información de ayuda disponible para este indicador.');
+    }
+
+    };
+  
+
+  if (loading || loadingTooltips) {
     return (
       <div className="px-4 py-6 text-white">
         <div className="animate-pulse space-y-6">
@@ -195,7 +289,7 @@ export default function Indicadores6GW() {
     );
   }
 
-  if (error) return <div className="text-red-400 p-6">Error: {error}</div>;
+  if (error || errorTooltips) return <div className="text-red-400 p-6">Error al cargar datos: {error || errorTooltips}</div>;
 
   return (
     <>
@@ -257,9 +351,11 @@ export default function Indicadores6GW() {
                 </div>
                 <div className="flex text-white text-3xl font-bold">
                   {formatMW(card.value)} MW
+                  {/**BOTON HELP CON LÓGICA DE CLIC */}
                   <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                     title="Ayuda"
+                    onClick={() => handleHelpClick(card.key)}
                   />
                 </div>
                 <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {card.fixedDate || updated}</div>
@@ -277,6 +373,7 @@ export default function Indicadores6GW() {
                   <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                     title="Ayuda"
+                    onClick={() => handleHelpClick(card.key)}
                   />
                 </div>
                 <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
@@ -285,6 +382,14 @@ export default function Indicadores6GW() {
           ))}
         </div>
       </div>
+
+      {/*Agregar el componente modal */}
+      <TooltipModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalTitle}
+        content={modalContent}
+        />
     </>
   );
 }
