@@ -78,15 +78,51 @@ const InfoTag = ({ icon, labelText, value }) => (
   </div>
 );
 
-const ProgressBar = ({ value }) => (
-  <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
-    <div className="text-sm mb-2" style={{ color: LABEL }}>Avances del proyectos</div>
-    <div className="h-3 w-full bg-neutral-700 rounded-full overflow-hidden">
-      <div className="h-full bg-emerald-500" style={{ width: `${Math.max(0, Math.min(100, value || 0))}%` }} />
+// Reemplaza la definición anterior de ProgressBar por esta:
+const ProgressBar = ({ value }) => {
+  const v = Math.max(0, Math.min(100, Number(value || 0)));
+
+  // Colores por tramo
+  // 0 - 25%   => rojo    #EF4444
+  // 25 - 50%  => naranja #F97316
+  // 50 - 75%  => amarillo#FFC800
+  // 75 - 100% => verde   #22C55E
+  const getColor = (pct) => {
+    if (pct <= 25) return '#EF4444';
+    if (pct <= 50) return '#F97316';
+    if (pct <= 75) return '#FFC800';
+    return '#22C55E';
+  };
+
+  const barColor = getColor(v);
+
+  return (
+    <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
+      <div className="text-sm mb-2" style={{ color: LABEL }}>Avances del proyectos</div>
+
+      <div
+        className="h-3 w-full rounded-full overflow-hidden"
+        style={{ background: '#3b3b3b' }}
+        aria-valuenow={v}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        role="progressbar"
+        title={`${v}%`}
+      >
+        <div
+          className="h-full"
+          style={{
+            width: `${v}%`,
+            background: barColor,
+            transition: 'width 400ms ease',
+          }}
+        />
+      </div>
+
+      <div className="text-right text-sm mt-1" style={{ color: LABEL }}>{v}%</div>
     </div>
-    <div className="text-right text-sm mt-1" style={{ color: LABEL }}>{value ?? 0}%</div>
-  </div>
-);
+  );
+};
 
 // util
 const fmtFPO = (iso) => {
