@@ -1,4 +1,3 @@
-// src/pages/Hidrologia.jsx
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
 import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
 import {
@@ -22,8 +21,8 @@ import OfertaDemandaIcon from '../assets/svg-icons/OfertaDemanda-On.svg';
 import arrowUpDarkmodeAmarilloIcon from '../assets/svg-icons/arrowUpDarkmodeAmarillo.svg';
 import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmarillo.svg';
 import chart1Html from '../data/Chart1.html?raw';
-import chart3Html from '../data/Chart3.html?raw'; // Información general
-import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
+import chart3Html from '../data/Chart3.html?raw';
+import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw';
 
 import { DamMap } from '../components/DamMap';
 
@@ -1307,5 +1306,4 @@ useEffect(() => {
     </>
   );
 }
-
 
