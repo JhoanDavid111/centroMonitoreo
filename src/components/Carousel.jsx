@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Carousel = ({ images = [], interval = 5000, height = "h-56" }) => {
   const [slide, setSlide] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(true);// Pausa el carrusel al iniciar se coloca true para que no inicie automaticamente 
 
   const prev = () =>
     setSlide((s) => (s - 1 + images.length) % images.length);

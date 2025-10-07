@@ -450,7 +450,7 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
       {/* Header local */}
-      <div className="max-w-7xl mx-auto px-4 pt-4">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 pt-4">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-[22px] font-semibold">{title}</h1>
           <button
@@ -473,7 +473,7 @@ useEffect(() => {
       </div>
 
       {/* Resumen */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8">
         <div className="text-[18px] font-semibold mb-2" style={{ color: '#D1D1D0' }}>Resumen</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
