@@ -63,7 +63,7 @@ export const SideInfoHidrologia = () => {
             <div className="grid grid-cols-6 gap-1 pl-4 md:text-[12px] lg:text-[14px] pb-2">
               <div className="col-span-2">Aportes</div>
               <div className="col-span-4">
-                {item["Aportes por región (GWh-día)"]} GWh-día
+                {item["Aportes por región (GWh-día)"]} GWh-día / {item["Porcentaje"]}%
               </div>
               <div className="col-span-2 pt-1">Volumen útil</div>
               <div className="col-span-4">
@@ -81,7 +81,7 @@ export const SideInfoHidrologia = () => {
             <div className="flex-1 h-3 rounded-2xl overflow-hidden bg-[#575756] mx-3 w-5/6">
               <div
                 className="h-3"
-                style={{ width: `${item.Porcentaje}%`, background: "#22C55E" }}
+                style={{ width: `${item["Nivel (%)"]}%`, background: "#22C55E" }}
               />
             </div>
           </div>

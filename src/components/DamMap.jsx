@@ -114,7 +114,7 @@ const RegionDialog = ({ coords, damProperties }) => {
             <div className="bg-white/5 border border-white/20 rounded-lg">
               <div className="flex justify-between p-3">
                 <span className="block text-sm text-white">
-                  Nivel embalses:
+                  Nivel embalse:
                 </span>
                 <span className="font-bold text-sm">{damLevel}%</span>
               </div>
