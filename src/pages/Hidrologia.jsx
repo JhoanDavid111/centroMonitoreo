@@ -1,6 +1,5 @@
-// src/pages/Hidrologia.jsx
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
-import { HidrologiaComponent } from "../components/SideInfoHidrologia";
+import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
 import {
   Banner,
   BannerAction,
@@ -22,11 +21,10 @@ import OfertaDemandaIcon from '../assets/svg-icons/OfertaDemanda-On.svg';
 import arrowUpDarkmodeAmarilloIcon from '../assets/svg-icons/arrowUpDarkmodeAmarillo.svg';
 import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmarillo.svg';
 import chart1Html from '../data/Chart1.html?raw';
-import chart3Html from '../data/Chart3.html?raw'; // Información general
-import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw'; // Aportes hídricos
-import { API } from '../config/api';
+import chart3Html from '../data/Chart3.html?raw';
+import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw';
 
-import MapaHidrologia from '../components/MapaHidrologia';
+import { DamMap } from '../components/DamMap';
 
 // ===== Paleta =====
 const COLORS = {
@@ -44,9 +42,13 @@ const COLORS = {
 // ===== Endpoints =====
 import { API } from '../config/api';
 
-const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
-const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
-const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
+const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
+const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
+const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
+
+
 
 /* ==================== helpers ==================== */
 // (dejamos solo lo necesario para otras partes)
@@ -283,7 +285,6 @@ function useAportesOptionsFromApi() {
   }), [series, range]);
 }
 
-/* =================== Highcharts (Desabastecimiento desde HTML) =================== */
 /* =================== Highcharts (Estatuto desde API) =================== */
 function useDesabastecimientoOptionsFromApi() {
   const [series, setSeries] = useState({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
@@ -537,7 +538,7 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
 
 function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
   return (
-    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626]w-full min-w-40">
+    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626] w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
         <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
@@ -951,6 +952,171 @@ export default function Hidrologia() {
     return () => { abort = true; };
   }, [API_HIDRO]);
 
+// Generación promedio diaria (Hídrica, Térmica, FNCER) + Demanda real
+useEffect(() => {
+  let abort = false;
+  (async () => {
+    try {
+      const res = await fetch(API_GENERACION, { method: 'POST', mode: 'cors', cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+      const ct = (res.headers.get('content-type') || '').toLowerCase();
+      const j = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
+      if (abort || !j) return;
+
+      const monthEs = (m) => ([
+        'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+        'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+      ][Math.max(0, Math.min(11, (m|0)-1))] || '—');
+
+      const labelCompare = (mAct, mAnt) => {
+        const [yA, mA] = String(mAct || '').split('-').map(Number);
+        const [yB, mB] = String(mAnt || '').split('-').map(Number);
+        if (Number.isFinite(mA) && Number.isFinite(mB)) {
+          // si cambia de año, muestro ambos años; si no, muestro uno
+          return yA === yB
+            ? `${monthEs(mA)} vs ${monthEs(mB)} ${yA}`
+            : `${monthEs(mA)} ${yA} vs ${monthEs(mB)} ${yB}`;
+        }
+        return '—';
+      };
+
+      const tarr = Array.isArray(j.generacion_por_tecnologia) ? j.generacion_por_tecnologia : [];
+      const tmap = Object.fromEntries(
+        tarr.map(t => [String(t.tecnologia || '').toUpperCase(), t])
+      );
+
+      const fmtNum = (v) => Number.isFinite(v) ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : '—';
+      const mkDelta = (abs, pct) =>
+        (Number.isFinite(abs) && Number.isFinite(pct))
+          ? `${abs >= 0 ? '+' : ''}${fmtNum(abs)} GWh (${pct >= 0 ? '+' : ''}${fmtNum(pct)}%)`
+          : '—';
+      const dirFrom = (v) => (Number.isFinite(v) && v < 0 ? 'down' : 'up');
+
+      const gH = tmap['HIDRAULICA'] || {};
+      const gT = tmap['TERMICA'] || {};
+      const gF = tmap['FNCER'] || {};
+
+      const groups = [
+        { name: 'Hídrica', value: fmtNum(gH.mes_actual), unit: 'GWh-día', delta: mkDelta(gH.diff_abs, gH.diff_pct), dir: dirFrom(gH.diff_abs) },
+        { name: 'Térmica', value: fmtNum(gT.mes_actual), unit: 'GWh-día', delta: mkDelta(gT.diff_abs, gT.diff_pct), dir: dirFrom(gT.diff_abs) },
+        { name: 'FNCER',   value: fmtNum(gF.mes_actual), unit: 'GWh-día', delta: mkDelta(gF.diff_abs, gF.diff_pct), dir: dirFrom(gF.diff_abs) },
+      ];
+
+      const dr = j.demanda_real || {};
+      const demAct = Array.isArray(dr.mes_actual) ? dr.mes_actual[0] : undefined;
+      const demDiffAbs = Array.isArray(dr.diff_abs) ? dr.diff_abs[0] : undefined;
+      const demDiffPct = Array.isArray(dr.diff_pct) ? dr.diff_pct[0] : undefined;
+
+      const bottom = `Demanda real promedio: ${fmtNum(demAct)} GWh – día`;
+      const bottomDelta = mkDelta(demDiffAbs, demDiffPct);
+      const bottomDir = dirFrom(demDiffAbs);
+
+      const updated = labelCompare(j.mes_actual, j.mes_anterior);
+
+      setIndices(prev => {
+        const copy = [...prev];
+        copy[2] = {
+          title: 'Generación promedio diaria',
+          updated,
+          groups,
+          bottom,
+          bottomDelta,
+          bottomDir,
+        };
+        return copy;
+      });
+    } catch (e) {
+      console.error('[Hidrologia] Error cargando generación:', e);
+      setIndices(prev => {
+        const copy = [...prev];
+        copy[2] = { ...prev[2], updated: 'Error al cargar' };
+        return copy;
+      });
+    }
+  })();
+  return () => { abort = true; };
+}, [API_GENERACION]);
+
+// Precios de energía (mínimo/promedio/máximo) + precio marginal de escasez
+useEffect(() => {
+  let abort = false;
+  (async () => {
+    try {
+      const res = await fetch(API_PRECIOS, { method: 'POST', mode: 'cors', cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+      const ct = (res.headers.get('content-type') || '').toLowerCase();
+      const arr = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
+      const j = Array.isArray(arr) && arr.length ? arr[0] : null;
+      if (abort || !j) return;
+
+      const fmtNum = (v) =>
+        Number.isFinite(v) ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : '—';
+      const mkDelta = (abs, pct) =>
+        (Number.isFinite(abs) && Number.isFinite(pct))
+          ? `${abs >= 0 ? '+' : ''}${fmtNum(abs)} (${pct >= 0 ? '+' : ''}${fmtNum(pct)}%)`
+          : '—';
+      const dirFrom = (v) => (Number.isFinite(v) && v < 0 ? 'down' : 'up');
+
+      // Título dinámico según meses
+      const labelCompare = (mAct, mAnt) => {
+        const [yA, mA] = String(mAct || '').split('-').map(Number);
+        const [yB, mB] = String(mAnt || '').split('-').map(Number);
+        if (Number.isFinite(mA) && Number.isFinite(mB)) {
+          return yA === yB
+            ? `${monthEs(mA)} vs ${monthEs(mB)} ${yA}`
+            : `${monthEs(mA)} ${yA} vs ${monthEs(mB)} ${yB}`;
+        }
+        return '—';
+      };
+
+      const groups = [
+        {
+          name: 'Mínimo\nDiario',
+          value: fmtNum(j.minimo_promedio_diario_actual),
+          unit: 'COP/kWh',
+          delta: mkDelta(j.diff_abs_minimo, j.diff_pct_minimo),
+          dir: dirFrom(j.diff_abs_minimo),
+        },
+        {
+          name: 'Promedio\nDiario',
+          value: fmtNum(j.promedio_diario_mes_actual),
+          unit: 'COP/kWh',
+          delta: mkDelta(j.diff_abs_promedio, j.diff_pct_promedio),
+          dir: dirFrom(j.diff_abs_promedio),
+        },
+        {
+          name: 'Máximo\nDiario',
+          value: fmtNum(j.maximo_promedio_diario_actual),
+          unit: 'COP/kWh',
+          delta: mkDelta(j.diff_abs_maximo, j.diff_pct_maximo),
+          dir: dirFrom(j.diff_abs_maximo),
+        },
+      ];
+
+      const title = `Precios de energía – ${labelCompare(j.mes_actual, j.mes_anterior)}`;
+      const updated = 'Promedios mensuales diarios (COP/kWh)';
+      const badge = 'Precio marginal de escasez';
+      const badgeValue = `${fmtNum(j.precio_marginal_escasez)} COP/kWh`;
+
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[3] = { title, updated, groups, badge, badgeValue };
+        return copy;
+      });
+    } catch (e) {
+      console.error('[Hidrologia] Error cargando precios de energía:', e);
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[3] = { ...prev[3], title: 'Precios de energía', updated: 'Error al cargar' };
+        return copy;
+      });
+    }
+  })();
+  return () => { abort = true; };
+}, [API_PRECIOS]);
+
   // Ref del contenido a imprimir (API v3)
   const printRef = useRef(null);
 
@@ -1044,11 +1210,11 @@ export default function Hidrologia() {
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold text-gray-300">Generación promedio diaria</span>
-              <span className="text-xs text-gray-400">{defaultIndices[2].updated}</span>
+              <span className="text-xs text-gray-400">{indices[2].updated}</span>
             </div>
 
             <div className="grid  sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {defaultIndices[2].groups.map((g) => {
+              {indices[2].groups.map((g) => {
                 let customIcon = null;
                 if (g.name === 'Hídrica') customIcon = hidrologiaIcon;
                 if (g.name === 'Térmica') customIcon = GeneracionTermicaIcon;
@@ -1069,9 +1235,9 @@ export default function Hidrologia() {
             </div>
 
             <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
-              <div className="text-white">{defaultIndices[2].bottom}</div>
+              <div className="text-white">{indices[2].bottom}</div>
               <div className="mt-2">
-                <TrendChip dir={defaultIndices[2].bottomDir}>{defaultIndices[2].bottomDelta}</TrendChip>
+                <TrendChip dir={indices[2].bottomDir}>{indices[2].bottomDelta}</TrendChip>
               </div>
             </div>
           </div>
@@ -1079,12 +1245,12 @@ export default function Hidrologia() {
           {/* Card 4 */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
-              <span className="font-semibold text-gray-300">Precios de energía – Julio vs junio 2025</span>
-              <span className="text-xs text-gray-400">{defaultIndices[3].updated}</span>
+              <span className="font-semibold text-gray-300">{indices[3].title}</span>
+              <span className="text-xs text-gray-400">{indices[3].updated}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {defaultIndices[3].groups.map((g) => {
+              {indices[3].groups?.map((g) => {
                 let customIcon = null;
                 if (g.name.includes('Mínimo')) customIcon = arrowUpDarkmodeAmarilloIcon;
                 if (g.name.includes('Promedio')) customIcon = arrowsDarkmodeAmarilloIcon;
@@ -1108,20 +1274,20 @@ export default function Hidrologia() {
             <button
               type="button"
               className="mt-4 w-full rounded-lg px-4 py-3 font-semibold bg-[#FFC800] text-[#111827] inline-flex items-center justify-between"
-              aria-label={`${defaultIndices[3].badge}: ${defaultIndices[3].badgeValue}`}
+              aria-label={`${indices[3].badge}: ${indices[3].badgeValue}`}
             >
               <span className="inline-flex items-center gap-2">
-                {defaultIndices[3].badge}
+                {indices[3].badge}
               </span>
-              <span className="text-base">{defaultIndices[3].badgeValue}</span>
+              <span className="text-base">{indices[3].badgeValue}</span>
             </button>
           </div>
         </div>
 
         {/* Mapa */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col md:flex-row">
-          <HidrologiaComponent />
-          <MapaHidrologia/>
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
+            <SideInfoHidrologia />
+            <DamMap/>
         </div>
 
         {/* Tabla + Gráfica Aportes */}
