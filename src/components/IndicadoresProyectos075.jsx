@@ -17,7 +17,7 @@ import { API } from '../config/api';
 
 
 //Mapeo canónico  de tarjetas a tooltips Basado en la nueva API , canonicalizado)
-const CARD_TO_TOOLTIP_ID = {
+const CARD_TO_TOOLTIP_MAP = {
   'total_proyectos_aprobados_bd075': 'proy_card_solicitudes_totales',
   'total_capacidad_instalada_bd075': 'proy_card_en_operacion',
   'total_capacidad_instalada_aprobados_bd075': 'proy_card_en_operacion_fncer',
@@ -89,7 +89,7 @@ export default function IndicadoresProyectos075() {
   const [modalTitle,setModalTitle]= useState('');
   const [modalContent,setModalContent]= useState('');
 
-  // 1. Integrar el hook de cache de tooltips
+  // 2. Integrar el hook de cache de tooltips
   const{
     tooltips,
     loading: loadingTooltips,
@@ -105,27 +105,22 @@ export default function IndicadoresProyectos075() {
 
   //Funcion para manejar el click en el boton de ayuda
   const handleHelpClick =(cardkey)=>{
-   
-    const tooltipId= CARD_TO_TOOLTIP_ID[cardkey];
-    const title= LABEL_MAP[cardkey]?.label || 'Indicador';
-    const content= tooltips[tooltipId];
+    
+      const tooltipId=CARD_TO_TOOLTIP_MAP[cardkey];
+      const title=labels[cardkey]?.label || 'Indicador';
+      const content= tooltips[tooltipId];
 
-  
+      if(tooltipId && content){
+        setModalTitle(cleanSubtitle(title));
+        setModalContent(content);
+        setIsModalOpen(true);
+      }else{
+        setModalTitle(cleanSubtitle(title));
+        setModalContent('No hay información disponible en este momento.');
+        setIsModalOpen(true);
+      }
 
-    //El valor de la tarjeta se lusa como parte del titulo
-    const subtitle=LABEL_MAP[cardkey]?.value || '';
-
-    if(tooltipId && content){
-      setModalTitle(cleanSubtitle(title));
-      setModalContent(content);
-      setIsModalOpen(true);
-
-    }else
-    {
-      setModalTitle(cleanSubtitle(title));
-      setModalContent('No se encontró una descripción detallada para este indicador.');
-      setIsModalOpen(true);
-    }
+    
 
   }
 
@@ -137,10 +132,6 @@ export default function IndicadoresProyectos075() {
       try {
         setLoading(true);
         setError('');
-
-
-
-  
 
     const res = await fetch(
       `${API}/v1/indicadores/proyectos_075/indicadores_proyectos_075`,
@@ -194,7 +185,7 @@ export default function IndicadoresProyectos075() {
   const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
   const heroValue    = labels.total_proyectos_bd075.value;
 
-  if (loading) {
+  if (loading || loadingTooltips) {
     return (
       <div className="px-4 py-6 text-white">
         <div className="animate-pulse space-y-6">
@@ -213,7 +204,7 @@ export default function IndicadoresProyectos075() {
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return <div className="text-red-400 p-6">Error: {error}</div>;
   }
 

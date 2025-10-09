@@ -1,4 +1,3 @@
-// src/components/Indicadores6GW.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 
@@ -14,14 +13,12 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
 import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
 
-
-
 import { use6GWCache } from './DataGrid/hooks/use6GWCache';
 
 import { useNavigate } from 'react-router-dom';
 import TooltipModal from './ui/TooltipModal';
 
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Asume que el archivo está en '../hooks/'
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Correcto
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -51,8 +48,7 @@ function canonicalKey(raw = '') {
   return clean; // fallback
 }
 
-// AGREGAR MAPEO DE CLAVE CANONICA A IDENTIFICADOR DE TOOLTIP
-
+// MAPEO DE CLAVE CANONICA A IDENTIFICADOR DE TOOLTIP
 const TOOLTIP_IDENTIFIERS_MAP={
   'EN OPERACIÓN': 'res_card_capacidad_inst_operacion',
   'PRUEBAS': 'res_card_capacidad_inst_prueba',
@@ -62,15 +58,12 @@ const TOOLTIP_IDENTIFIERS_MAP={
   'GENERACION DISTRIBUIDA': 'res_card_gd',
   'AGPE': 'res_card_agpe',
   'ZNI': 'res_card_zni', // Añadir ZNI al mapeo
-
-
 }
 
 const LABEL_MAP = {
   total_proyectos_bd075: {
       label: 'Capacidad total instalada 6GW+ =',
-      icon: EnergiaAmarillo, // (opcional, no se usa en cards; el hero ya toma el icono directo)
-    
+      icon: EnergiaAmarillo,
     },
   'EN OPERACIÓN': { label: 'Capacidad instalada en operación', icon: DemandaOn },
   'PRUEBAS': { label: 'Capacidad instalada en pruebas', icon: ProcessOn },
@@ -111,33 +104,31 @@ async function fetchIndicadores6GW() {
   return resp.json();
 }
 
-
+// NOTA: La función fetchTooltips() fue eliminada de este archivo, ya que su 
+// lógica debe residir dentro de useTooltipsCache.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
 
-  // const { data, loading, error, refetch } = use6GWCache();
-  // const navigate = useNavigate();
-
-  const { data, loading, error } = use6GWCache(); // Se mantiene
+  const { data, loading, error } = use6GWCache(); 
   const navigate = useNavigate();
 
-    // *** USO DEL NUEVO HOOK ***
+  // USO DEL HOOK CENTRALIZADO DE TOOLTIPS
   const { 
     tooltips, 
     loading: loadingTooltips, 
     error: errorTooltips 
-  } = useTooltipsCache(); // Reemplaza los estados y el useEffect anterior
+  } = useTooltipsCache(); 
 
 
-  // ** ESTADOS FALTANTES PARA LA MODAL **
+  // ESTADOS DE LA MODAL
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState('');
 
-  // ** FUNCIÓN PARA CERRAR LA MODAL **
+  // FUNCIÓN PARA CERRAR LA MODAL
   const closeModal = () => {
     setIsModalOpen(false);
     setModalTitle('');
@@ -145,38 +136,11 @@ export default function Indicadores6GW() {
   };
 
 
+  // NOTA: El useEffect para cargar tooltips fue eliminado. Su lógica está en useTooltipsCache.
+
 
   const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
   
-    // **USE EFFECT PARA CARGAR TOOLTIPS**
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const resTooltips = await fetchTooltips();
-        if (alive) {
-          // Normalizar la respuesta de la API a un mapa para fácil acceso: { identificador: Texto }
-          const normalizedTooltips = {};
-          resTooltips.forEach(seccion => {
-            seccion.elementos.forEach(elemento => {
-              normalizedTooltips[elemento.identificador] = elemento.Texto;
-            });
-          });
-          setTooltips(normalizedTooltips);
-          setLoadingTooltips(false);
-        }
-      } catch (e) {
-        if (alive) {
-          setErrorTooltips(e.message || 'Error al consultar tooltips');
-          setLoadingTooltips(false);
-        }
-      }
-    })();
-    return () => { alive = false; };
-  }, []);
-
-
-
   const normalized = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return data.map((d) => ({
@@ -227,33 +191,31 @@ export default function Indicadores6GW() {
       label: 'Zonas no interconectadas (ZNI)',
       value: 13.89,
       special: true,
-      fixedDate: '8/5/2025'
+      fixedDate: '8/5/2025',
+      key: 'ZNI', // Aseguramos que la ZNI card también tiene key para el tooltip
     };
 
     return [...apiCards, zniCard].sort((a, b) => a.order - b.order);
   }, [normalized]);
 
-  //** NUEVA FUNCION PARA MOSTRAR EL TOOLTIP **
+  // FUNCIÓN PARA MOSTRAR EL TOOLTIP
   const handleHelpClick=(cardKey)=>{
     const tooltipId=TOOLTIP_IDENTIFIERS_MAP[cardKey];
     const title=LABEL_MAP[cardKey]?.label || cardKey;
     const content = tooltips[tooltipId]; // Obtener el contenido del tooltip
 
-    console.log('Que retorna juan Clicked help for:', cardKey, '-> Tooltip ID:', tooltipId, 'Content:', content);  
-    if(tooltipId && tooltips[tooltipId]){
-      //temporal: usar alert para mostrar el tooltip
-      // alert(`${LABEL_MAP[cardKey].label}:\n\n${tooltips[tooltipId]}`);
+    
+    if (tooltipId && tooltips[tooltipId]) {
       setModalTitle(cleanSubtitle(title));
-      setModalContent(cleanSubtitle(content));
+      // CORRECCIÓN: Se usa el contenido del tooltip directamente, sin cleanSubtitle
+      setModalContent(content); 
       setIsModalOpen(true);
-    }else{
+    } else {
       setModalTitle('Información no disponible');
       setModalContent('No hay información de ayuda disponible para este indicador.');
       setIsModalOpen(true);
-      // alert('No hay información de ayuda disponible para este indicador.');
     }
-
-    };
+  };
   
 
   if (loading || loadingTooltips) {
@@ -275,6 +237,7 @@ export default function Indicadores6GW() {
     );
   }
 
+  // Se unifica el manejo de error de indicadores y tooltips
   if (error || errorTooltips) return <div className="text-red-400 p-6">Error al cargar datos: {error || errorTooltips}</div>;
 
   return (
