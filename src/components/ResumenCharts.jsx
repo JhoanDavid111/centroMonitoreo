@@ -8,6 +8,27 @@ import { useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
+import TooltipModal from './ui/TooltipModal'; // Importar la modal
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Asume esta ruta
+
+// ────────────────────────────────────────────────
+// Mapeo Canónico para Tooltips
+// Se utiliza para mapear el índice de la gráfica con el identificador del tooltip en la API.
+// Los índices corresponden al orden en que se generan las gráficas en fetchData.
+// 0: Distribución actual por tecnología -> res_chart_tec
+// 1: Distribución de capacidad instalada por tipo de proyecto -> res_chart_cat
+// 2: Capacidad entrante por mes -> res_chart_cap_ent
+// 3: Evolución anual matriz energética despachada centralmente -> res_chart_matriz
+// ────────────────────────────────────────────────
+const CHART_TOOLTIP_MAP = {
+  0: 'res_grafica_distribucion_actual_tecnologia',
+  1: 'res_grafica_distribucion_capacidad_instalada_tipo_proyecto',
+  2: 'res_grafica_capacidad_entrante_mes',
+  3: 'res_grafica_evolucion_anual_matriz_energetica_despachada_centralmente_',
+
+  
+};
+
 // ────────────────────────────────────────────────
 // Caché
 // ────────────────────────────────────────────────
@@ -168,6 +189,38 @@ export function ResumenCharts() {
   const [error, setError] = useState(null);
   const [isCached, setIsCached] = useState(false);
   const chartRefs = useRef([]);
+
+  // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+
+    // Usar el hook de cache centralizado
+  const { tooltips, loading: loadingTooltips, error: errorTooltips } = useTooltipsCache();
+
+  // Función para cerrar la modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+  
+  // Función para manejar el clic en el botón de ayuda
+  const handleHelpClick = (chartIndex, chartOptions) => {
+    const tooltipId = CHART_TOOLTIP_MAP[chartIndex];
+    const title = chartOptions.title?.text || `Gráfica ${chartIndex + 1}`;
+    const content = tooltips[tooltipId]; // Obtener el contenido del tooltip
+
+    if (tooltipId && content) {
+      setModalTitle(title);
+      setModalContent(content);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle('Información no disponible');
+      setModalContent('No hay información de ayuda disponible para esta gráfica.');
+      setIsModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -411,7 +464,7 @@ export function ResumenCharts() {
     return () => { isMounted = false; };
   }, []);
 
-  if (loading) {
+  if (loading || loadingTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <div className="flex space-x-2">
@@ -424,7 +477,7 @@ export function ResumenCharts() {
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -456,9 +509,7 @@ export function ResumenCharts() {
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
               style={{ width: 30, height: 30 }}
               title="Ayuda"
-              onClick={() => {
-                alert(`${opt.title?.text || 'Gráfica'}\n\nEsta gráfica muestra datos importantes sobre la capacidad instalada.`);
-              }}
+              onClick={() => handleHelpClick(idx, opt)}
               type="button"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -476,6 +527,13 @@ export function ResumenCharts() {
           </div>
         ))}
       </div>
+      {/* *** COMPONENTE TOOLTIP MODAL *** */}
+      <TooltipModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalTitle}
+        content={modalContent}
+      />
     </section>
   );
 }

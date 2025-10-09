@@ -21,6 +21,8 @@ import { use6GWCache } from './DataGrid/hooks/use6GWCache';
 import { useNavigate } from 'react-router-dom';
 import TooltipModal from './ui/TooltipModal';
 
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Asume que el archivo está en '../hooks/'
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
 // ─────────────────────────────────────────────────────────────────────────────
@@ -109,22 +111,26 @@ async function fetchIndicadores6GW() {
   return resp.json();
 }
 
-// NUEVA FUNCION PARA OBTENER TOOLTIPS
-async function fetchTooltips(){
-  //remplaza 'localhost:3000' por la url de la api
-  const API_URL='http://localhost:3001';
-  const resp=await fetch(`${API_URL}/v1/tooltips/tooltips`,{method:'POST'});
-  if(!resp.ok) throw new Error('Error al consultar tooltips');
-  return resp.json();
-}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
 
-  const { data, loading, error, refetch } = use6GWCache();
+  // const { data, loading, error, refetch } = use6GWCache();
+  // const navigate = useNavigate();
+
+  const { data, loading, error } = use6GWCache(); // Se mantiene
   const navigate = useNavigate();
+
+    // *** USO DEL NUEVO HOOK ***
+  const { 
+    tooltips, 
+    loading: loadingTooltips, 
+    error: errorTooltips 
+  } = useTooltipsCache(); // Reemplaza los estados y el useEffect anterior
+
 
   // ** ESTADOS FALTANTES PARA LA MODAL **
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,11 +144,7 @@ export default function Indicadores6GW() {
     setModalContent('');
   };
 
-  //**ESTADO PARA LOS TOOLTIPS **
-  const [tooltips, setTooltips] = useState({});
-  const [loadingTooltips, setLoadingTooltips] = useState(true); 
-  // Se remueve tooltipsError ya que es redundante con errorTooltips
-  const [errorTooltips,setErrorTooltips]=useState(null);
+
 
   const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
   
@@ -173,24 +175,7 @@ export default function Indicadores6GW() {
     return () => { alive = false; };
   }, []);
 
-/*   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetchIndicadores6GW();
-        if (alive) {
-          setData(res);
-          setLoading(false);
-        }
-      } catch (e) {
-        if (alive) {
-          setError(e.message || 'Error al consultar indicadores 6GW+');
-          setLoading(false);
-        }
-      }
-    })();
-    return () => { alive = false; };
-  }, []); */
+
 
   const normalized = useMemo(() => {
     if (!Array.isArray(data)) return [];
@@ -254,6 +239,7 @@ export default function Indicadores6GW() {
     const title=LABEL_MAP[cardKey]?.label || cardKey;
     const content = tooltips[tooltipId]; // Obtener el contenido del tooltip
 
+    console.log('Que retorna juan Clicked help for:', cardKey, '-> Tooltip ID:', tooltipId, 'Content:', content);  
     if(tooltipId && tooltips[tooltipId]){
       //temporal: usar alert para mostrar el tooltip
       // alert(`${LABEL_MAP[cardKey].label}:\n\n${tooltips[tooltipId]}`);
