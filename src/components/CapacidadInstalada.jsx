@@ -9,6 +9,16 @@ import { useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
+// *** NUEVAS IMPORTACIONES ***
+import TooltipModal from './ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+// ────────────────────────────────────────────────
+// Mapeo Canónico para Tooltip
+// Este identificador debe coincidir con la clave retornada por tu API de tooltips
+// ────────────────────────────────────────────────
+const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
+
 // ============== Caché ==============
 const CACHE_PREFIX = 'chart-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
@@ -75,6 +85,45 @@ export function CapacidadInstalada() {
   const [loading, setLoading] = useState(true);
   const [isCached, setIsCached] = useState(false);
   const [error, setError] = useState(null);
+
+  // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+  
+  // 1. Usar el hook de cache centralizado para tooltips
+  const { 
+    tooltips, 
+    loading: loadingTooltips, 
+    error: errorTooltips 
+  } = useTooltipsCache();
+
+  // Función para cerrar la modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
+  // Función para manejar el clic en el botón de ayuda
+  const handleHelpClick = () => {
+    // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
+    const title = options?.title?.text || 'Capacidad instalada por tecnología';
+    
+    // 3. Buscar el contenido en el caché global de tooltips
+    const content = tooltips[CHART_TOOLTIP_ID];
+
+    if (content) {
+      setModalTitle(title);
+      setModalContent(content);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle('Información no disponible');
+      setModalContent('No se encontró una descripción detallada para esta gráfica.');
+      setIsModalOpen(true);
+    }
+  };
+
 
   useEffect(() => {
     let alive = true;
@@ -230,7 +279,7 @@ export function CapacidadInstalada() {
     return () => { alive = false; };
   }, []);
 
-  if (loading) {
+  if (loading || loadingTooltips) {
     return (
       <div className="w-full bg-[#262626] p-4 rounded-lg border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
@@ -243,7 +292,7 @@ export function CapacidadInstalada() {
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return (
       <div className="w-full bg-[#262626] p-4 rounded-lg border border-[#666666] shadow flex flex-col items-center justify-center h-64">
         <div className="text-red-400 mb-2">
@@ -251,7 +300,7 @@ export function CapacidadInstalada() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.062 19h13.876c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.33 16c-.77 1.333.2 3 1.732 3z" />
           </svg>
         </div>
-        <p className="text-gray-300 text-center">{error}</p>
+        <p className="text-gray-300 text-center">{error || errorTooltips }</p>
         <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
           Reintentar
         </button>
@@ -269,7 +318,7 @@ export function CapacidadInstalada() {
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Esta gráfica muestra la capacidad acumulada de los proyectos por tipo de energía a lo largo del tiempo.')}
+          onClick={handleHelpClick}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -279,6 +328,17 @@ export function CapacidadInstalada() {
         </button>
 
         <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
+
+        {/* *** COMPONENTE TOOLTIP MODAL *** */}
+        <TooltipModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalTitle}
+          content={modalContent}
+        />
+      {/* Fin ayuda */}
+
+
       </div>
     </section>
   );

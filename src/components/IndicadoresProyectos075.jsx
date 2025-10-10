@@ -2,7 +2,10 @@
 import { useEffect, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
-// Íconos
+import TooltipModal from './ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+// Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 import EnergiaAmarillo     from '../assets/svg-icons/Energia-Amarillo.svg';
 import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
@@ -11,7 +14,20 @@ import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
 import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
 import { API } from '../config/api';
 
-// Texto base (labels e iconos se conservan; los valores ahora vienen del API)
+
+
+//Mapeo canónico  de tarjetas a tooltips Basado en la nueva API , canonicalizado)
+const CARD_TO_TOOLTIP_MAP = {
+  'total_proyectos_aprobados_bd075': 'proy_card_solicitudes_totales',
+  'total_capacidad_instalada_bd075': 'proy_card_en_operacion',
+  'total_capacidad_instalada_aprobados_bd075': 'proy_card_en_operacion_fncer',
+  'total_proyectos_curva_s': 'proy_card_solicitudes_aprobadas_entrar',
+  'proyectos_aprobados_no_curva_s': 'proy_card_fncer_con_fpo',
+
+}
+
+
+// Textos (quemados por ahora)
 const LABEL_MAP = {
   total_proyectos_bd075: {
     label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
@@ -68,7 +84,50 @@ export default function IndicadoresProyectos075() {
   const [labels, setLabels]   = useState(LABEL_MAP);
   const [updated, setUpdated] = useState(new Date().toLocaleDateString('es-CO'));
 
-  useEffect(() => {
+  //**Estados y hooks para la modal tooltips */
+  const [isModalOpen, setIsModalOpen]= useState(false);
+  const [modalTitle,setModalTitle]= useState('');
+  const [modalContent,setModalContent]= useState('');
+
+  // 2. Integrar el hook de cache de tooltips
+  const{
+    tooltips,
+    loading: loadingTooltips,
+    error: errorTooltips
+  }=useTooltipsCache();
+
+  //Funcion para cerrar la modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
+  //Funcion para manejar el click en el boton de ayuda
+  const handleHelpClick =(cardkey)=>{
+    
+      const tooltipId=CARD_TO_TOOLTIP_MAP[cardkey];
+      const title=labels[cardkey]?.label || 'Indicador';
+      const content= tooltips[tooltipId];
+
+      if(tooltipId && content){
+        setModalTitle(cleanSubtitle(title));
+        setModalContent(content);
+        setIsModalOpen(true);
+      }else{
+        setModalTitle(cleanSubtitle(title));
+        setModalContent('No hay información disponible en este momento.');
+        setIsModalOpen(true);
+      }
+
+    
+
+  }
+
+// const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
+//   const heroValue = LABEL_MAP.total_proyectos_bd075.value;
+
+ useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -126,7 +185,7 @@ export default function IndicadoresProyectos075() {
   const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
   const heroValue    = labels.total_proyectos_bd075.value;
 
-  if (loading) {
+  if (loading || loadingTooltips) {
     return (
       <div className="px-4 py-6 text-white">
         <div className="animate-pulse space-y-6">
@@ -145,7 +204,7 @@ export default function IndicadoresProyectos075() {
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return <div className="text-red-400 p-6">Error: {error}</div>;
   }
 
@@ -198,6 +257,7 @@ export default function IndicadoresProyectos075() {
                 <HelpCircle
                   className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                   title="Ayuda"
+                  onClick={() => handleHelpClick(key)}
                 />
               </div>
               <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
@@ -205,6 +265,14 @@ export default function IndicadoresProyectos075() {
           ))}
         </div>
       </div>
+
+          {/** Componente Modal */}
+          <TooltipModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            title={modalTitle}
+            content={modalContent} 
+            />
     </>
   );
 }
