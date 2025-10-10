@@ -5,10 +5,15 @@ import ExportData from 'highcharts/modules/export-data';
 import Exporting from 'highcharts/modules/exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig';
 
+import  TooltipModal from './ui/TooltipModal'; // Asume esta ruta
+import {useTooltipsCache} from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+// Mapeo Canónico para Tooltip
+const CHART_TOOLTIP_ID='res_grafica_generacion_real_diaria_tecnologia'
 // ─────────── Configuración de caché ───────────
 const CACHE_PREFIX = 'generacion-despacho-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
@@ -128,6 +133,44 @@ export function GeneracionDespacho() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCached, setIsCached] = useState(false);
+  
+//** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS */
+const [isModalOpen, setIsModalOpen]= useState(false);
+const [modalTitle,setModalTitle]= useState('');
+const [modalContent,setModalContent]= useState('');
+
+// 1. Usar el hook de cache centralizado para tooltips
+const {
+  tooltips,
+  loading: loadingTooltips,
+  error:errorTooltips
+}= useTooltipsCache();
+
+//Funccion para cerrar la modal
+const closeModal=()=>{
+  setIsModalOpen(false);
+  setModalTitle('');
+  setModalContent('');
+};
+
+//Funcion para manejar el clic en el boton de ayuda
+const handleHelpClick=()=>{
+  //usar el titulo de la grafica o un valor por defecto
+  const title= options?.title?.text || 'Generación real diaria por tecnología';
+
+  //Bucar el contenido en el caché global de tooltips usando la clave canonica
+  const content= tooltips[CHART_TOOLTIP_ID];
+  if (content){
+    setModalTitle(title);
+    setModalContent(content);
+    setIsModalOpen(true); 
+  }else{
+    setModalTitle('Información no disponible');
+    setModalContent('No se encontró una descripción detallada para esta gráfica.(Clave: '+CHART_TOOLTIP_ID + ')');
+    setIsModalOpen(true);
+  }
+}
+
 
   useEffect(() => {
     let isMounted = true;
@@ -273,9 +316,8 @@ export function GeneracionDespacho() {
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() =>
-            alert('Esta gráfica muestra la generación real diaria de energía desglosada por tecnología (térmica, cogenerador, hidráulica, solar y eólica).')
-          }
+          onClick={handleHelpClick}
+          
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -295,6 +337,16 @@ export function GeneracionDespacho() {
 
         <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
       </div>
+      {/***componente modal */}
+      <TooltipModal 
+      isOpen={isModalOpen}
+      onClose={closeModal}
+      title={modalTitle}
+      content={modalContent}
+      />
+      
+
+
     </section>
   );
 }

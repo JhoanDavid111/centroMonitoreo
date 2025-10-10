@@ -312,7 +312,7 @@ export default function ProyectoDetalle() {
           ...p,
           fpo: p.fpo ? p.fpo.split('T')[0] : '-',
           porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
-          estado: 'pendiente', // ← valor quemado temporalmente
+          estado: (p.estado_proyecto ?? '-'), // ← toma el valor del API
         }));
         setProyectos(formatted);
       } catch (err) {
@@ -915,40 +915,25 @@ const columnsSimple = [
 
 
   // ——— Columna “Estado” (solo para la pestaña “Todos los proyectos”) ———
+// ——— Columna “Estado” (texto simple, sin estilos de color) ———
 const estadoColumn = {
   name: (
     <div className="relative inline-block pb-11">
       <span>Estado</span>
-
-      {/* Filtro por texto */}
       <Filter
-        className={`inline ml-1 cursor-pointer ${
-          columnFilters.estado ? 'text-yellow-400' : 'text-gray-500'
-        }`}
+        className={`inline ml-1 cursor-pointer ${columnFilters.estado ? 'text-yellow-400' : 'text-gray-500'}`}
         size={16}
         onClick={() => setOpenFilter(openFilter === 'estado' ? '' : 'estado')}
         title="Filtrar columna"
       />
-
-      {/* Icono de orden asc/desc/sin orden */}
       <ChevronsUpDown
         className={`inline ml-1 cursor-pointer ${
-          sortState.key === 'estado' && sortState.direction
-            ? 'text-yellow-400'
-            : 'text-gray-500'
+          sortState.key === 'estado' && sortState.direction ? 'text-yellow-400' : 'text-gray-500'
         }`}
         size={16}
         onClick={() => toggleSort('estado')}
-        title={
-          sortState.key !== 'estado' || !sortState.direction
-            ? 'Ordenar ascendente'
-            : sortState.direction === 'asc'
-              ? 'Cambiar a descendente'
-              : 'Quitar orden'
-        }
+        title={sortState.key!=='estado'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
       />
-
-      {/* Popover del filtro */}
       {openFilter === 'estado' && (
         <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
           <input
@@ -965,17 +950,13 @@ const estadoColumn = {
   selector: row => row.estado,
   sortable: false,
   wrap: true,
-  width: '140px',
-  cell: row => (
-    <span
-      className={`px-2 py-1 rounded text-xs font-semibold border
-        ${String(row.estado).toLowerCase() === 'pendiente'
-          ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
-          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'}`}
-    >
-      {row.estado ?? '-'}
-    </span>
-  ),
+  width: '180px',
+  cell: row => {
+    const raw = row.estado ?? '-';
+    const formatted = titleCase(String(raw));
+    const disp = formatted.length > 50 ? `${formatted.slice(0, 20)}...` : formatted;
+    return <span title={formatted}>{disp}</span>;
+  }
 };
 
   // ——— Columnas para Seguimiento Curva S ———

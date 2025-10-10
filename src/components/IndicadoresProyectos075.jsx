@@ -1,6 +1,9 @@
 // src/components/IndicadoresProyectos075.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
+
+import TooltipModal from './ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
 
 // Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -9,43 +12,56 @@ import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 import Proyecto075On       from '../assets/svg-icons/Proyecto075-On.svg';
 import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
 import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
+import { API } from '../config/api';
+
+
+
+//Mapeo canónico  de tarjetas a tooltips Basado en la nueva API , canonicalizado)
+const CARD_TO_TOOLTIP_MAP = {
+  'total_proyectos_aprobados_bd075': 'proy_card_solicitudes_totales',
+  'total_capacidad_instalada_bd075': 'proy_card_en_operacion',
+  'total_capacidad_instalada_aprobados_bd075': 'proy_card_en_operacion_fncer',
+  'total_proyectos_curva_s': 'proy_card_solicitudes_aprobadas_entrar',
+  'proyectos_aprobados_no_curva_s': 'proy_card_fncer_con_fpo',
+
+}
+
 
 // Textos (quemados por ahora)
 const LABEL_MAP = {
   total_proyectos_bd075: {
     label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
-    icon: EnergiaAmarillo, // (opcional, no se usa en cards; el hero ya toma el icono directo)
-    value: '145 proyectos (4430 MW)',
+    icon: EnergiaAmarillo,
+    value: '', // se completa con API: "<n> proyectos (<mw> MW)"
   },
   total_proyectos_aprobados_bd075: {
-    label: 'Solicitudes totales',          // (en tu UI aparece como “No. de proyectos aprobados”)
-    icon: Proyecto075On,                   // ✅ Proyecto075-On
-    value: '2802',
+    label: 'Solicitudes totales',
+    icon: Proyecto075On,
+    value: '', // API: total_solicitudes
   },
   total_capacidad_instalada_bd075: {
-    label: 'Proyectos en operación',       // (en tu UI aparece como “Capacidad vigente total”)
-    icon: EnergiaElectricaOn,              // ✅ EnergiaElectrica-On
-    value: '35  (2998 MW)',
+    label: 'Proyectos en operación',
+    icon: EnergiaElectricaOn,
+    value: '', // API: "total_proyectos_operacion  (capacidad_proyectos_operacion_mw MW)"
   },
   total_capacidad_instalada_aprobados_bd075: {
-    label: 'Proyectos en operación FNCER', // (en tu UI aparece como “Capacidad vigente total proyectos”)
-    icon: EnergiaElectricaOn,              // ✅ EnergiaElectrica-On
-    value: '20 (1303 MW)',
+    label: 'Proyectos en operación FNCER',
+    icon: EnergiaElectricaOn,
+    value: '', // API: "total_proyectos_operacion_fncer  (capacidad_proyectos_operacion_fncer_mw MW)"
   },
   total_proyectos_curva_s: {
-    label: 'Solicitudes aprobadas FNCER por entrar', // (en tu UI: “No. de proyectos con curva S”)
-    icon: OfertaDemandaOn,                           // ✅ OfertaDemanda-On
-    value: '385 (16789 MW)',
+    label: 'Solicitudes aprobadas FNCER por entrar',
+    icon: OfertaDemandaOn,
+    value: '', // API: "total_solicitudes_aprobadas (capacidad_solicitudes_aprobadas_mw MW)"
   },
   proyectos_aprobados_no_curva_s: {
-    label: 'Proyectos FNCER con FPO vencida', // (en tu UI: “No. de proyectos sin curva S”)
-    icon: MinusDarkOn,                        // ✅ minusDark-On
-    value: '83  (1561 MW)',
+    label: 'Proyectos FNCER con FPO vencida',
+    icon: MinusDarkOn,
+    value: '', // API: "total_fncer_vencidos  (capacidad_fncer_vencidos_mw MW)"
   },
 };
 
-
-// Orden de tarjetas (se muestran TODAS; 3 por fila)
+// Orden de tarjetas
 const ORDER = [
   'total_proyectos_aprobados_bd075',
   'total_capacidad_instalada_bd075',
@@ -56,20 +72,120 @@ const ORDER = [
 
 // Helpers
 function cleanSubtitle(raw) {
-  // quita el " =" final del label para usarlo como subtítulo
   return String(raw || '').replace(/\s*=\s*$/, '');
 }
+const nf0 = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+const nf2 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtMW = (mw) => nf2.format(mw ?? 0);
 
 export default function IndicadoresProyectos075() {
-  const [loading] = useState(false);
-  const [error] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
+  const [labels, setLabels]   = useState(LABEL_MAP);
+  const [updated, setUpdated] = useState(new Date().toLocaleDateString('es-CO'));
 
-  const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
-  const heroValue = LABEL_MAP.total_proyectos_bd075.value;
+  //**Estados y hooks para la modal tooltips */
+  const [isModalOpen, setIsModalOpen]= useState(false);
+  const [modalTitle,setModalTitle]= useState('');
+  const [modalContent,setModalContent]= useState('');
 
-  const updated = new Date().toLocaleDateString('es-CO');
+  // 2. Integrar el hook de cache de tooltips
+  const{
+    tooltips,
+    loading: loadingTooltips,
+    error: errorTooltips
+  }=useTooltipsCache();
 
-  if (loading) {
+  //Funcion para cerrar la modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
+  //Funcion para manejar el click en el boton de ayuda
+  const handleHelpClick =(cardkey)=>{
+    
+      const tooltipId=CARD_TO_TOOLTIP_MAP[cardkey];
+      const title=labels[cardkey]?.label || 'Indicador';
+      const content= tooltips[tooltipId];
+
+      if(tooltipId && content){
+        setModalTitle(cleanSubtitle(title));
+        setModalContent(content);
+        setIsModalOpen(true);
+      }else{
+        setModalTitle(cleanSubtitle(title));
+        setModalContent('No hay información disponible en este momento.');
+        setIsModalOpen(true);
+      }
+
+    
+
+  }
+
+// const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
+//   const heroValue = LABEL_MAP.total_proyectos_bd075.value;
+
+ useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+    const res = await fetch(
+      `${API}/v1/indicadores/proyectos_075/indicadores_proyectos_075`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // No body requerido
+      }
+    );
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        // Mapear respuesta a los valores de la UI (sin cambiar estilos ni textos)
+        const next = { ...LABEL_MAP };
+
+        // Hero: "n proyectos (mw MW)"
+        const nAprobEntrar = data.total_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
+        const mwAprobEntrar = data.capacidad_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
+        next.total_proyectos_bd075.value = `${nf0.format(nAprobEntrar)} proyectos (${fmtMW(mwAprobEntrar)} MW)`;
+
+        // Solicitudes totales
+        next.total_proyectos_aprobados_bd075.value = `${nf0.format(data.total_solicitudes ?? 0)}`;
+
+        // Proyectos en operación
+        next.total_capacidad_instalada_bd075.value = `${nf0.format(data.total_proyectos_operacion ?? 0)}  (${fmtMW(data.capacidad_proyectos_operacion_mw ?? 0)} MW)`;
+
+        // Proyectos en operación FNCER
+        next.total_capacidad_instalada_aprobados_bd075.value = `${nf0.format(data.total_proyectos_operacion_fncer ?? 0)} (${fmtMW(data.capacidad_proyectos_operacion_fncer_mw ?? 0)} MW)`;
+
+        // Solicitudes aprobadas FNCER por entrar
+        next.total_proyectos_curva_s.value = `${nf0.format(data.total_solicitudes_aprobadas ?? 0)} (${fmtMW(data.capacidad_solicitudes_aprobadas_mw ?? 0)} MW)`;
+
+        // Proyectos FNCER con FPO vencida
+        next.proyectos_aprobados_no_curva_s.value = `${nf0.format(data.total_fncer_vencidos ?? 0)}  (${fmtMW(data.capacidad_fncer_vencidos_mw ?? 0)} MW)`;
+
+        setLabels(next);
+        setUpdated(new Date().toLocaleDateString('es-CO'));
+      } catch (e) {
+        setError(`No fue posible cargar los indicadores. ${e?.message ?? ''}`.trim());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
+  const heroValue    = labels.total_proyectos_bd075.value;
+
+  if (loading || loadingTooltips) {
     return (
       <div className="px-4 py-6 text-white">
         <div className="animate-pulse space-y-6">
@@ -88,15 +204,15 @@ export default function IndicadoresProyectos075() {
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return <div className="text-red-400 p-6">Error: {error}</div>;
   }
 
   const cards = ORDER.map((key) => ({
     key,
-    icon: LABEL_MAP[key].icon,
-    label: LABEL_MAP[key].label,
-    value: LABEL_MAP[key].value,
+    icon: labels[key].icon,
+    label: labels[key].label,
+    value: labels[key].value,
   }));
 
   return (
@@ -104,7 +220,6 @@ export default function IndicadoresProyectos075() {
       {/* ───────── Indicador general (hero) ───────── */}
       <div className="px-4 pt-6 text-center">
         <div className="inline-flex items-center gap-4">
-          {/* círculo amarillo + icono negro (forzado con filter) */}
           <span
             className="inline-flex items-center justify-center rounded-full"
             style={{ width: 64, height: 64, background: '#FFC800' }}
@@ -116,9 +231,7 @@ export default function IndicadoresProyectos075() {
               style={{ background: 'transparent' }}
             />
           </span>
-          <span
-            className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold"
-          >
+          <span className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold">
             {heroValue}
           </span>
         </div>
@@ -144,6 +257,7 @@ export default function IndicadoresProyectos075() {
                 <HelpCircle
                   className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
                   title="Ayuda"
+                  onClick={() => handleHelpClick(key)}
                 />
               </div>
               <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
@@ -151,8 +265,17 @@ export default function IndicadoresProyectos075() {
           ))}
         </div>
       </div>
+
+          {/** Componente Modal */}
+          <TooltipModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            title={modalTitle}
+            content={modalContent} 
+            />
     </>
   );
 }
+
 
 
