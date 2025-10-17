@@ -47,6 +47,9 @@ const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.
 const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
 const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
 const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
+const API_EXPANDER_EMBALSES = 'http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses';
+const API_EXPANDER_APORTES = 'http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes';
+
 
 
 
@@ -225,7 +228,11 @@ function useAportesOptionsFromApi() {
     title: {
       text: 'Aportes y nivel útil de embalses por mes',
       align: 'left',
-      style: { color: '#fff', fontSize: '1.65em' }
+      style: {
+        fontFamily: 'Nunito Sans, sans-serif',
+        fontSize: '16px',
+        color: '#fff'
+      }
     },
     subtitle: { text: '', align: 'left', style: { color: COLORS.gray } },
     xAxis: {
@@ -362,8 +369,11 @@ function useDesabastecimientoOptionsFromApi() {
     title: {
       text: 'Estatuto de desabastecimiento',
       align: 'left',
-      margin: 50,
-      style: { color: '#fff', fontSize: '1.65em' },
+      style: {
+        fontFamily: 'Nunito Sans, sans-serif',
+        fontSize: '16px',
+        color: '#fff'
+      }
     },
     xAxis: {
       type: 'datetime',
@@ -839,13 +849,94 @@ function HidroTabs({ data }) {
   );
 }
 
+function useHidroRowsFromApi() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let abort = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        // === 1️⃣ Fetch de embalses ===
+        const resEmb = await fetch(API_EXPANDER_EMBALSES, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+        });
+        const embData = await resEmb.json();
+        console.log('[Expander Embalses] Respuesta completa:', embData);
+
+        const embalses = Array.isArray(embData?.resumen_detallado_embalse)
+          ? embData.resumen_detallado_embalse
+          : [];
+        console.log('[Expander Embalses] Total embalses:', embalses.length);
+
+        // === 2️⃣ Fetch de aportes ===
+        const resApo = await fetch(API_EXPANDER_APORTES, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+        });
+        const apoData = await resApo.json();
+        console.log('[Expander Aportes] Respuesta completa:', apoData);
+
+        const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
+        console.log('[Expander Aportes] Total aportes:', aportes.length);
+
+        // === 3️⃣ Mapeo y merge ===
+        const mapAportes = new Map();
+        for (const a of aportes) {
+          if (!a.Embalse || !a.Region) continue;
+          const key = `${a.Region}::${a.Embalse}`.toUpperCase();
+          mapAportes.set(key, {
+            region: a.Region,
+            embalse: a.Embalse,
+            aportesGwh: Number(a['Aportes del día (GWh-día)']) || NaN,
+            aportesPct: Number(a['% Aportes del Total']) || NaN,
+            mediaHistoricaGwhDia: Number(a['Aporte Medio Histórico (GWh-día)']) || NaN,
+            cambioGwh: Number(a['Var. GWh vs Día Anterior']) || NaN,
+          });
+        }
+
+        const merged = embalses.map(e => {
+          const key = `${e.Region}::${e.Embalse}`.toUpperCase();
+          const apo = mapAportes.get(key);
+          return {
+            region: e.Region,
+            embalse: e.Embalse,
+            volumenGwh: Number(e['Volumen útil (GWh-día)']) || NaN,
+            cambioGwh: Number(e['Variación Volumen útil (GWh-día)']) || NaN,
+            nivelPct: Number(e['Nivel (%)']) || NaN,
+            capacidadGwhDia: Number(e['Capacidad útil (GWh-día)']) || NaN,
+            ...(apo || {}), // mezcla datos de aportes
+          };
+        });
+
+        console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
+        if (!abort) setRows(merged);
+      } catch (err) {
+        console.error('[Hidrología Expander] Error al cargar datos:', err);
+        if (!abort) setRows([]);
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    };
+    load();
+    return () => { abort = true; };
+  }, []);
+
+  return { rows, loading };
+}
+
+
 /* --------------------------------- Página --------------------------------- */
 export default function Hidrologia() {
   // ⬇️ AHORA LA GRÁFICA DE APORTES USA API
   const aportesOptions = useAportesOptionsFromApi();
   const desabOptions = useDesabastecimientoOptionsFromApi();
   const [tab, setTab] = useState('aportes');
-  const hidroRows = useHidroRows(chart3Html, tablaHidrologiaCompleta);
+  const { rows: hidroRows, loading: loadingHidroRows } = useHidroRowsFromApi();
 
   // === Índices desde API (sin cambios) ===
   const [indices, setIndices] = useState(defaultIndices);
@@ -1164,47 +1255,65 @@ useEffect(() => {
         <h2 className="text-2xl font-semibold text-gray-300 avoid-break">Índices</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
+        {/* Card 1 */}
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
 
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[0].value}</p>
-              <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#D1D1D0]">
-                <div
-                  className="h-3"
-                  style={{ width: `${Math.max(0, Math.min(100, indices[0].pctValueNum || 0))}%`, background: COLORS.blue }}
-                />
-              </div>
-              <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
-            </div>
-            <div className="mt-1 text-gray-300">{indices[0].pct}</div>
+          {/* Fila: valor GWh con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[0].value}</p>
+            <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <TitleRow
-              title="Aportes mensuales promedio"
-              updated={indices[1].updated}
-              icon={OfertaDemandaIcon}
-            />
+          {/* Divisor */}
+          <div className="my-3 h-px w-full bg-[#3a3a3a]" />
 
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].value}</p>
-              <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
-            </div>
-
-            <div className="mt-3 flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].pct}</p>
-              <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
-            </div>
-
-            <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
+          {/* Fila: % con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <div className="text-gray-300 text-xl">{indices[0].pct}</div>
+            <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
           </div>
+
+          {/* Barra de nivel */}
+          <div className="mt-3 flex items-center gap-3">
+            <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#1f1f1f] border border-[#3a3a3a]">
+              <div
+                className="h-3"
+                style={{
+                  width: `${Math.max(0, Math.min(100, indices[0].pctValueNum || 0))}%`,
+                  background: COLORS.blue
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2 */}
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <TitleRow
+            title="Aportes mensuales promedio"
+            updated={indices[1].updated}
+            icon={OfertaDemandaIcon}
+          />
+
+          {/* Fila: valor GWh con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[1].value}</p>
+            <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
+          </div>
+
+          {/* Divisor */}
+          <div className="my-3 h-px w-full bg-[#3a3a3a]" />
+
+          {/* Fila: % con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[1].pct}</p>
+            <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
+          </div>
+
+          {/* Media histórica */}
+          <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
+        </div>
 
           {/* Card 3 */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
