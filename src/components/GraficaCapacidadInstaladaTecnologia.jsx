@@ -5,10 +5,20 @@ import HighchartsReact from 'highcharts-react-official';
 import { API } from '../config/api';
 import { CACHE_CONFIG } from '../config/cacheConfig'; 
 
+// *** NUEVAS IMPORTACIONES ***
+import TooltipModal from './ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+// ────────────────────────────────────────────────
+// Mapeo Canónico para Tooltip
+// Este identificador debe coincidir con la clave retornada por tu API de tooltips
+// ────────────────────────────────────────────────
+const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
+
 // Configuración de caché
 const CACHE_PREFIX = 'chart-cache-';
 const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-//console.log(`jajajajCache expiration set to ${CACHE_EXPIRATION_MS} ms`);
+
 
 // Caché en memoria para la sesión actual
 const memoryCache = new Map();
@@ -79,6 +89,44 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
   const [error, setError] = useState(null);
   const chartRef = useRef(null);
 
+    // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+  
+  // 1. Usar el hook de cache centralizado para tooltips
+  const { 
+    tooltips, 
+    loading: loadingTooltips, 
+    error: errorTooltips 
+  } = useTooltipsCache();
+
+  // Función para cerrar la modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
+  // Función para manejar el clic en el botón de ayuda
+  const handleHelpClick = () => {
+    // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
+    const title = options?.title?.text || 'Capacidad instalada por tecnología';
+    
+    // 3. Buscar el contenido en el caché global de tooltips
+    const content = tooltips[CHART_TOOLTIP_ID];
+
+    if (content) {
+      setModalTitle(title);
+      setModalContent(content);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle('Información no disponible');
+      setModalContent('No se encontró una descripción detallada para esta gráfica.');
+      setIsModalOpen(true);
+    }
+  };
+
   useEffect(() => {
     async function fetchData() {
       const cacheKey = `capacidad-tecnologia-${fechaInicio}-${fechaFin}`;
@@ -142,7 +190,7 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
     fetchData();
   }, [fechaInicio, fechaFin]);
 
-  if (loading) {
+  if (loading || loadingTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
@@ -164,10 +212,10 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">{error || errorTooltips}</p>
       </div>
     );
   }
@@ -178,7 +226,7 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
         className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
         style={{ width: 30, height: 30 }}
         title="Ayuda"
-        onClick={() => alert('Esta gráfica muestra la capacidad instalada por tecnología energética.')}
+        onClick={handleHelpClick}
         type="button"
       >
         <svg
@@ -201,6 +249,14 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
         </svg>
       </button>
       <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
+    {/* *** COMPONENTE TOOLTIP MODAL *** */}
+      <TooltipModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalTitle}
+        content={modalContent}
+      />
+
     </div>
   );
 }
