@@ -50,8 +50,6 @@ const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `${API}/v1/indicad
 const API_CONSOLIDADO = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 
-
-
 /* ==================== helpers ==================== */
 // (dejamos solo lo necesario para otras partes)
 const extractCategories = (html) => {
@@ -124,6 +122,12 @@ function parseValueAndDelta(s) {
   return { value, delta };
 }
 
+function deltaPctFromText(txt) {
+  const m = String(txt || '').match(/\(([^)]+)\)/); // contenido entre paréntesis
+  if (!m) return NaN;
+  return pctNum(m[1]); // reaprovecha tu pctNum
+}
+
 
 function parseMW(v) {
   if (typeof v === 'number') return v;
@@ -160,31 +164,29 @@ function useHidroRowsFromConsolidado() {
             const embalse = String(e?.nombre || '').trim();
 
             // --- pestaña RESUMEN ---
-            // nivel -> porcentaje (para la barra)
             const nivelResumenPct = pctNum(e?.resumen?.nivel);
-            // aportes_hidricos -> badge con signo
-            const aportesResumenPct = pctNum(e?.resumen?.aportes_hidricos);
-            // capacidad generación MW
-            const capacidadMW = parseMW(e?.resumen?.capacidad_generacion_mw);
+            const variacionVolumen = num(e?.resumen?.['Variación Volumen útil (GWh-día)']);   // NUEVO
+            const capacidadGW      = num(e?.resumen?.['capacidad generacion GW']);             // NUEVO
 
             // --- pestaña EMBALSES ---
             const { value: volGwh, delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
             const nivelEmbalsePct = pctNum(e?.detalle_embalse?.nivel);
-            const capacidadGwhDia = num(e?.detalle_embalse?.capacidad_gwh_dia);
+            const capacidadGwhDia  = num(e?.detalle_embalse?.capacidad_gwh_dia);
 
             // --- pestaña APORTES ---
             const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
-            const aportesPct = pctNum(e?.detalle_aportes?.porcentaje);
-            const mediaHistGwhDia = num(e?.detalle_aportes?.media_historica_gwh_dia);
+            const aportesPctDetalleNum = pctNum(e?.detalle_aportes?.porcentaje);               // num (por si lo necesitas)
+            const porcentajeTexto      = String(e?.detalle_aportes?.porcentaje ?? '').trim();  // TEXTO COMPLETO
+            const mediaHistGwhDia      = num(e?.detalle_aportes?.media_historica_gwh_dia);
 
             out.push({
               region: regionName,
               embalse,
 
               // resumen
-              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct, // usamos detalle si viene, sino resumen
-              aportesPct: aportesResumenPct,
-              capacidadMW,
+              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct,
+              variacionVolGwh: variacionVolumen, // NUEVO en columna Resumen
+              capacidadGW,                        // NUEVO en columna Resumen
 
               // embalses
               volumenGwh: volGwh,
@@ -193,14 +195,14 @@ function useHidroRowsFromConsolidado() {
 
               // aportes
               aportesGwh,
-              aportesGwhDelta: aportesDelta, // no existía; lo usamos en UI
+              aportesGwhDelta: aportesDelta,
               mediaHistoricaGwhDia: mediaHistGwhDia,
-              aportesPctDetalle: aportesPct, // por si quieres usarlo en esa pestaña
+              aportesPctDetalle: aportesPctDetalleNum, // opcional
+              porcentajeTexto,                         // NUEVO: usar en UI
             });
           }
         }
 
-        // ordenamos por región/embalse
         out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
         if (!abort) setRows(out);
       } catch (e) {
@@ -215,6 +217,7 @@ function useHidroRowsFromConsolidado() {
 
   return { rows, loading };
 }
+
 
 
 
@@ -622,8 +625,8 @@ function HidroTabs({ data }) {
               <tr>
                 <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
                 <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Variación Volumen útil (GWh-día)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (GW)</th>
               </tr>
             )}
             {tab === 'embalses' && (
@@ -665,17 +668,23 @@ function HidroTabs({ data }) {
                       <div className="pl-6">{r.embalse}</div>
                     </td>
 
-                    {tab === 'resumen' && (
-                      <>
-                        <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2"><DeltaBadge value={r.aportesPct} /></td>
-                        <td className="px-3 py-2 text-gray-200">
-                          {Number.isFinite(r.capacidadMW)
-                            ? r.capacidadMW.toLocaleString('es-CO')
-                            : '—'}
-                        </td>
-                      </>
-                    )}
+                {tab === 'resumen' && (
+                  <>
+                    <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
+
+                    {/* Variación Volumen útil (GWh-día) con chip de color por signo */}
+                    <td className="px-3 py-2">
+                      <DeltaBadge value={r.variacionVolGwh} suffix=" GWh-día" />
+                    </td>
+
+                    {/* Capacidad generación (GW) */}
+                    <td className="px-3 py-2 text-gray-200">
+                      {Number.isFinite(r.capacidadGW)
+                        ? r.capacidadGW.toLocaleString('es-CO', { maximumFractionDigits: 2 })
+                        : '—'}
+                    </td>
+                  </>
+                )}
 
                     {tab === 'embalses' && (
                       <>
@@ -694,14 +703,27 @@ function HidroTabs({ data }) {
                           {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
                           <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
                         </td>
+
                         <td className="px-3 py-2 text-gray-200">
-                          {Number.isFinite(r.aportesPctDetalle)
-                            ? `${r.aportesPctDetalle.toFixed(1)}%`
-                            : (Number.isFinite(r.aportesPct) ? `${r.aportesPct.toFixed(1)}%` : '—')}
+                          {/* Parte base (antes del paréntesis) en neutro */}
+                          {r.porcentajeTexto
+                            ? r.porcentajeTexto.replace(/\s*\([^)]+\)\s*$/, '').trim()
+                            : (Number.isFinite(r.aportesPctDetalle) ? `${r.aportesPctDetalle.toFixed(2)}%` : '—')}
+
+                          {/* Delta coloreado como en la columna de Aportes */}
+                          <DeltaInline
+                            value={deltaPctFromText(r.porcentajeTexto)}
+                            decimals={2}
+                            suffix="%"
+                          />
                         </td>
-                        <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}</td>
+
+                        <td className="px-3 py-2 text-gray-400">
+                          {Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}
+                        </td>
                       </>
                     )}
+
                   </tr>
                 ))}
               </React.Fragment>
