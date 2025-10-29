@@ -45,12 +45,12 @@ const COLORS = {
 // ===== Endpoints =====
 import { API } from '../config/api';
 
-const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
-const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
-const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
-const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `${API}/v1/indicadores/hidrologia/indicadores_generacion_sin`;
-const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `${API}/v1/indicadores/hidrologia/indicadores_precios_energia`;
-const API_CONSOLIDADO = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
+const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
+const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
+const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
+const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
+const API_CONSOLIDADO = `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 
 /* ==================== helpers ==================== */
@@ -182,72 +182,84 @@ function useHidroRowsFromConsolidado() {
         for (const reg of regiones) {
           const regionName = String(reg?.nombre || '').trim();
 
-          // === Consolidado por región (SOLO pestaña Resumen disponible) ===
-          const nivelRegionPct     = pctNum(reg?.resumen?.nivel);                   // "94%" -> 94
-          const aportesRegionRaw   = String(reg?.resumen?.aportes_hidricos ?? '').trim(); // p.ej. "39.8%" o "+12.3%"
-          const aportesRegionPct   = pctNum(aportesRegionRaw);
-          const capacidadRegionMW  = parseMW(reg?.resumen?.capacidad_generacion_mw); // 5570
+// ---- RESUMEN POR REGIÓN (solo para la fila colapsada de la región) ----
+const nivelRegionPct    = pctNum(reg?.resumen?.nivel);
+const aportesRegionRaw  = String(reg?.resumen?.aportes_hidricos ?? '').trim();
+const aportesRegionPct  = pctNum(aportesRegionRaw);
+const capacidadRegionMW = parseMW(reg?.resumen?.capacidad_generacion_mw);
 
-          summary[regionName] = {
-            nivelPct: nivelRegionPct,
-            aportesRaw: aportesRegionRaw,  // conservamos texto para detectar signo explícito
-            aportesPct: aportesRegionPct,
-            capacidadMW: capacidadRegionMW,
+const volumenRegionGwh       = num(reg?.resumen?.volumen_gwh_dia);
+const deltaVolumenRegionGwh  = num(reg?.resumen?.delta_volumen_gwh_dia);
+const capacidadUtilRegionGwh = num(reg?.resumen?.capacidad_util_gwh_dia);
 
-            // Placeholders para futuras pestañas (listo para cuando el WS las exponga)
-            volumenGwh: NaN,
-            cambioGwh: NaN,
-            capacidadGwhDia: NaN,
-            aportesGwh: NaN,
-            aportesGwhDelta: NaN,
-            mediaHistoricaGwhDia: NaN,
-            porcentajeTexto: '',
-          };
+const aportesRegionGwh       = num(reg?.resumen?.aportes_gwh_dia_region);
+const mediaHistRegionGwh     = num(reg?.resumen?.media_historica_aportes_gwh_dia_region);
+
+summary[regionName] = {
+  // pestaña Resumen
+  nivelPct: nivelRegionPct,
+  aportesRaw: aportesRegionRaw,
+  aportesPct: aportesRegionPct,
+  capacidadMW: capacidadRegionMW,
+
+  // pestaña Embalses
+  volumenGwh: volumenRegionGwh,
+  cambioGwh: deltaVolumenRegionGwh,
+  capacidadGwhDia: capacidadUtilRegionGwh,
+
+  // pestaña Aportes
+  aportesGwh: aportesRegionGwh,
+  mediaHistoricaGwhDia: mediaHistRegionGwh,
+
+  // sin % regional de “aportes del total”
+  porcentajeTexto: '',
+  aportesGwhDelta: NaN,
+};
 
           // === Filas por embalse (igual que ya tenías, solo guardamos también el "raw" de aportes de resumen) ===
           const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
           for (const e of embalses) {
             const embalse = String(e?.nombre || '').trim();
 
-            // --- pestaña RESUMEN ---
-            const nivelResumenPct    = pctNum(e?.resumen?.nivel);
-            const aportesHidRaw      = String(e?.resumen?.aportes_hidricos ?? '').trim(); // "+81.3%" / "-4.7%"
-            const aportesHidPct      = pctNum(aportesHidRaw);
-            const capacidadMW        = parseMW(e?.resumen?.capacidad_generacion_mw);
+        // --- datos del embalse (SIEMPRE del embalse) ---
+        const nivelEmbalsePctResumen  = pctNum(e?.resumen?.nivel);
+        const aportesHidRaw           = String(e?.resumen?.aportes_hidricos ?? '').trim();
+        const aportesHidPctResumen    = pctNum(aportesHidRaw);
+        const capacidadMWEmbalse      = parseMW(e?.resumen?.capacidad_generacion_mw);
 
-            // --- pestaña EMBALSES ---
-            const { value: volGwh, delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
-            const nivelEmbalsePct = pctNum(e?.detalle_embalse?.nivel);
-            const capacidadGwhDia  = num(e?.detalle_embalse?.capacidad_gwh_dia);
+        // detalle embalse
+        const { value: volGwh,  delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
+        const nivelEmbalsePctDetalle  = pctNum(e?.detalle_embalse?.nivel);
+        const capacidadGwhDiaEmbalse  = num(e?.detalle_embalse?.capacidad_gwh_dia);
 
-            // --- pestaña APORTES ---
-            const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
-            const aportesPctDetalleNum = pctNum(e?.detalle_aportes?.porcentaje);
-            const porcentajeTexto      = String(e?.detalle_aportes?.porcentaje ?? '').trim();
-            const mediaHistGwhDia      = num(e?.detalle_aportes?.media_historica_gwh_dia);
+        // detalle aportes
+        const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
+        const porcentajeTexto       = String(e?.detalle_aportes?.porcentaje ?? '').trim();
+        const aportesPctDetalleNum  = pctNum(e?.detalle_aportes?.porcentaje);
+        const mediaHistGwhDiaEmb    = num(e?.detalle_aportes?.media_historica_gwh_dia);
 
-            out.push({
-              region: regionName,
-              embalse,
+        out.push({
+          region: regionName,
+          embalse: String(e?.nombre || '').trim(),
 
-              // resumen
-              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct,
-              aportesHidricosPct: aportesHidPct,
-              aportesHidricosRaw: aportesHidRaw, // << guardamos el texto para saber si hubo '+'/'-'
-              capacidadMW,
+          // pestaña RESUMEN (del embalse, sin mezclar región)
+          nivelPct: Number.isFinite(nivelEmbalsePctDetalle) ? nivelEmbalsePctDetalle : nivelEmbalsePctResumen,
+          aportesHidricosPct: aportesHidPctResumen,
+          aportesHidricosRaw: aportesHidRaw,
+          capacidadMW: capacidadMWEmbalse,
 
-              // embalses
-              volumenGwh: volGwh,
-              cambioGwh: volDelta,
-              capacidadGwhDia,
+          // pestaña EMBALSES
+          volumenGwh: volGwh,
+          cambioGwh: volDelta,
+          capacidadGwhDia: capacidadGwhDiaEmbalse,
 
-              // aportes
-              aportesGwh,
-              aportesGwhDelta: aportesDelta,
-              mediaHistoricaGwhDia: mediaHistGwhDia,
-              aportesPctDetalle: aportesPctDetalleNum,
-              porcentajeTexto,
-            });
+          // pestaña APORTES
+          aportesGwh,
+          aportesGwhDelta: aportesDelta,
+          mediaHistoricaGwhDia: mediaHistGwhDiaEmb,
+          aportesPctDetalle: aportesPctDetalleNum,
+          porcentajeTexto,
+        });
           }
         }
 
@@ -747,31 +759,57 @@ function HidroTabs({ data, regionSummary = {} }) {
 
                   {tab === 'embalses' && (
                     <>
-                      {/* Volumen (GWh-día) – placeholder hasta que el WS traiga consolidado */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
+                      {/* Volumen (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.volumenGwh)
+                          ? (
+                            <>
+                              {sum.volumenGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.cambioGwh) ? sum.cambioGwh : NaN} />
+                            </>
+                          )
+                          : '—'}
+                      </td>
 
-                      {/* Nivel – si quieres, reutilizamos el % de resumen mientras llega el de esta pestaña */}
+                      {/* Nivel % – consolidado por región */}
                       <td className="px-3 py-2 align-top w-[290px]">
                         {sum && Number.isFinite(sum.nivelPct)
                           ? <NivelBar pct={sum.nivelPct} />
                           : <span className="text-gray-400">—</span>}
                       </td>
 
-                      {/* Capacidad (GWh-día) – placeholder */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
+                      {/* Capacidad útil (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.capacidadGwhDia)
+                          ? sum.capacidadGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
                     </>
                   )}
 
                   {tab === 'aportes' && (
                     <>
-                      {/* Aportes (GWh-día) – placeholder de región */}
+                      {/* Aportes (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.aportesGwh)
+                          ? (
+                            <>
+                              {sum.aportesGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.aportesGwhDelta) ? sum.aportesGwhDelta : NaN} />
+                            </>
+                          )
+                          : '—'}
+                      </td>
+
+                      {/* % de aportes – no viene consolidado en el API, lo dejamos en “—” */}
                       <td className="px-3 py-2 text-gray-400">—</td>
 
-                      {/* % de aportes – OCULTO en consolidado por región */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
-
-                      {/* Media histórica (GWh-día) – placeholder de región */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
+                      {/* Media histórica (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.mediaHistoricaGwhDia)
+                          ? sum.mediaHistoricaGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
                     </>
                   )}
 
@@ -802,35 +840,31 @@ function HidroTabs({ data, regionSummary = {} }) {
                       <>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.volumenGwh) ? r.volumenGwh.toFixed(2) : '—'}
-                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : 0} />
+                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : NaN} />
                         </td>
-                        <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2 text-gray-400">
+                        <td className="px-3 py-2 align-top w-[290px]">
+                          <NivelBar pct={r.nivelPct} />
+                        </td>
+                        <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.capacidadGwhDia) ? r.capacidadGwhDia.toFixed(2) : '—'}
                         </td>
                       </>
                     )}
 
-                  {tab === 'aportes' && (
-                    <>
-                      <td className="px-3 py-2 text-gray-200">
-                        {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
-                        <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
-                      </td>
-
-                      {/* % de aportes – se mantiene para embalses */}
-                      <td className="px-3 py-2 text-gray-200">
-                        {r.porcentajeTexto
-                          ? r.porcentajeTexto.replace(/\s*\([^)]+\)\s*$/, '').trim()
-                          : (Number.isFinite(r.aportesPctDetalle) ? `${r.aportesPctDetalle.toFixed(2)}%` : '—')}
-                        <DeltaInline value={deltaPctFromText(r.porcentajeTexto)} decimals={2} suffix="%" />
-                      </td>
-
-                      <td className="px-3 py-2 text-gray-400">
-                        {Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}
-                      </td>
-                    </>
-                  )}
+                    {tab === 'aportes' && (
+                      <>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
+                          <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
+                        </td>
+                        <td className="px-3 py-2">
+                          <AportesPctCell raw={r.porcentajeTexto} value={r.aportesPctDetalle} />
+                        </td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}
+                        </td>
+                      </>
+                    )}
 
                   </tr>
                 ))}
