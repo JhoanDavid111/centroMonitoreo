@@ -65,6 +65,7 @@ const flattenData = (regiones) => {
           embalse_nivel: embalse.resumen?.nivel || "",
           embalse_aportes_hidricos: embalse.resumen?.aportes_hidricos || "",
           embalse_capacidad_generacion_mw: embalse.resumen?.capacidad_generacion_mw || "",
+          embalse_recurso: embalse.resumen?.recurso || "",
 
           embalse_volumen_gwh_dia: embalse.detalle_embalse?.volumen_gwh_dia || "",
           embalse_detalle_nivel: embalse.detalle_embalse?.nivel || "",
@@ -73,6 +74,7 @@ const flattenData = (regiones) => {
           embalse_aportes_gwh_dia: embalse.detalle_aportes?.aportes_gwh_dia || "",
           embalse_porcentaje: embalse.detalle_aportes?.porcentaje || "",
           embalse_media_historica_gwh_dia: embalse.detalle_aportes?.media_historica_gwh_dia || "",
+          embalse_porcentaje_aportes_sin_delta: embalse.detalle_aportes?.porcentaje_aportes_sin_delta || "",
         });
       });
     });
@@ -110,6 +112,8 @@ const RegionDialog = ({ coords, damProperties }) => {
   const embalse_aportes_delta = getDataParenthesis(damProperties.embalse_aportes_gwh_dia); // Aportes hídricos --- variación 1ero sin lo del
   const embalse_porcentaje = damProperties.embalse_porcentaje;
   const embalse_media_historica_gwh_dia = damProperties.embalse_media_historica_gwh_dia; // Aportes medios históricos
+  const embalse_porcentaje_aportes_sin_delta = damProperties.embalse_porcentaje_aportes_sin_delta; // Aportes medios históricos
+  const embalse_recurso = damProperties.embalse_recurso; // Recurso
 
   return (
     <Dialog
@@ -189,7 +193,7 @@ const RegionDialog = ({ coords, damProperties }) => {
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
               <span className="text-[13px]">● Aportes hídricos:</span>
               <span>
-                {embalse_aportes_string}
+                {embalse_aportes_string} GWh-día ({embalse_porcentaje_aportes_sin_delta}%)
                 <TrendChip dir={embalse_aportes_delta.signo}>{embalse_aportes_delta.valor}</TrendChip>
               </span>
             </div>
@@ -199,7 +203,7 @@ const RegionDialog = ({ coords, damProperties }) => {
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
               <span className="text-[13px]">● Recurso de generación:</span>{" "}
-              <span>{embalse_nombre}</span>
+              <span>{embalse_recurso}</span>
             </div>
             <div className="pl-1 p-4 border-b-[1px] border-[#575756]/50 flex text-sm justify-between">
               <span className="text-[13px]">
