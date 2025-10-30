@@ -65,17 +65,9 @@ export const SideInfoHidrologia = () => {
               <div className="col-span-4">
                 {item["Aportes por región (GWh-día)"]} GWh-día / {item["Porcentaje"]}%
               </div>
-              <div className="col-span-2 pt-1">Volumen útil</div>
-              <div className="col-span-4">
-                {item["Volumen útil (GWh-día)"]} GWh-dia
-              </div>
-              <div className="col-span-2 pt-1">Capacidad útil</div>
-              <div className="col-span-4">
-                {item["Capacidad útil (GWh-día)"]} GWh-dia
-              </div>
               <div className="col-span-2 pt-1">Nivel</div>
               <div className="col-span-4">
-                {item["Nivel (%)"]} %
+                {item["Volumen útil (GWh-día)"]} GWh-día - {item["Nivel (%)"]} %
               </div>
             </div>
             <div className="flex-1 h-3 rounded-2xl overflow-hidden bg-[#575756] mx-3 w-5/6">
