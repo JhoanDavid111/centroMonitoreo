@@ -68,10 +68,11 @@ const sections = [
             // },
             {
                 title: "Acciones 6GW+",
-                path: "/en_construccion",
+                path: "https://acciones6gw.upme.gov.co",
                 icon: AccionesEstrategicasOff,
                 activeIcon: AccionesEstrategicasOn,
                 roles: [ROLES.ADMIN],
+                external: true,
             },
     ],
   },

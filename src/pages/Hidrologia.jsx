@@ -1,5 +1,8 @@
+// src/pages/Hidrologia.jsx
+
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
 import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
+import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 import {
   Banner,
   BannerAction,
@@ -42,11 +45,30 @@ const COLORS = {
 // ===== Endpoints =====
 import { API } from '../config/api';
 
-const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
-const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
-const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
-const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
-const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
+
+// *** NUEVAS IMPORTACIONES ***
+import TooltipModal from '../components/ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+
+// ────────────────────────────────────────────────
+// Mapeo Canónico para Tooltip
+// Este identificador debe coincidir con la clave retornada por tu API de tooltips
+// ────────────────────────────────────────────────
+const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
+
+
+const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
+const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
+
+const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
+const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
+const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `${API}/v1/indicadores/hidrologia/indicadores_generacion_sin`;
+const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `${API}/v1/indicadores/hidrologia/indicadores_precios_energia`;
+const API_CONSOLIDADO = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
+
+
 
 
 
@@ -88,6 +110,133 @@ function ymToUtc(ym) {
   if (!m) return NaN;
   return Date.UTC(+m[1], (+m[2]) - 1, 1);
 }
+
+// ====== Helpers para CONSOLIDADO ======
+const num = (s) => {
+  if (s == null) return NaN;
+  const m = String(s).replace(/\s+/g,'').replace(',', '.').match(/-?\d+(?:\.\d+)?/);
+  return m ? parseFloat(m[0]) : NaN;
+};
+
+const pctNum = (s) => {
+  if (s == null) return NaN;
+  // acepta "+47.1%", "-34,9 %", "117%"
+  const m = String(s).replace(/\s+/g,'').replace(',', '.').match(/([+-]?\d+(?:\.\d+)?)%?/);
+  return m ? parseFloat(m[1]) : NaN;
+};
+
+
+function parseValueAndDelta(s) {
+  if (!s) return { value: NaN, delta: NaN };
+  const txt = String(s).replace(',', '.');
+  const valM = txt.match(/-?\d+(?:\.\d+)?/);
+  const value = valM ? parseFloat(valM[0]) : NaN;
+
+ 
+  const dM = txt.match(/\(([^)]+)\)/);
+  if (!dM) return { value, delta: NaN };
+
+
+  let d = dM[1].trim().replace('+ -', '-').replace('+-', '-');
+  const dNumM = d.match(/([+-]?\d+(?:\.\d+)?)/);
+  const delta = dNumM ? parseFloat(dNumM[1]) : NaN;
+
+  return { value, delta };
+}
+
+
+function parseMW(v) {
+  if (typeof v === 'number') return v;
+  return num(v);
+}
+
+function useHidroRowsFromConsolidado() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(API_CONSOLIDADO, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' }
+        });
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
+        if (abort) return;
+
+        const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
+        const out = [];
+
+        for (const reg of regiones) {
+          const regionName = String(reg?.nombre || '').trim();
+          const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
+
+          for (const e of embalses) {
+            const embalse = String(e?.nombre || '').trim();
+
+            // --- pestaña RESUMEN ---
+            // nivel -> porcentaje (para la barra)
+            const nivelResumenPct = pctNum(e?.resumen?.nivel);
+            // aportes_hidricos -> badge con signo
+            const aportesResumenPct = pctNum(e?.resumen?.aportes_hidricos);
+            // capacidad generación MW
+            const capacidadMW = parseMW(e?.resumen?.capacidad_generacion_mw);
+
+            // --- pestaña EMBALSES ---
+            const { value: volGwh, delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
+            const nivelEmbalsePct = pctNum(e?.detalle_embalse?.nivel);
+            const capacidadGwhDia = num(e?.detalle_embalse?.capacidad_gwh_dia);
+
+            // --- pestaña APORTES ---
+            const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
+            const aportesPct = pctNum(e?.detalle_aportes?.porcentaje);
+            const mediaHistGwhDia = num(e?.detalle_aportes?.media_historica_gwh_dia);
+
+            out.push({
+              region: regionName,
+              embalse,
+
+              // resumen
+              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct, // usamos detalle si viene, sino resumen
+              aportesPct: aportesResumenPct,
+              capacidadMW,
+
+              // embalses
+              volumenGwh: volGwh,
+              cambioGwh: volDelta,
+              capacidadGwhDia,
+
+              // aportes
+              aportesGwh,
+              aportesGwhDelta: aportesDelta, // no existía; lo usamos en UI
+              mediaHistoricaGwhDia: mediaHistGwhDia,
+              aportesPctDetalle: aportesPct, // por si quieres usarlo en esa pestaña
+            });
+          }
+        }
+
+        // ordenamos por región/embalse
+        out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
+        if (!abort) setRows(out);
+      } catch (e) {
+        console.error('[Consolidado] Error cargando:', e);
+        if (!abort) setRows([]);
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    })();
+    return () => { abort = true; };
+  }, []);
+
+  return { rows, loading };
+}
+
+
 
 /* ======================= Índices (defaults) ======================= */
 const defaultIndices = [
@@ -161,266 +310,6 @@ function TrendChip({ dir = 'up', children }) {
   );
 }
 
-/* =================== Highcharts (APORTES desde API) =================== */
-function useAportesOptionsFromApi() {
-  const [series, setSeries] = useState({ s1: [], s2: [], s3: [] }); // GWh, Media Histórica, % útil
-  const [range, setRange] = useState({ minX: undefined, maxX: undefined });
-
-  useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(API_APORTES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-
-        if (abort || !Array.isArray(data)) return;
-
-        const s1 = []; // aportes_gwh
-        const s2 = []; // aportes_media_historica
-        const s3 = []; // porcentaje_util
-        for (const row of data) {
-          const x = ymToUtc(row.mes);
-          if (!Number.isFinite(x)) continue;
-          const gwh = Number(row.aportes_gwh);
-          const media = Number(row.aportes_media_historica);
-          const pct = Number(row.porcentaje_util);
-          if (Number.isFinite(gwh)) s1.push([x, gwh]);
-          if (Number.isFinite(media)) s2.push([x, media]);
-          if (Number.isFinite(pct)) s3.push([x, pct]);
-        }
-        s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
-
-        const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
-        const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
-        const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
-
-        setSeries({ s1, s2, s3 });
-        setRange({ minX, maxX });
-      } catch (err) {
-        console.error('[Aportes API] Error:', err);
-        setSeries({ s1: [], s2: [], s3: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return useMemo(() => ({
-    chart: {
-      backgroundColor: COLORS.darkBg,
-      height: 650,
-      marginTop: 80,
-      marginBottom: 180,
-      spacingBottom: 40,
-    },
-    title: {
-      text: 'Aportes y nivel útil de embalses por mes',
-      align: 'left',
-      style: { color: '#fff', fontSize: '1.65em' }
-    },
-    subtitle: { text: '', align: 'left', style: { color: COLORS.gray } },
-    xAxis: {
-      type: 'datetime',
-      min: range.minX,
-      max: range.maxX,
-      gridLineWidth: 1,
-      gridLineColor: '#444',
-      tickPixelInterval: 130,
-      labels: {
-        rotation: -45,
-        align: 'right',
-        autoRotation: undefined,
-        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); },
-        style: { color: COLORS.gray, fontSize: '12px' }
-      }
-    },
-    yAxis: [
-      { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
-      { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
-    ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
-    plotOptions: { series: { marker: { radius: 3, enabled: false }, lineWidth: 2, turboThreshold: 0 } },
-    series: [
-      { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
-      { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', data: series.s2, tooltip: { valueSuffix: ' GWh-dia' } },
-      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
-    ],
-    tooltip: {
-      backgroundColor: '#262626',
-      style: { color: '#FFF', fontSize: '14px' },
-      xDateFormat: '%Y-%m',
-      shared: true,
-      useHTML: true,
-      formatter: function () {
-        let header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
-        let rows = this.points
-          .map((point) => {
-            let suffix =
-              (point.series.options.tooltip &&
-                point.series.options.tooltip.valueSuffix) ||
-              '';
-            return `
-            <div style="user-select:text;pointer-events:auto;margin:10px 0;">
-              <span style="color:${point.color};  fontSize:20px;">● </span>
-              ${point.series.name}: <b>${Highcharts.numberFormat(
-                point.y,
-                2
-              )}${suffix}</b>
-            </div>
-          `;
-          })
-          .join('');
-        return `<div style="padding:5px;">${header}${rows}</div>`;
-      },
-    },
-  }), [series, range]);
-}
-
-/* =================== Highcharts (Estatuto desde API) =================== */
-function useDesabastecimientoOptionsFromApi() {
-  const [series, setSeries] = useState({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
-  const [range, setRange] = useState({ minX: undefined, maxX: undefined });
-
-  useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(API_ESTATUTO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !Array.isArray(data)) return;
-
-        const pBolsa = [];
-        const pEscasez = [];
-        const nivelPct = [];
-        const sendaPct = [];
-
-        for (const r of data) {
-          const [y, m, d] = String(r.fecha || '').split('-').map(Number);
-          const x = Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d) ? Date.UTC(y, m - 1, d) : NaN;
-          if (!Number.isFinite(x)) continue;
-
-          const bolsa = Number(r['Precio de Bolsa en Períodos Punta']);
-          const escasez = Number(r['Precio Marginal de Escasez']);
-          let nivel = Number(r['Volumen útil del embalse']);
-          let senda = r['Senda de Referencia'];
-          senda = senda == null ? NaN : Number(senda);
-
-          // el nivel suele venir 0–1: convierto a %
-          if (Number.isFinite(nivel)) nivel = nivel <= 1 ? nivel * 100 : nivel;
-          if (Number.isFinite(senda)) senda = senda <= 1 ? senda * 100 : senda;
-
-          if (Number.isFinite(bolsa))   pBolsa.push([x, bolsa]);
-          if (Number.isFinite(escasez)) pEscasez.push([x, escasez]);
-          if (Number.isFinite(nivel))   nivelPct.push([x, nivel]);
-          if (Number.isFinite(senda))   sendaPct.push([x, senda]);
-        }
-
-        // ordenar y calcular rango
-        [pBolsa, pEscasez, nivelPct, sendaPct].forEach(arr => arr.sort((a, b) => a[0] - b[0]));
-        const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
-        const minX = allX.length ? Math.min(...allX) : undefined;
-        const maxX = allX.length ? Math.max(...allX) : undefined;
-
-        setSeries({ pBolsa, pEscasez, nivelPct, sendaPct });
-        setRange({ minX, maxX });
-      } catch (e) {
-        console.error('[Estatuto API] Error:', e);
-        setSeries({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return useMemo(() => ({
-    chart: {
-      zooming: { type: 'x' },
-      backgroundColor: COLORS.darkBg,
-      height: 600,
-      marginTop: 50,
-      marginBottom: 140,
-      spacingBottom: 20,
-    },
-    title: {
-      text: 'Estatuto de desabastecimiento',
-      align: 'left',
-      margin: 50,
-      style: { color: '#fff', fontSize: '1.65em' },
-    },
-    xAxis: {
-      type: 'datetime',
-      min: range.minX,
-      max: range.maxX,
-      gridLineWidth: 1,
-      gridLineColor: '#444',
-      labels: {
-        rotation: -45,
-        align: 'right',
-        autoRotation: undefined,
-        style: { color: COLORS.gray, fontSize: '12px' },
-        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); },
-      },
-      title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
-    },
-    yAxis: [
-      { // precios
-        title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } },
-        labels: { style: { color: COLORS.gray, fontSize: '12px' } }
-      },
-      { // % embalse
-        title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } },
-        labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } },
-        opposite: true
-      },
-    ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
-    plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
-    series: [
-      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: series.pBolsa },
-      { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: series.pEscasez },
-      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
-      ...(series.sendaPct.length
-        ? [{ name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: series.sendaPct, tooltip: { valueSuffix: '%' } }]
-        : []),
-    ],
-    tooltip: {
-      backgroundColor: '#262626',
-      valueDecimals: 2,
-      style: { color: '#FFF', fontSize: '14px' },
-      shared: true,
-      useHTML: true,
-      formatter: function () {
-        let header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
-        let rows = this.points
-          .map(point => `
-            <div style="user-select:text;pointer-events:auto; margin:5px 0 10px 0;">
-              <span style="color:${point.color}; fontSize:20px;">● </span>
-              ${point.series.name}: <b>${Highcharts.numberFormat(point.y, 2)}${point.series.yAxis?.options?.title?.text?.includes('%') ? '%' : ''}</b>
-            </div>
-          `).join('');
-        return `<div style="padding:0px;">${header}${rows}</div>`;
-      },
-    },
-  }), [series, range]);
-}
 
 /* -------- inyección de estilos para iframes embebidos (srcDoc) -------- */
 function injectStylesForGeneral(html) {
@@ -537,7 +426,12 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
 }
 
 function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
-  return (
+// Función de ayuda específica (puedes ajustarla para que muestre contenido diferente)
+  // const handleHelpClick = (cardName) => {
+  //   alert(`Ayuda para la métrica: ${cardName}`);
+  // };
+
+return (
     <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626] w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
@@ -545,8 +439,23 @@ function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multi
       </div>
       <div className="text-white text-xl">{value}</div>
       <div className="text-gray-300 text-sm">{unit}</div>
-      <div className="mt-2">
+      
+      {/* CÓDIGO CLAVE: Colocar el chip y el botón en el mismo flex container */}
+      <div className="mt-2 flex items-center gap-1"> {/* Agregamos 'flex items-center gap-1' */}
         <TrendChip dir={dir}>{delta}</TrendChip>
+
+        {/* Botón de Ayuda (HelpCircle) */}
+       <button
+          onClick={() => onHelpClick(name)} // MODIFICADO: Usa onHelpClick
+          className="flex items-center justify-center 
+            h-6 w-6 
+            rounded-md 
+            bg-neutral-700 hover:bg-neutral-600 transition-colors
+            ml-1"
+          title={`Ayuda sobre ${name}`}
+        >
+          <HelpCircle className="w-4 h-4 text-white" />
+        </button>
       </div>
     </div>
   );
@@ -800,7 +709,11 @@ function HidroTabs({ data }) {
                       <>
                         <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
                         <td className="px-3 py-2"><DeltaBadge value={r.aportesPct} /></td>
-                        <td className="px-3 py-2 text-gray-400">—</td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.capacidadMW)
+                            ? r.capacidadMW.toLocaleString('es-CO')
+                            : '—'}
+                        </td>
                       </>
                     )}
 
@@ -819,11 +732,12 @@ function HidroTabs({ data }) {
                       <>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
-                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : 2.55} />
+                          <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
                         </td>
                         <td className="px-3 py-2 text-gray-200">
-                          {Number.isFinite(r.aportesPct) ? `${Math.round(r.aportesPct)}%` : '—'}
-                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? (r.cambioGwh >= 0 ? 34.89 : -34.89) : 34.89} />
+                          {Number.isFinite(r.aportesPctDetalle)
+                            ? `${r.aportesPctDetalle.toFixed(1)}%`
+                            : (Number.isFinite(r.aportesPct) ? `${r.aportesPct.toFixed(1)}%` : '—')}
                         </td>
                         <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}</td>
                       </>
@@ -839,13 +753,341 @@ function HidroTabs({ data }) {
   );
 }
 
+function useHidroRowsFromApi() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let abort = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        // === 1️⃣ Fetch de embalses ===
+        const resEmb = await fetch(API_EXPANDER_EMBALSES, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+        });
+        const embData = await resEmb.json();
+        console.log('[Expander Embalses] Respuesta completa:', embData);
+
+        const embalses = Array.isArray(embData?.resumen_detallado_embalse)
+          ? embData.resumen_detallado_embalse
+          : [];
+        console.log('[Expander Embalses] Total embalses:', embalses.length);
+
+        // === 2️⃣ Fetch de aportes ===
+        const resApo = await fetch(API_EXPANDER_APORTES, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+        });
+        const apoData = await resApo.json();
+        console.log('[Expander Aportes] Respuesta completa:', apoData);
+
+        const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
+        console.log('[Expander Aportes] Total aportes:', aportes.length);
+
+        // === 3️⃣ Mapeo y merge ===
+        const mapAportes = new Map();
+        for (const a of aportes) {
+          if (!a.Embalse || !a.Region) continue;
+          const key = `${a.Region}::${a.Embalse}`.toUpperCase();
+          mapAportes.set(key, {
+            region: a.Region,
+            embalse: a.Embalse,
+            aportesGwh: Number(a['Aportes del día (GWh-día)']) || NaN,
+            aportesPct: Number(a['% Aportes del Total']) || NaN,
+            mediaHistoricaGwhDia: Number(a['Aporte Medio Histórico (GWh-día)']) || NaN,
+            cambioGwh: Number(a['Var. GWh vs Día Anterior']) || NaN,
+          });
+        }
+
+        const merged = embalses.map(e => {
+          const key = `${e.Region}::${e.Embalse}`.toUpperCase();
+          const apo = mapAportes.get(key);
+          return {
+            region: e.Region,
+            embalse: e.Embalse,
+            volumenGwh: Number(e['Volumen útil (GWh-día)']) || NaN,
+            cambioGwh: Number(e['Variación Volumen útil (GWh-día)']) || NaN,
+            nivelPct: Number(e['Nivel (%)']) || NaN,
+            capacidadGwhDia: Number(e['Capacidad útil (GWh-día)']) || NaN,
+            ...(apo || {}), // mezcla datos de aportes
+          };
+        });
+
+        console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
+        if (!abort) setRows(merged);
+      } catch (err) {
+        console.error('[Hidrología Expander] Error al cargar datos:', err);
+        if (!abort) setRows([]);
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    };
+    load();
+    return () => { abort = true; };
+  }, []);
+
+  return { rows, loading };
+}
+
+function useAportesOptionsFromApi() {
+  const [series, setSeries] = React.useState({ s1: [], s2: [], s3: [] }); // GWh, Media Histórica, % útil
+  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
+
+  React.useEffect(() => {
+    let abort = false;
+    const ac = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(API_APORTES, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+          signal: ac.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
+        if (abort || !Array.isArray(data)) return;
+
+        const s1 = [], s2 = [], s3 = [];
+        for (const row of data) {
+          const x = ymToUtc(row.mes);
+          if (!Number.isFinite(x)) continue;
+          const gwh   = Number(row.aportes_gwh);
+          const media = Number(row.aportes_media_historica);
+          const pct   = Number(row.porcentaje_util);
+          if (Number.isFinite(gwh))   s1.push([x, gwh]);
+          if (Number.isFinite(media)) s2.push([x, media]);
+          if (Number.isFinite(pct))   s3.push([x, pct]);
+        }
+        s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
+
+        const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
+        const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
+        const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
+
+        setSeries({ s1, s2, s3 });
+        setRange({ minX, maxX });
+      } catch (err) {
+        console.error('[Aportes API] Error:', err);
+        setSeries({ s1: [], s2: [], s3: [] });
+        setRange({ minX: undefined, maxX: undefined });
+      }
+    })();
+    return () => { abort = true; ac.abort(); };
+  }, []);
+
+  return React.useMemo(() => ({
+    chart: { backgroundColor: COLORS.darkBg, height: 650, marginTop: 80, marginBottom: 180, spacingBottom: 40 },
+    title: {
+      text: 'Aportes y nivel útil de embalses por mes',
+      align: 'left',
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+    },
+    xAxis: {
+      type: 'datetime',
+      min: range.minX,
+      max: range.maxX,
+      gridLineWidth: 1,
+      gridLineColor: '#444',
+      tickPixelInterval: 130,
+      labels: {
+        rotation: -45, align: 'right', autoRotation: undefined,
+        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); },
+        style: { color: COLORS.gray, fontSize: '12px' }
+      }
+    },
+    yAxis: [
+      { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
+      { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
+    ],
+    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
+    plotOptions: { series: { marker: { radius: 3, enabled: false }, lineWidth: 2, turboThreshold: 0 } },
+    series: [
+      { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
+      { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', data: series.s2, tooltip: { valueSuffix: ' GWh-dia' } },
+      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
+    ],
+    tooltip: {
+      backgroundColor: '#262626',
+      style: { color: '#FFF', fontSize: '14px' },
+      xDateFormat: '%Y-%m',
+      shared: true,
+      useHTML: true,
+      formatter: function () {
+        let header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
+        let rows = this.points.map((p) => {
+          const suffix = (p.series.options.tooltip && p.series.options.tooltip.valueSuffix) || '';
+          return `
+            <div style="user-select:text;pointer-events:auto;margin:10px 0;">
+              <span style="color:${p.color};  fontSize:20px;">● </span>
+              ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}${suffix}</b>
+            </div>`;
+        }).join('');
+        return `<div style="padding:5px;">${header}${rows}</div>`;
+      },
+    },
+  }), [series, range]);
+}
+
+function useDesabastecimientoOptionsFromApi() {
+  const [series, setSeries] = React.useState({
+    pBolsa: [],        // Precio de Bolsa en Períodos Punta
+    pEscasez: [],      // Precio Marginal de Escasez
+    nivelPct: [],      // Volumen útil del embalse (%)
+    sendaPct: []       // Senda de referencia (%)
+  });
+  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
+
+  React.useEffect(() => {
+    let abort = false;
+    const ac = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch(API_ESTATUTO, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+          signal: ac.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
+        if (abort || !Array.isArray(data)) return;
+
+        const pBolsa = [];
+        const pEscasez = [];
+        const nivelPct = [];
+        const sendaPct = [];
+
+        for (const r of data) {
+          const [y, m, d] = String(r.fecha || '').split('-').map(Number);
+          const x = Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d) ? Date.UTC(y, m - 1, d) : NaN;
+          if (!Number.isFinite(x)) continue;
+
+          const bolsa  = Number(r['Precio de Bolsa en Períodos Punta']);
+          const escasez = Number(r['Precio Marginal de Escasez']);
+          let nivel   = Number(r['Volumen útil del embalse']);
+          let senda   = r['Senda de Referencia'];
+          senda = senda == null ? NaN : Number(senda);
+
+          // Normalizo a % si viene 0–1
+          if (Number.isFinite(nivel)) nivel = nivel <= 1 ? nivel * 100 : nivel;
+          if (Number.isFinite(senda)) senda = senda <= 1 ? senda * 100 : senda;
+
+          if (Number.isFinite(bolsa))   pBolsa.push([x, bolsa]);
+          if (Number.isFinite(escasez)) pEscasez.push([x, escasez]);
+          if (Number.isFinite(nivel))   nivelPct.push([x, nivel]);
+          if (Number.isFinite(senda))   sendaPct.push([x, senda]);
+        }
+
+        [pBolsa, pEscasez, nivelPct, sendaPct].forEach(a => a.sort((a1, a2) => a1[0] - a2[0]));
+        const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
+        const minX = allX.length ? Math.min(...allX) : undefined;
+        const maxX = allX.length ? Math.max(...allX) : undefined;
+
+        setSeries({ pBolsa, pEscasez, nivelPct, sendaPct });
+        setRange({ minX, maxX });
+      } catch (e) {
+        console.error('[Estatuto API] Error:', e);
+        setSeries({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
+        setRange({ minX: undefined, maxX: undefined });
+      }
+    })();
+
+    return () => { abort = true; ac.abort(); };
+  }, []);
+
+  return React.useMemo(() => ({
+    chart: {
+      zooming: { type: 'x' },
+      backgroundColor: COLORS.darkBg,
+      height: 600,
+      marginTop: 50,
+      marginBottom: 140,
+      spacingBottom: 20,
+    },
+    title: {
+      text: 'Estatuto de desabastecimiento',
+      align: 'left',
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+    },
+    xAxis: {
+      type: 'datetime',
+      min: range.minX,
+      max: range.maxX,
+      gridLineWidth: 1,
+      gridLineColor: '#444',
+      labels: {
+        rotation: -45,
+        align: 'right',
+        autoRotation: undefined,
+        style: { color: COLORS.gray, fontSize: '12px' },
+        formatter() { return Highcharts.dateFormat('%Y-%m', this.value); },
+      },
+      title: { text: 'Fecha', style: { color: COLORS.gray, fontSize: '16px' } },
+    },
+    yAxis: [
+      { // precios
+        title: { text: 'Precios (COP/kWh)', style: { color: COLORS.gray, fontSize: '16px' } },
+        labels: { style: { color: COLORS.gray, fontSize: '12px' } }
+      },
+      { // % embalse
+        title: { text: 'Nivel de Embalse Útil (%)', style: { color: COLORS.gray, fontSize: '16px' } },
+        labels: { format: '{value}%', style: { color: COLORS.gray, fontSize: '12px' } },
+        opposite: true
+      },
+    ],
+    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
+    plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
+    series: [
+      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: series.pBolsa },
+      { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: series.pEscasez },
+      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
+      ...(series.sendaPct.length
+        ? [{ name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: series.sendaPct, tooltip: { valueSuffix: '%' } }]
+        : []),
+    ],
+    tooltip: {
+      backgroundColor: '#262626',
+      valueDecimals: 2,
+      style: { color: '#FFF', fontSize: '14px' },
+      shared: true,
+      useHTML: true,
+      formatter: function () {
+        const header = `<b>${Highcharts.dateFormat('%e %b %Y', this.x)}</b><br/>`;
+        const rows = this.points.map(p => `
+          <div style="user-select:text;pointer-events:auto; margin:5px 0 10px 0;">
+            <span style="color:${p.color}; fontSize:20px;">● </span>
+            ${p.series.name}: <b>${Highcharts.numberFormat(p.y, 2)}${p.series.yAxis && p.series.yAxis.opposite ? '%' : (p.series.name.includes('COP') ? '' : '')}</b>
+          </div>
+        `).join('');
+        return `<div style="padding:0px;">${header}${rows}</div>`;
+      },
+    },
+  }), [series, range]);
+}
+
+
 /* --------------------------------- Página --------------------------------- */
 export default function Hidrologia() {
+  
+
+
+
+
   // ⬇️ AHORA LA GRÁFICA DE APORTES USA API
   const aportesOptions = useAportesOptionsFromApi();
   const desabOptions = useDesabastecimientoOptionsFromApi();
   const [tab, setTab] = useState('aportes');
-  const hidroRows = useHidroRows(chart3Html, tablaHidrologiaCompleta);
+  const { rows: hidroRows, loading: loadingHidroRows } = useHidroRowsFromConsolidado();
 
   // === Índices desde API (sin cambios) ===
   const [indices, setIndices] = useState(defaultIndices);
@@ -862,6 +1104,45 @@ export default function Hidrologia() {
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
   ][Math.max(0, Math.min(11, (m|0)-1))] || '—');
+
+  // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState('');
+    
+    // 1. Usar el hook de cache centralizado para tooltips
+    const { 
+      tooltips, 
+      loading: loadingTooltips, 
+      error: errorTooltips 
+    } = useTooltipsCache();
+  
+    // Función para cerrar la modal
+    const closeModal = () => {
+      setIsModalOpen(false);
+      setModalTitle('');
+      setModalContent('');
+    };
+  
+    // Función para manejar el clic en el botón de ayuda
+    const handleHelpClick = () => {
+      // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
+      const title = options?.title?.text || 'Capacidad Prueba';
+      
+      // 3. Buscar el contenido en el caché global de tooltips
+      const content = tooltips[CHART_TOOLTIP_ID];
+  
+      if (content) {
+        setModalTitle(title);
+        setModalContent(content);
+        setIsModalOpen(true);
+      } else {
+        setModalTitle('Información no disponible');
+        setModalContent('No se encontró una descripción detallada para esta gráfica.');
+        setIsModalOpen(true);
+      }
+    };
+  
 
   // Fetch indicadores hidráulicos
   useEffect(() => {
@@ -1164,47 +1445,99 @@ useEffect(() => {
         <h2 className="text-2xl font-semibold text-gray-300 avoid-break">Índices</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
+        {/* Card 1 */}
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
 
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[0].value}</p>
-              <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
-            </div>
+          {/* Fila: valor GWh con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[0].value}</p>
 
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#D1D1D0]">
-                <div
-                  className="h-3"
-                  style={{ width: `${Math.max(0, Math.min(100, indices[0].pctValueNum || 0))}%`, background: COLORS.blue }}
-                />
-              </div>
-              <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
+            <div className="flex items-center gap-2">
+            <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
+            <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
             </div>
-            <div className="mt-1 text-gray-300">{indices[0].pct}</div>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
-            <TitleRow
-              title="Aportes mensuales promedio"
-              updated={indices[1].updated}
-              icon={OfertaDemandaIcon}
-            />
+          {/* Divisor */}
+          <div className="my-3 h-px w-full bg-[#3a3a3a]" />
 
-            <div className="flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].value}</p>
-              <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
-            </div>
+          {/* Fila: % con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <div className="text-gray-300 text-xl">{indices[0].pct}</div>
 
-            <div className="mt-3 flex items-center gap-3">
-              <p className="text-white text-xl">{indices[1].pct}</p>
-              <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
-            </div>
+            <div className="flex items-center gap-2">
+            <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
 
-            <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
           </div>
+          </div>
+
+          {/* Barra de nivel */}
+          <div className="mt-3 flex items-center gap-3">
+            <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#1f1f1f] border border-[#3a3a3a]">
+              <div
+                className="h-3"
+                style={{
+                  width: `${Math.max(0, Math.min(100, indices[0].pctValueNum || 0))}%`,
+                  background: COLORS.blue
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2 */}
+        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <TitleRow
+            title="Aportes mensuales promedio"
+            updated={indices[1].updated}
+            icon={OfertaDemandaIcon}
+          />
+
+          {/* Fila: valor GWh con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[1].value}</p>
+
+            <div className="flex items-center gap-2">
+            <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+                </div>
+          </div>
+
+          {/* Divisor */}
+          <div className="my-3 h-px w-full bg-[#3a3a3a]" />
+
+          {/* Fila: % con chip a la derecha */}
+          <div className="flex items-center justify-between">
+            <p className="text-white text-xl">{indices[1].pct}</p>
+
+            <div className="flex items-center gap-2">
+            <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+
+            </div>
+          </div>
+
+          {/* Media histórica */}
+          <div className="text-xs text-gray-400 mt-2">{indices[1].sub}</div>
+        </div>
 
           {/* Card 3 */}
           <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
@@ -1232,12 +1565,20 @@ useEffect(() => {
                   />
                 );
               })}
+              
             </div>
 
             <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
+               <div className="flex items-center gap-2">
               <div className="text-white">{indices[2].bottom}</div>
-              <div className="mt-2">
+            
+               
                 <TrendChip dir={indices[2].bottomDir}>{indices[2].bottomDelta}</TrendChip>
+                 <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
               </div>
             </div>
           </div>
@@ -1293,14 +1634,49 @@ useEffect(() => {
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <HidroTabs data={hidroRows} />
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+              {/* Ayuda */}
+              <button
+                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+                style={{ width: 30, height: 30 }}
+                title="Ayuda"
+                onClick={handleHelpClick}
+                type="button"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                  <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+                </svg>
+              </button>
+
             <HighchartsReact highcharts={Highcharts} options={aportesOptions} />
           </div>
         </div>
 
         {/* Estatuto de desabastecimiento */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 h-[650px] avoid-break">
+        <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+        {/* Ayuda */}
+        <button
+          className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          style={{ width: 30, height: 30 }}
+          title="Ayuda"
+          onClick={handleHelpClick}
+          type="button"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+            <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+          </svg>
+        </button>
+          
           <HighchartsReact highcharts={Highcharts} options={desabOptions} />
+          {/* *** COMPONENTE TOOLTIP MODAL *** */}
+                  <TooltipModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    title={modalTitle}
+                    content={modalContent}
+                  />
         </div>
       </section>
     </>
