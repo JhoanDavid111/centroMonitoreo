@@ -26,6 +26,9 @@ import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmaril
 import chart1Html from '../data/Chart1.html?raw';
 import chart3Html from '../data/Chart3.html?raw';
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 import { DamMap } from '../components/DamMap';
 
@@ -67,14 +70,12 @@ const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPL
 const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
 const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
 
-const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
-const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
-const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
-const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `${API}/v1/indicadores/hidrologia/indicadores_generacion_sin`;
-const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `${API}/v1/indicadores/hidrologia/indicadores_precios_energia`;
-const API_CONSOLIDADO = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
-
-
+const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
+const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
+const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
+const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
+const API_CONSOLIDADO = `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 
 
@@ -150,77 +151,137 @@ function parseValueAndDelta(s) {
   return { value, delta };
 }
 
+function deltaPctFromText(txt) {
+  const m = String(txt || '').match(/\(([^)]+)\)/); // contenido entre paréntesis
+  if (!m) return NaN;
+  return pctNum(m[1]); // reaprovecha tu pctNum
+}
+
 
 function parseMW(v) {
   if (typeof v === 'number') return v;
   return num(v);
 }
 
+function AportesPctCell({ raw, value }) {
+  // raw: texto original ("+81.3%", "-4.7%", "39.8%")
+  // value: número (81.3, -4.7, 39.8)
+  const txt = (raw ?? '').trim();
+  const hasExplicitPlus  = /^[\s+]*\+/.test(txt);
+  const hasExplicitMinus = /^[\s-]*-/.test(txt) || txt.startsWith('−'); // considera guion y '−'
+  const hasSign = hasExplicitPlus || hasExplicitMinus;
+
+  if (hasSign) {
+    // Usa DeltaBadge con el número; se colorea verde si >=0, rojo si <0
+    return <DeltaBadge value={Number.isFinite(value) ? value : NaN} suffix="%" />;
+  }
+  // Sin signo explícito → neutro
+  const shown = Number.isFinite(value) ? `${value.toFixed(2)}%` : (txt || '—');
+  return <span className="text-gray-200">{shown}</span>;
+}
+
+
 function useHidroRowsFromConsolidado() {
   const { data, isLoading: loading } = useHidrologiaConsolidado();
   
-  const rows = useMemo(() => {
-    if (!data) return [];
+  const { rows, regionSummary } = useMemo(() => {
+    if (!data) return { rows: [], regionSummary: {} };
+    
+    const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
+    const out = [];
+    const summary = {}; // region -> { ... }
 
-        const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
-        const out = [];
+    for (const reg of regiones) {
+      const regionName = String(reg?.nombre || '').trim();
 
-        for (const reg of regiones) {
-          const regionName = String(reg?.nombre || '').trim();
-          const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
+      // ---- RESUMEN POR REGIÓN (solo para la fila colapsada de la región) ----
+      const nivelRegionPct    = pctNum(reg?.resumen?.nivel);
+      const aportesRegionRaw  = String(reg?.resumen?.aportes_hidricos ?? '').trim();
+      const aportesRegionPct  = pctNum(aportesRegionRaw);
+      const capacidadRegionMW = parseMW(reg?.resumen?.capacidad_generacion_mw);
 
-          for (const e of embalses) {
-            const embalse = String(e?.nombre || '').trim();
+      const volumenRegionGwh       = num(reg?.resumen?.volumen_gwh_dia);
+      const deltaVolumenRegionGwh  = num(reg?.resumen?.delta_volumen_gwh_dia);
+      const capacidadUtilRegionGwh = num(reg?.resumen?.capacidad_util_gwh_dia);
 
-            // --- pestaña RESUMEN ---
-            // nivel -> porcentaje (para la barra)
-            const nivelResumenPct = pctNum(e?.resumen?.nivel);
-            // aportes_hidricos -> badge con signo
-            const aportesResumenPct = pctNum(e?.resumen?.aportes_hidricos);
-            // capacidad generación MW
-            const capacidadMW = parseMW(e?.resumen?.capacidad_generacion_mw);
+      const aportesRegionGwh       = num(reg?.resumen?.aportes_gwh_dia_region);
+      const mediaHistRegionGwh     = num(reg?.resumen?.media_historica_aportes_gwh_dia_region);
 
-            // --- pestaña EMBALSES ---
-            const { value: volGwh, delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
-            const nivelEmbalsePct = pctNum(e?.detalle_embalse?.nivel);
-            const capacidadGwhDia = num(e?.detalle_embalse?.capacidad_gwh_dia);
+      summary[regionName] = {
+        // pestaña Resumen
+        nivelPct: nivelRegionPct,
+        aportesRaw: aportesRegionRaw,
+        aportesPct: aportesRegionPct,
+        capacidadMW: capacidadRegionMW,
 
-            // --- pestaña APORTES ---
-            const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
-            const aportesPct = pctNum(e?.detalle_aportes?.porcentaje);
-            const mediaHistGwhDia = num(e?.detalle_aportes?.media_historica_gwh_dia);
+        // pestaña Embalses
+        volumenGwh: volumenRegionGwh,
+        cambioGwh: deltaVolumenRegionGwh,
+        capacidadGwhDia: capacidadUtilRegionGwh,
 
-            out.push({
-              region: regionName,
-              embalse,
+        // pestaña Aportes
+        aportesGwh: aportesRegionGwh,
+        mediaHistoricaGwhDia: mediaHistRegionGwh,
 
-              // resumen
-              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct, // usamos detalle si viene, sino resumen
-              aportesPct: aportesResumenPct,
-              capacidadMW,
+        // sin % regional de "aportes del total"
+        porcentajeTexto: '',
+        aportesGwhDelta: NaN,
+      };
 
-              // embalses
-              volumenGwh: volGwh,
-              cambioGwh: volDelta,
-              capacidadGwhDia,
+      // === Filas por embalse (igual que ya tenías, solo guardamos también el "raw" de aportes de resumen) ===
+      const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
+      for (const e of embalses) {
+        const embalse = String(e?.nombre || '').trim();
 
-              // aportes
-              aportesGwh,
-              aportesGwhDelta: aportesDelta, // no existía; lo usamos en UI
-              mediaHistoricaGwhDia: mediaHistGwhDia,
-              aportesPctDetalle: aportesPct, // por si quieres usarlo en esa pestaña
-            });
-          }
-        }
+        // --- datos del embalse (SIEMPRE del embalse) ---
+        const nivelEmbalsePctResumen  = pctNum(e?.resumen?.nivel);
+        const aportesHidRaw           = String(e?.resumen?.aportes_hidricos ?? '').trim();
+        const aportesHidPctResumen    = pctNum(aportesHidRaw);
+        const capacidadMWEmbalse      = parseMW(e?.resumen?.capacidad_generacion_mw);
+
+        // detalle embalse
+        const { value: volGwh,  delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
+        const nivelEmbalsePctDetalle  = pctNum(e?.detalle_embalse?.nivel);
+        const capacidadGwhDiaEmbalse  = num(e?.detalle_embalse?.capacidad_gwh_dia);
+
+        // detalle aportes
+        const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
+        const porcentajeTexto       = String(e?.detalle_aportes?.porcentaje ?? '').trim();
+        const aportesPctDetalleNum  = pctNum(e?.detalle_aportes?.porcentaje);
+        const mediaHistGwhDiaEmb    = num(e?.detalle_aportes?.media_historica_gwh_dia);
+
+        out.push({
+          region: regionName,
+          embalse: String(e?.nombre || '').trim(),
+
+          // pestaña RESUMEN (del embalse, sin mezclar región)
+          nivelPct: Number.isFinite(nivelEmbalsePctDetalle) ? nivelEmbalsePctDetalle : nivelEmbalsePctResumen,
+          aportesHidricosPct: aportesHidPctResumen,
+          aportesHidricosRaw: aportesHidRaw,
+          capacidadMW: capacidadMWEmbalse,
+
+          // pestaña EMBALSES
+          volumenGwh: volGwh,
+          cambioGwh: volDelta,
+          capacidadGwhDia: capacidadGwhDiaEmbalse,
+
+          // pestaña APORTES
+          aportesGwh,
+          aportesGwhDelta: aportesDelta,
+          mediaHistoricaGwhDia: mediaHistGwhDiaEmb,
+          aportesPctDetalle: aportesPctDetalleNum,
+          porcentajeTexto,
+        });
+      }
+    }
 
     // ordenamos por región/embalse
     out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
-    return out;
+    return { rows: out, regionSummary: summary };
   }, [data]);
 
-  return { rows, loading };
+  return { rows, loading, regionSummary };
 }
-
 
 
 /* ======================= Índices (defaults) ======================= */
@@ -601,7 +662,7 @@ function groupByRegion(rows) {
   return Array.from(map.entries());
 }
 
-function HidroTabs({ data }) {
+function HidroTabs({ data, regionSummary = {} }) {
   const [tab, setTab] = useState('resumen');
   const [open, setOpen] = useState(() => new Set());
   const groups = useMemo(() => groupByRegion(data), [data]);
@@ -647,8 +708,8 @@ function HidroTabs({ data }) {
               <tr>
                 <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
                 <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th> {/* <- antes era Variación Volumen */}
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th> {/* <- MW */}
               </tr>
             )}
             {tab === 'embalses' && (
@@ -670,20 +731,110 @@ function HidroTabs({ data }) {
           </thead>
 
           <tbody>
-            {groups.map(([region, rows]) => (
+          {groups.map(([region, rows]) => {
+            const sum = regionSummary[region] || null;
+
+            return (
               <React.Fragment key={region}>
-                <tr className="bg-[#262626] border-b border-[#3a3a3a]">
-                  <td colSpan={4} className="px-3 py-2">
+                {/* Fila de región visible en vista colapsada con las 4 columnas */}
+                <tr className="bg-[#262626] border-b border-[#3a3a3a] hover:bg-[#2a2a2a]">
+                  {/* Columna: Región + botón expandir */}
+                  <td className="px-3 py-2">
                     <button
                       className="text-gray-200 font-semibold inline-flex items-center gap-2"
                       onClick={() => toggle(region)}
+                      aria-expanded={open.has(region)}
                     >
                       <span className="inline-block w-5 text-center">{open.has(region) ? '−' : '+'}</span>
                       {region}
                     </button>
                   </td>
+
+                  {/* Columnas de métricas por pestaña (se ven aun colapsado) */}
+                  {tab === 'resumen' && (
+                    <>
+                      {/* Nivel */}
+                      <td className="px-3 py-2 align-top w-[290px]">
+                        {sum && Number.isFinite(sum.nivelPct)
+                          ? <NivelBar pct={sum.nivelPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Aportes hídricos (verde si +, rojo si −, neutro si sin signo) */}
+                      <td className="px-3 py-2">
+                        {sum
+                          ? <AportesPctCell raw={sum.aportesRaw} value={sum.aportesPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Capacidad generación (MW) */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.capacidadMW)
+                          ? sum.capacidadMW.toLocaleString('es-CO', { maximumFractionDigits: 0 })
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+
+                  {tab === 'embalses' && (
+                    <>
+                      {/* Volumen (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.volumenGwh)
+                          ? (
+                            <>
+                              {sum.volumenGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.cambioGwh) ? sum.cambioGwh : NaN} />
+                            </>
+                          )
+                          : '—'}
+                      </td>
+
+                      {/* Nivel % – consolidado por región */}
+                      <td className="px-3 py-2 align-top w-[290px]">
+                        {sum && Number.isFinite(sum.nivelPct)
+                          ? <NivelBar pct={sum.nivelPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Capacidad útil (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.capacidadGwhDia)
+                          ? sum.capacidadGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+
+                  {tab === 'aportes' && (
+                    <>
+                      {/* Aportes (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.aportesGwh)
+                          ? (
+                            <>
+                              {sum.aportesGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.aportesGwhDelta) ? sum.aportesGwhDelta : NaN} />
+                            </>
+                          )
+                          : '—'}
+                      </td>
+
+                      {/* % de aportes – no viene consolidado en el API, lo dejamos en “—” */}
+                      <td className="px-3 py-2 text-gray-400">—</td>
+
+                      {/* Media histórica (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.mediaHistoricaGwhDia)
+                          ? sum.mediaHistoricaGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+
                 </tr>
 
+                {/* Filas por embalse (solo cuando está expandido) */}
                 {open.has(region) && rows.map((r) => (
                   <tr key={`${region}::${r.embalse}`} className="border-b border-[#2e2e2e] hover:bg-[#2a2a2a]">
                     <td className="px-3 py-2 text-gray-200">
@@ -693,10 +844,12 @@ function HidroTabs({ data }) {
                     {tab === 'resumen' && (
                       <>
                         <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2"><DeltaBadge value={r.aportesPct} /></td>
+                        <td className="px-3 py-2">
+                          <AportesPctCell raw={r.aportesHidricosRaw} value={r.aportesHidricosPct} />
+                        </td>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.capacidadMW)
-                            ? r.capacidadMW.toLocaleString('es-CO')
+                            ? r.capacidadMW.toLocaleString('es-CO', { maximumFractionDigits: 0 })
                             : '—'}
                         </td>
                       </>
@@ -706,10 +859,14 @@ function HidroTabs({ data }) {
                       <>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.volumenGwh) ? r.volumenGwh.toFixed(2) : '—'}
-                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : 0} />
+                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : NaN} />
                         </td>
-                        <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.capacidadGwhDia) ? r.capacidadGwhDia.toFixed(2) : '—'}</td>
+                        <td className="px-3 py-2 align-top w-[290px]">
+                          <NivelBar pct={r.nivelPct} />
+                        </td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.capacidadGwhDia) ? r.capacidadGwhDia.toFixed(2) : '—'}
+                        </td>
                       </>
                     )}
 
@@ -719,18 +876,22 @@ function HidroTabs({ data }) {
                           {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
                           <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
                         </td>
-                        <td className="px-3 py-2 text-gray-200">
-                          {Number.isFinite(r.aportesPctDetalle)
-                            ? `${r.aportesPctDetalle.toFixed(1)}%`
-                            : (Number.isFinite(r.aportesPct) ? `${r.aportesPct.toFixed(1)}%` : '—')}
+                        <td className="px-3 py-2">
+                          <AportesPctCell raw={r.porcentajeTexto} value={r.aportesPctDetalle} />
                         </td>
-                        <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}</td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}
+                        </td>
                       </>
                     )}
+
                   </tr>
                 ))}
               </React.Fragment>
-            ))}
+            );
+          })}
+
+
           </tbody>
         </table>
       </div>
@@ -1019,7 +1180,7 @@ export default function Hidrologia() {
   const aportesOptions = useAportesOptionsFromApi();
   const desabOptions = useDesabastecimientoOptionsFromApi();
   const [tab, setTab] = useState('aportes');
-  const { rows: hidroRows, loading: loadingHidroRows } = useHidroRowsFromConsolidado();
+  const { rows: hidroRows, loading: loadingHidroRows, regionSummary } = useHidroRowsFromConsolidado();
 
   // === Índices desde API (sin cambios) ===
   const [indices, setIndices] = useState(defaultIndices);
@@ -1058,8 +1219,8 @@ export default function Hidrologia() {
   
     // Función para manejar el clic en el botón de ayuda
     const handleHelpClick = () => {
-      // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
-      const title = options?.title?.text || 'Capacidad Prueba';
+      // 2. Obtener el título de la gráfica de aportes
+      const title = aportesOptions?.title?.text || 'Aportes y nivel útil de embalses por mes';
       
       // 3. Buscar el contenido en el caché global de tooltips
       const content = tooltips[CHART_TOOLTIP_ID];
@@ -1335,6 +1496,86 @@ export default function Hidrologia() {
     removeAfterPrint: true,
   });
 
+  // ---- Descargar PDF (html2canvas + jsPDF) ----
+const [downloading, setDownloading] = useState(false);
+
+const handleDownloadPdf = async () => {
+  if (!printRef.current || downloading) return;
+  setDownloading(true);
+  try {
+    // Asegura calidad en pantallas HiDPI
+    const scale = Math.max(2, window.devicePixelRatio || 1);
+
+    // Captura el nodo completo
+    const canvas = await html2canvas(printRef.current, {
+      backgroundColor: '#262626',   // respeta el fondo dark
+      scale,
+      useCORS: true,
+      logging: false,
+      // html2canvas ya soporta SVG; foreignObject mejora algunos casos
+      foreignObjectRendering: true,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+
+    // Configura PDF A4 (mm)
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth  = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Ajuste de escala manteniendo proporción
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    // Si ocupa más de una página, la partimos “desplazando” el alto
+    let position = 0;
+    let remaining = imgHeight;
+
+    // Tip: usamos la misma imagen, pero movemos el “recorte” con addImage options
+    // jsPDF no recorta, así que hacemos paginado por “slice” dibujando el mismo bitmap
+    // en offsets verticales.
+    // Para calidad y performance, convertimos a px->mm con la misma proporción.
+    const pxPageHeight = Math.floor((pageHeight * canvas.width) / pageWidth); // alto equivalente en px por página
+    let sY = 0;
+
+    while (remaining > 0) {
+      // Crea un canvas “slice” por página
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width  = canvas.width;
+      pageCanvas.height = Math.min(pxPageHeight, canvas.height - sY);
+
+      const ctx = pageCanvas.getContext('2d');
+      ctx.drawImage(
+        canvas,
+        0, sY,                    // src x,y
+        canvas.width, pageCanvas.height, // src w,h
+        0, 0,                     // dst x,y
+        canvas.width, pageCanvas.height  // dst w,h
+      );
+
+      const pageImgData = pageCanvas.toDataURL('image/png');
+      const pageImgHeight = (pageCanvas.height * imgWidth) / canvas.width;
+
+      if (position > 0) pdf.addPage();
+      pdf.addImage(pageImgData, 'PNG', 0, 0, imgWidth, pageImgHeight, undefined, 'FAST');
+
+      remaining -= pageImgHeight;
+      sY += pageCanvas.height;
+      position += pageImgHeight;
+    }
+
+    pdf.save('hidrologia.pdf');
+  } catch (e) {
+    console.error('[PDF] Error generando PDF:', e);
+    alert('No se pudo generar el PDF. Revisa la consola para más detalles.');
+  } finally {
+    setDownloading(false);
+  }
+};
+
+
   return (
     <>
       <style>{`@media print { ${pageStyle} }`}</style>
@@ -1546,22 +1787,21 @@ export default function Hidrologia() {
 
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <HidroTabs data={hidroRows} />
+          <HidroTabs data={hidroRows} regionSummary={regionSummary} />
           <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
-              {/* Ayuda */}
-              <button
-                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-                style={{ width: 30, height: 30 }}
-                title="Ayuda"
-                onClick={handleHelpClick}
-                type="button"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
-                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-                  <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
-                </svg>
-              </button>
-
+            {/* Ayuda */}
+            <button
+              className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+              style={{ width: 30, height: 30 }}
+              title="Ayuda"
+              onClick={handleHelpClick}
+              type="button"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+                <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+              </svg>
+            </button>
             <HighchartsReact highcharts={Highcharts} options={aportesOptions} />
           </div>
         </div>
