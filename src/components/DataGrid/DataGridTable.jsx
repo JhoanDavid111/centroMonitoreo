@@ -248,9 +248,7 @@ const DataGridTable = ({
         </div>
       ),
       ignoreRowClick: true,
-      width: '100px',
-      button: true,
-      compact: true
+      width: '100px'
     };
     
     return [actionColumn, ...processedColumns];

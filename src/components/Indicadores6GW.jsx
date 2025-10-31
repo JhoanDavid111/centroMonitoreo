@@ -13,12 +13,11 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 
 import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
 
-import { use6GWCache } from './DataGrid/hooks/use6GWCache';
-
 import { useNavigate } from 'react-router-dom';
 import TooltipModal from './ui/TooltipModal';
 
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Correcto
+import { useIndicadores6GW } from '../services/indicadoresService';
+import { useTooltips } from '../services/tooltipsService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -98,29 +97,21 @@ function cleanSubtitle(raw) {
 const formatMW = (n) =>
   Number(n ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-async function fetchIndicadores6GW() {
-  const resp = await fetch(`${API}/v1/indicadores/6g_proyecto`, { method: 'POST' });
-  if (!resp.ok) throw new Error('Error al consultar indicadores 6GW+');
-  return resp.json();
-}
-
-// NOTA: La función fetchTooltips() fue eliminada de este archivo, ya que su 
-// lógica debe residir dentro de useTooltipsCache.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
 
-  const { data, loading, error } = use6GWCache(); 
+  const { data, isLoading: loading, error } = useIndicadores6GW(); 
   const navigate = useNavigate();
 
   // USO DEL HOOK CENTRALIZADO DE TOOLTIPS
   const { 
-    tooltips, 
-    loading: loadingTooltips, 
+    data: tooltips = {}, 
+    isLoading: loadingTooltips, 
     error: errorTooltips 
-  } = useTooltipsCache(); 
+  } = useTooltips(); 
 
 
   // ESTADOS DE LA MODAL

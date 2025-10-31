@@ -1,13 +1,12 @@
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer } from "react-leaflet";
-import { API } from '../config/api';
+import { useHidrologiaConsolidado } from '../services/indicadoresService';
 
 import { Dialog, DialogContent, DialogTrigger } from "./ui/Dialog";
 
 import REGIONES_URL from "../assets/geojson/RegionesHidro.geojson?url";
 
-const DATA_DAM_API = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 const regionBackground = {
   antioquia: "#9168EA",
@@ -225,38 +224,35 @@ const RegionDialog = ({ coords, damProperties }) => {
 const DamMap = () => {
   const [regiones, setRegiones] = useState(null);
   const [dataApi, setDataApi] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingGeoJSON, setLoadingGeoJSON] = useState(true);
 
   useEffect(() => {
     Promise.all([fetch(REGIONES_URL)])
       .then(async ([r1]) => {
         const regionesJson = await r1.json();
         setRegiones(regionesJson);
+        setLoadingGeoJSON(false);
       })
-      .catch((err) => console.error("Error cargando GeoJSON:", err));
+      .catch((err) => {
+        console.error("Error cargando GeoJSON:", err);
+        setLoadingGeoJSON(false);
+      });
   }, []);
 
+  const { data: consolidadoData, isLoading: loadingData } = useHidrologiaConsolidado();
+  
   useEffect(() => {
-    const fetchDataApiTooltip = async () => {
-      try {
-        const response = await fetch(DATA_DAM_API, {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (!response.ok) {
-          throw new Error("Error fetching data tooltips")
-        }
-        const dataApiTooltip = await response.json()
-        const flattened = flattenData(dataApiTooltip.regiones);
-        setDataApi(flattened)
-      } catch(error){
-        console.log(`Error: ${error}`)
-      } finally {
-        setLoading(false)
-      }
+    if (!consolidadoData) return;
+    
+    try {
+      const flattened = flattenData(consolidadoData.regiones || []);
+      setDataApi(flattened);
+    } catch (error) {
+      console.error('Error procesando datos consolidado:', error);
     }
-    fetchDataApiTooltip();
-  }, [])
+  }, [consolidadoData]);
+  
+  const loading = loadingData || loadingGeoJSON;
 
   if (loading) return <div>Cargando datos...</div>;
 

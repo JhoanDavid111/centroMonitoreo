@@ -1,7 +1,7 @@
 // src/pages/PageProjectTransmision.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchProjectData } from '../service/apiServiceConvocatoriaTransmision';
+import { fetchProjectData } from '../services/transmisionService';
 import {
   ChevronLeft, FileText,
   AlertTriangle,

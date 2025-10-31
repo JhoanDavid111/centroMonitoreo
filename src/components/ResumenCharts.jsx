@@ -4,12 +4,11 @@ import ExportData from 'highcharts/modules/export-data';
 import Exporting from 'highcharts/modules/exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
-import { useEffect, useRef, useState } from 'react';
-import { API } from '../config/api';
-import { CACHE_CONFIG } from '../config/cacheConfig';
+import { useRef, useState, useMemo } from 'react';
 
-import TooltipModal from './ui/TooltipModal'; // Importar la modal
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Asume esta ruta
+import TooltipModal from './ui/TooltipModal';
+import { useTooltips } from '../services/tooltipsService';
+import { useResumenCharts } from '../services/graficasService';
 
 // ────────────────────────────────────────────────
 // Mapeo Canónico para Tooltips
@@ -30,48 +29,9 @@ const CHART_TOOLTIP_MAP = {
 };
 
 // ────────────────────────────────────────────────
-// Caché
+// Utilidades
 // ────────────────────────────────────────────────
-const CACHE_PREFIX = 'resumen-charts-cache-';
-const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-const memoryCache = new Map();
 const CHART_HEIGHT = 380;
-
-const getFromCache = (key) => {
-  if (memoryCache.has(key)) return memoryCache.get(key);
-  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
-  if (!cachedItem) return null;
-  try {
-    const { data, timestamp } = JSON.parse(cachedItem);
-    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
-      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
-      return null;
-    }
-    memoryCache.set(key, data);
-    return data;
-  } catch (e) {
-    console.error('Error parsing cache', e);
-    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
-    return null;
-  }
-};
-
-const setToCache = (key, data) => {
-  const timestamp = Date.now();
-  const cacheItem = JSON.stringify({ data, timestamp });
-  memoryCache.set(key, data);
-  try {
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
-  } catch (e) {
-    console.error('LocalStorage is full, clearing oldest items...');
-    const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith(CACHE_PREFIX))
-      .map(k => ({ key: k, timestamp: JSON.parse(localStorage.getItem(k)).timestamp }))
-      .sort((a, b) => b.timestamp - a.timestamp);
-    keys.slice(50).forEach(item => localStorage.removeItem(item.key));
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
-  }
-};
 
 const withHeight = (opts) => ({
   ...opts,
@@ -183,11 +143,7 @@ function columnTooltipFormatter() {
 // Component
 // ────────────────────────────────────────────────
 export function ResumenCharts() {
-  const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isCached, setIsCached] = useState(false);
   const chartRefs = useRef([]);
 
   // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
@@ -195,8 +151,20 @@ export function ResumenCharts() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState('');
 
-    // Usar el hook de cache centralizado
-  const { tooltips, loading: loadingTooltips, error: errorTooltips } = useTooltipsCache();
+  // Usar el hook de cache centralizado
+  const { data: tooltips = {}, isLoading: loadingTooltips, error: errorTooltips } = useTooltips();
+  
+  // Usar React Query para las queries paralelas
+  const queries = useResumenCharts();
+  const [techQuery, catQuery, entradaQuery, matQuery] = queries;
+
+  const techJson = techQuery.data;
+  const catJson = catQuery.data;
+  const entradaJson = entradaQuery.data;
+  const matJson = matQuery.data;
+
+  const loading = queries.some(q => q.isLoading);
+  const error = queries.find(q => q.error)?.error || null;
 
   // Función para cerrar la modal
   const closeModal = () => {
@@ -222,32 +190,11 @@ export function ResumenCharts() {
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const cacheKey = 'resumen_charts_data';
+  // Procesar datos cuando estén disponibles
+  const charts = useMemo(() => {
+    if (!techJson || !catJson || !entradaJson || !matJson) return [];
 
-    const fetchData = async () => {
-      try {
-        const cachedData = getFromCache(cacheKey);
-        if (cachedData && isMounted) {
-          setCharts(cachedData);
-          setIsCached(true);
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        setIsCached(false);
-        setError(null);
-
-        const [techJson, catJson, entradaJson, matJson] = await Promise.all([
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_tecnologia`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_categoria`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/capacidad_por_entrar_075`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json()),
-          fetch(`${API}/v1/graficas/6g_proyecto/grafica_matriz_completa_anual`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }).then(r => r.json())
-        ]);
-
-        if (!techJson || !catJson || !entradaJson || !matJson) throw new Error('Datos incompletos recibidos del servidor');
+    try {
 
         // Colores
         const techColor = {
@@ -289,7 +236,7 @@ export function ResumenCharts() {
         opts.push(withHeight({
           chart: { type: 'pie', backgroundColor: '#262626' },
           title: { text: 'Distribución actual por tecnología', align: 'left' },
-          subtitle: { text: isCached ? '(Datos en caché)' : '' },
+          subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           plotOptions: {
             pie: {
@@ -323,7 +270,7 @@ export function ResumenCharts() {
         opts.push(withHeight({
           chart: { type: 'pie', backgroundColor: '#262626' },
           title: { text: 'Distribución de capacidad instalada por tipo de proyecto', align: 'left' },
-          subtitle: { text: isCached ? '(Datos en caché)' : '' },
+          subtitle: { text: '' },
           plotOptions: {
             pie: {
               dataLabels: {
@@ -379,7 +326,7 @@ export function ResumenCharts() {
         opts.push(withHeight({
           chart: { type: 'column', backgroundColor: '#262626' },
           title: { text: 'Capacidad entrante por mes', align: 'left' },
-          subtitle: { text: isCached ? '(Datos en caché)' : '' },
+          subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
             categories: meses,
@@ -414,7 +361,7 @@ export function ResumenCharts() {
         opts.push({
           chart: { type: 'column', height: 350, backgroundColor: '#262626' },
           title: { text: 'Evolución anual matriz energética despachada centralmente', align: 'left' },
-          subtitle: { text: isCached ? '(Datos en caché)' : '' },
+          subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
           xAxis: {
             categories: years,
@@ -445,24 +392,21 @@ export function ResumenCharts() {
           exporting: { enabled: true }
         });
 
-        if (isMounted) {
-          setCharts(opts);
-          setToCache(cacheKey, opts);
-          setTimeout(() => {
-            chartRefs.current.forEach(ref => { if (ref && ref.chart) ref.chart.reflow(); });
-          }, 200);
-        }
+        return opts;
       } catch (err) {
         console.error('Error:', err);
-        if (isMounted) setError(err.message || 'Error al cargar los datos');
-      } finally {
-        if (isMounted) setLoading(false);
+        return [];
       }
-    };
+  }, [techJson, catJson, entradaJson, matJson]);
 
-    fetchData();
-    return () => { isMounted = false; };
-  }, []);
+  // Reflow de gráficos cuando cambien
+  useMemo(() => {
+    if (charts.length > 0) {
+      setTimeout(() => {
+        chartRefs.current.forEach(ref => { if (ref && ref.chart) ref.chart.reflow(); });
+      }, 200);
+    }
+  }, [charts]);
 
   if (loading || loadingTooltips) {
     return (

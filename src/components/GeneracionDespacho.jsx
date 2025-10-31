@@ -5,57 +5,14 @@ import ExportData from 'highcharts/modules/export-data';
 import Exporting from 'highcharts/modules/exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
-import { use, useEffect, useRef, useState } from 'react';
-import { API } from '../config/api';
-import { CACHE_CONFIG } from '../config/cacheConfig';
-
-import  TooltipModal from './ui/TooltipModal'; // Asume esta ruta
-import {useTooltipsCache} from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useGeneracionDiaria } from '../services/graficasService';
+import { useTooltips } from '../services/tooltipsService';
+import TooltipModal from './ui/TooltipModal';
 
 // Mapeo Canónico para Tooltip
 const CHART_TOOLTIP_ID='res_grafica_generacion_real_diaria_tecnologia'
-// ─────────── Configuración de caché ───────────
-const CACHE_PREFIX = 'generacion-despacho-cache-';
-const CACHE_EXPIRATION_MS = CACHE_CONFIG.EXPIRATION_MS;
-const memoryCache = new Map();
 
-const getFromCache = (key) => {
-  if (memoryCache.has(key)) return memoryCache.get(key);
-  const cachedItem = localStorage.getItem(`${CACHE_PREFIX}${key}`);
-  if (!cachedItem) return null;
-
-  try {
-    const { data, timestamp } = JSON.parse(cachedItem);
-    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
-      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
-      return null;
-    }
-    memoryCache.set(key, data);
-    return data;
-  } catch (e) {
-    console.error('Error parsing cache', e);
-    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
-    return null;
-  }
-};
-
-const setToCache = (key, data) => {
-  const timestamp = Date.now();
-  const cacheItem = JSON.stringify({ data, timestamp });
-  memoryCache.set(key, data);
-  try {
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
-  } catch (e) {
-    console.error('LocalStorage is full, clearing oldest items...');
-    const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith(CACHE_PREFIX))
-      .map(k => ({ key: k, timestamp: JSON.parse(localStorage.getItem(k)).timestamp }))
-      .sort((a, b) => b.timestamp - a.timestamp);
-
-    keys.slice(50).forEach(item => localStorage.removeItem(item.key));
-    localStorage.setItem(`${CACHE_PREFIX}${key}`, cacheItem);
-  }
-};
 
 // ─────────── Carga de módulos Highcharts ───────────
 Exporting(Highcharts);
@@ -129,22 +86,15 @@ function areaTooltipFormatter() {
 
 export function GeneracionDespacho() {
   const chartRef = useRef(null);
-  const [options, setOptions] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isCached, setIsCached] = useState(false);
   
-//** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS */
-const [isModalOpen, setIsModalOpen]= useState(false);
-const [modalTitle,setModalTitle]= useState('');
-const [modalContent,setModalContent]= useState('');
+  // Estados para modal/tooltips
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
 
-// 1. Usar el hook de cache centralizado para tooltips
-const {
-  tooltips,
-  loading: loadingTooltips,
-  error:errorTooltips
-}= useTooltipsCache();
+  // Hooks de React Query
+  const { data, isLoading: loading, error } = useGeneracionDiaria();
+  const { data: tooltips = {}, isLoading: loadingTooltips, error: errorTooltips } = useTooltips();
 
 //Funccion para cerrar la modal
 const closeModal=()=>{
@@ -153,133 +103,96 @@ const closeModal=()=>{
   setModalContent('');
 };
 
-//Funcion para manejar el clic en el boton de ayuda
-const handleHelpClick=()=>{
-  //usar el titulo de la grafica o un valor por defecto
-  const title= options?.title?.text || 'Generación real diaria por tecnología';
+  // Función para manejar el clic en el botón de ayuda
+  const handleHelpClick = () => {
+    const title = 'Generación real diaria por tecnología';
+    const content = tooltips[CHART_TOOLTIP_ID];
+    
+    if (content) {
+      setModalTitle(title);
+      setModalContent(content);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle('Información no disponible');
+      setModalContent(`No se encontró una descripción detallada para esta gráfica. (Clave: ${CHART_TOOLTIP_ID})`);
+      setIsModalOpen(true);
+    }
+  };
 
-  //Bucar el contenido en el caché global de tooltips usando la clave canonica
-  const content= tooltips[CHART_TOOLTIP_ID];
-  if (content){
-    setModalTitle(title);
-    setModalContent(content);
-    setIsModalOpen(true); 
-  }else{
-    setModalTitle('Información no disponible');
-    setModalContent('No se encontró una descripción detallada para esta gráfica.(Clave: '+CHART_TOOLTIP_ID + ')');
-    setIsModalOpen(true);
-  }
-}
+  // Procesar datos con useMemo
+  const options = useMemo(() => {
+    if (!data || !Array.isArray(data)) return null;
 
+    // Ordenar por fecha
+    const sorted = [...data].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    const categories = sorted.map(item => item.fecha.slice(0, 10));
 
-  useEffect(() => {
-    let isMounted = true;
-    const cacheKey = 'generacion_despacho_data';
+    // Mostrar aprox. 12 labels en X
+    const tickInt = Math.max(1, Math.ceil(categories.length / 12));
 
-    const fetchData = async () => {
-      try {
-        // Cache
-        const cachedData = getFromCache(cacheKey);
-        if (cachedData && isMounted) {
-          setOptions(cachedData);
-          setIsCached(true);
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        setIsCached(false);
-        setError(null);
-
-        const resp = await fetch(`${API}/v1/graficas/6g_proyecto/grafica_generacion_diaria`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!resp.ok) throw new Error(`Error HTTP: ${resp.status}`);
-
-        const data = await resp.json();
-        if (!data || !Array.isArray(data)) throw new Error('Datos recibidos no válidos');
-
-        // Ordenar por fecha
-        const sorted = [...data].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-        const categories = sorted.map(item => item.fecha.slice(0, 10));
-
-        // Mostrar aprox. 12 labels en X
-        const tickInt = Math.max(1, Math.ceil(categories.length / 12));
-
-        // Series (asegura nombres iguales a tus keys reales)
-        const techs = ['TERMICA', 'COGENERADOR', 'HIDRAULICA', 'SOLAR', 'EOLICA'];
-        const colorMap = {
-          EOLICA: '#5DFF97',
-          SOLAR: '#FFC800',
-          HIDRAULICA: '#3B82F6',
-          COGENERADOR: '#D1D1D0',
-          TERMICA: '#F97316'
-        };
-
-        const series = techs.map((tech, idx) => ({
-          name: tech,
-          data: categories.map(date => {
-            const rec = sorted.find(d => d.fecha.slice(0, 10) === date);
-            return rec && rec[tech] != null ? Number(rec[tech]) : 0;
-          }),
-          color: colorMap[tech],
-          index: idx,
-          legendIndex: idx
-        }));
-
-        const chartOptions = {
-          chart: { type: 'area', height: 400, backgroundColor: '#262626' },
-          title: { text: 'Generación real diaria por tecnología' },
-          subtitle: { text: isCached ? '(Datos en caché)' : '' },
-          legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-          xAxis: {
-            categories,
-            tickInterval: tickInt,
-            title: { text: 'Fecha', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
-            labels: { rotation: -45, style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } }
-          },
-          yAxis: {
-            title: { text: 'Generación (MWh-día)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-            labels: { style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
-            min: 0,
-            gridLineColor: '#333'
-          },
-          plotOptions: {
-            area: { stacking: 'normal', marker: { enabled: false } }
-          },
-          series,
-          tooltip: {
-            shared: true,
-            useHTML: true,
-            backgroundColor: '#262626',
-            borderColor: '#666',
-            formatter: areaTooltipFormatter
-          },
-          exporting: { enabled: true }
-        };
-
-        if (isMounted) {
-          setOptions(chartOptions);
-          setToCache(cacheKey, chartOptions);
-          setTimeout(() => {
-            chartRef.current?.chart?.redraw();
-          }, 200);
-        }
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
-        if (isMounted) setError('No se pudo cargar la gráfica de Generación Real Diaria por Tecnología');
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+    // Series
+    const techs = ['TERMICA', 'COGENERADOR', 'HIDRAULICA', 'SOLAR', 'EOLICA'];
+    const colorMap = {
+      EOLICA: '#5DFF97',
+      SOLAR: '#FFC800',
+      HIDRAULICA: '#3B82F6',
+      COGENERADOR: '#D1D1D0',
+      TERMICA: '#F97316'
     };
 
-    fetchData();
-    return () => { isMounted = false; };
-  }, []);
+    const series = techs.map((tech, idx) => ({
+      name: tech,
+      data: categories.map(date => {
+        const rec = sorted.find(d => d.fecha.slice(0, 10) === date);
+        return rec && rec[tech] != null ? Number(rec[tech]) : 0;
+      }),
+      color: colorMap[tech],
+      index: idx,
+      legendIndex: idx
+    }));
 
-  if (loading) {
+    return {
+      chart: { type: 'area', height: 400, backgroundColor: '#262626' },
+      title: { text: 'Generación real diaria por tecnología' },
+      subtitle: { text: '' },
+      legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
+      xAxis: {
+        categories,
+        tickInterval: tickInt,
+        title: { text: 'Fecha', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
+        labels: { rotation: -45, style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } }
+      },
+      yAxis: {
+        title: { text: 'Generación (MWh-día)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
+        labels: { style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
+        min: 0,
+        gridLineColor: '#333'
+      },
+      plotOptions: {
+        area: { stacking: 'normal', marker: { enabled: false } }
+      },
+      series,
+      tooltip: {
+        shared: true,
+        useHTML: true,
+        backgroundColor: '#262626',
+        borderColor: '#666',
+        formatter: areaTooltipFormatter
+      },
+      exporting: { enabled: true }
+    };
+  }, [data]);
+
+  // Reflow cuando cambien los datos
+  useEffect(() => {
+    if (options && chartRef.current?.chart) {
+      setTimeout(() => {
+        chartRef.current?.chart?.redraw();
+      }, 200);
+    }
+  }, [options]);
+
+  if (loading || loadingTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
         <div className="flex space-x-2">
@@ -292,13 +205,13 @@ const handleHelpClick=()=>{
     );
   }
 
-  if (error) {
+  if (error || errorTooltips) {
     return (
       <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[450px]">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p className="text-red-500 mb-4">{error}</p>
+        <p className="text-red-500 mb-4">{error?.message || errorTooltips?.message || 'Error al cargar la gráfica'}</p>
         <button
           onClick={() => window.location.reload()}
           className="px-4 py-2 bg-[#FFC800] hover:bg-[#FFD700] rounded text-[#262626] font-medium"
@@ -308,6 +221,8 @@ const handleHelpClick=()=>{
       </div>
     );
   }
+
+  if (!options) return null;
 
   return (
     <section className="mt-8">

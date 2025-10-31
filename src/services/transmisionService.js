@@ -1,27 +1,13 @@
-// src/service/apiServiceConvocatoriaTransmision.jsx
-import { API } from '../config/api';
-
+// src/services/transmisionService.js
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../lib/axios';
 
 export const fetchProjectData = async (projectId) => {
   try {
-    const response = await fetch(
-      `${API}/v1/graficas/transmision/informacion_especifica_proyecto/${encodeURIComponent(projectId)}`, 
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+    const { data } = await apiClient.post(
+      `/v1/graficas/transmision/informacion_especifica_proyecto/${encodeURIComponent(projectId)}`
     );
 
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    
-    
     if (Array.isArray(data) && data.length > 0) {
       return transformApiData(data[0]);
     }
@@ -31,6 +17,16 @@ export const fetchProjectData = async (projectId) => {
     console.error('Error fetching project data:', error);
     throw error;
   }
+};
+
+// Hook para usar con React Query
+export const useProjectData = (projectId) => {
+  return useQuery({
+    queryKey: ['transmision', 'project', projectId],
+    queryFn: () => fetchProjectData(projectId),
+    enabled: !!projectId,
+    staleTime: 15 * 60 * 1000,
+  });
 };
 
 const formatApiDate = (dateStr) => {
@@ -106,3 +102,4 @@ const transformApiData = (apiData) => {
     }
   };
 };
+

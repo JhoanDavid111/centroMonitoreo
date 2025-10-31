@@ -1,6 +1,6 @@
 // src/pages/Hidrologia.jsx
 
-import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
+import bannerHidrologia from '../assets/bannerHidrologia.png';
 import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
 import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 import {
@@ -44,11 +44,17 @@ const COLORS = {
 
 // ===== Endpoints =====
 import { API } from '../config/api';
-
-
-// *** NUEVAS IMPORTACIONES ***
-import TooltipModal from '../components/ui/TooltipModal'; // Asume esta ruta
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+import TooltipModal from '../components/ui/TooltipModal';
+import { useTooltipsCache } from '../hooks/useTooltipsCache';
+import {
+  useHidrologiaConsolidado,
+  useHidrologiaEmbalses,
+  useHidrologiaAportes,
+  useHidrologiaHidraulicos,
+  useHidrologiaGeneracion,
+  useHidrologiaPrecios
+} from '../services/indicadoresService';
+import { useGraficaAportes, useGraficaEstatuto } from '../services/graficasService';
 
 
 // ────────────────────────────────────────────────
@@ -151,23 +157,10 @@ function parseMW(v) {
 }
 
 function useHidroRowsFromConsolidado() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let abort = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(API_CONSOLIDADO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          headers: { Accept: 'application/json' }
-        });
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort) return;
+  const { data, isLoading: loading } = useHidrologiaConsolidado();
+  
+  const rows = useMemo(() => {
+    if (!data) return [];
 
         const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
         const out = [];
@@ -220,18 +213,10 @@ function useHidroRowsFromConsolidado() {
           }
         }
 
-        // ordenamos por región/embalse
-        out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
-        if (!abort) setRows(out);
-      } catch (e) {
-        console.error('[Consolidado] Error cargando:', e);
-        if (!abort) setRows([]);
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    })();
-    return () => { abort = true; };
-  }, []);
+    // ordenamos por región/embalse
+    out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
+    return out;
+  }, [data]);
 
   return { rows, loading };
 }
@@ -754,39 +739,21 @@ function HidroTabs({ data }) {
 }
 
 function useHidroRowsFromApi() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: embData, isLoading: loadingEmb } = useHidrologiaEmbalses();
+  const { data: apoData, isLoading: loadingApo } = useHidrologiaAportes();
+  
+  const loading = loadingEmb || loadingApo;
+  
+  const rows = useMemo(() => {
+    if (!embData || !apoData) return [];
 
-  useEffect(() => {
-    let abort = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        // === 1️⃣ Fetch de embalses ===
-        const resEmb = await fetch(API_EXPANDER_EMBALSES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        const embData = await resEmb.json();
-        console.log('[Expander Embalses] Respuesta completa:', embData);
+    const embalses = Array.isArray(embData?.resumen_detallado_embalse)
+      ? embData.resumen_detallado_embalse
+      : [];
+    console.log('[Expander Embalses] Total embalses:', embalses.length);
 
-        const embalses = Array.isArray(embData?.resumen_detallado_embalse)
-          ? embData.resumen_detallado_embalse
-          : [];
-        console.log('[Expander Embalses] Total embalses:', embalses.length);
-
-        // === 2️⃣ Fetch de aportes ===
-        const resApo = await fetch(API_EXPANDER_APORTES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        const apoData = await resApo.json();
-        console.log('[Expander Aportes] Respuesta completa:', apoData);
-
-        const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
-        console.log('[Expander Aportes] Total aportes:', aportes.length);
+    const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
+    console.log('[Expander Aportes] Total aportes:', aportes.length);
 
         // === 3️⃣ Mapeo y merge ===
         const mapAportes = new Map();
@@ -817,72 +784,43 @@ function useHidroRowsFromApi() {
           };
         });
 
-        console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
-        if (!abort) setRows(merged);
-      } catch (err) {
-        console.error('[Hidrología Expander] Error al cargar datos:', err);
-        if (!abort) setRows([]);
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    };
-    load();
-    return () => { abort = true; };
-  }, []);
+    console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
+    return merged;
+  }, [embData, apoData]);
 
   return { rows, loading };
 }
 
 function useAportesOptionsFromApi() {
-  const [series, setSeries] = React.useState({ s1: [], s2: [], s3: [] }); // GWh, Media Histórica, % útil
-  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
+  const { data, isLoading } = useGraficaAportes();
+  
+  const { series, range } = useMemo(() => {
+    if (!data || !Array.isArray(data)) return { 
+      series: { s1: [], s2: [], s3: [] }, 
+      range: { minX: undefined, maxX: undefined } 
+    };
 
-  React.useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(API_APORTES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const s1 = [], s2 = [], s3 = [];
+    for (const row of data) {
+      const x = ymToUtc(row.mes);
+      if (!Number.isFinite(x)) continue;
+      const gwh   = Number(row.aportes_gwh);
+      const media = Number(row.aportes_media_historica);
+      const pct   = Number(row.porcentaje_util);
+      if (Number.isFinite(gwh))   s1.push([x, gwh]);
+      if (Number.isFinite(media)) s2.push([x, media]);
+      if (Number.isFinite(pct))   s3.push([x, pct]);
+    }
+    s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
 
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !Array.isArray(data)) return;
+    const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
+    const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
+    const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
 
-        const s1 = [], s2 = [], s3 = [];
-        for (const row of data) {
-          const x = ymToUtc(row.mes);
-          if (!Number.isFinite(x)) continue;
-          const gwh   = Number(row.aportes_gwh);
-          const media = Number(row.aportes_media_historica);
-          const pct   = Number(row.porcentaje_util);
-          if (Number.isFinite(gwh))   s1.push([x, gwh]);
-          if (Number.isFinite(media)) s2.push([x, media]);
-          if (Number.isFinite(pct))   s3.push([x, pct]);
-        }
-        s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
+    return { series: { s1, s2, s3 }, range: { minX, maxX } };
+  }, [data]);
 
-        const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
-        const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
-        const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
-
-        setSeries({ s1, s2, s3 });
-        setRange({ minX, maxX });
-      } catch (err) {
-        console.error('[Aportes API] Error:', err);
-        setSeries({ s1: [], s2: [], s3: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return React.useMemo(() => ({
+  return useMemo(() => ({
     chart: { backgroundColor: COLORS.darkBg, height: 650, marginTop: 80, marginBottom: 180, spacingBottom: 40 },
     title: {
       text: 'Aportes y nivel útil de embalses por mes',
@@ -936,31 +874,18 @@ function useAportesOptionsFromApi() {
 }
 
 function useDesabastecimientoOptionsFromApi() {
-  const [series, setSeries] = React.useState({
-    pBolsa: [],        // Precio de Bolsa en Períodos Punta
-    pEscasez: [],      // Precio Marginal de Escasez
-    nivelPct: [],      // Volumen útil del embalse (%)
-    sendaPct: []       // Senda de referencia (%)
-  });
-  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
-
-  React.useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-
-    (async () => {
-      try {
-        const res = await fetch(API_ESTATUTO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !Array.isArray(data)) return;
+  const { data, isLoading, error } = useGraficaEstatuto();
+  
+  const { series, range } = useMemo(() => {
+    if (!data || !Array.isArray(data)) {
+      if (error && import.meta.env.DEV) {
+        console.error('[Estatuto API] Error:', error);
+      }
+      return {
+        series: { pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] },
+        range: { minX: undefined, maxX: undefined }
+      };
+    }
 
         const pBolsa = [];
         const pEscasez = [];
@@ -988,24 +913,30 @@ function useDesabastecimientoOptionsFromApi() {
           if (Number.isFinite(senda))   sendaPct.push([x, senda]);
         }
 
-        [pBolsa, pEscasez, nivelPct, sendaPct].forEach(a => a.sort((a1, a2) => a1[0] - a2[0]));
-        const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
-        const minX = allX.length ? Math.min(...allX) : undefined;
-        const maxX = allX.length ? Math.max(...allX) : undefined;
+    [pBolsa, pEscasez, nivelPct, sendaPct].forEach(a => a.sort((a1, a2) => a1[0] - a2[0]));
+    const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
+    const minX = allX.length ? Math.min(...allX) : undefined;
+    const maxX = allX.length ? Math.max(...allX) : undefined;
 
-        setSeries({ pBolsa, pEscasez, nivelPct, sendaPct });
-        setRange({ minX, maxX });
-      } catch (e) {
-        console.error('[Estatuto API] Error:', e);
-        setSeries({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
+    return { series: { pBolsa, pEscasez, nivelPct, sendaPct }, range: { minX, maxX } };
+  }, [data]);
 
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return React.useMemo(() => ({
+  return useMemo(() => {
+    if (!range.minX || !range.maxX) {
+      return {
+        chart: {
+          backgroundColor: COLORS.darkBg,
+          height: 600,
+        },
+        title: {
+          text: isLoading ? 'Cargando gráfica de estatuto...' : 'Estatuto de desabastecimiento',
+          style: { color: COLORS.gray }
+        },
+        series: []
+      };
+    }
+    
+    return {
     chart: {
       zooming: { type: 'x' },
       backgroundColor: COLORS.darkBg,
@@ -1072,7 +1003,8 @@ function useDesabastecimientoOptionsFromApi() {
         return `<div style="padding:0px;">${header}${rows}</div>`;
       },
     },
-  }), [series, range]);
+  };
+  }, [series, range, isLoading]);
 }
 
 
@@ -1145,105 +1077,92 @@ export default function Hidrologia() {
   
 
   // Fetch indicadores hidráulicos
+  const { data: hidroData, isLoading: loadingHidro } = useHidrologiaHidraulicos();
+  
   useEffect(() => {
-    let abort = false;
-    async function load() {
-      setLoadingIdx(true);
-      try {
-        const res = await fetch(API_HIDRO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    if (!hidroData) return;
+    
+    setLoadingIdx(true);
+    try {
+      const j = hidroData;
 
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const j = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !j) return;
+      const asNum = (v) => {
+        const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
+        return Number.isFinite(n) ? n : NaN;
+      };
 
-        const asNum = (v) => {
-          const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
-          return Number.isFinite(n) ? n : NaN;
-        };
+      const fecha = j.fecha;
+      const [yy, mm, dd] = String(fecha || '').split('-');
+      const updatedEmbalse = (yy && mm && dd) ? `${dd.padStart(2,'0')}/${mm.padStart(2,'0')}/${yy}` : '—';
 
-        const fecha = j.fecha;
-        const [yy, mm, dd] = String(fecha || '').split('-');
-        const updatedEmbalse = (yy && mm && dd) ? `${dd.padStart(2,'0')}/${mm.padStart(2,'0')}/${yy}` : '—';
+      const volUtil = asNum(j.volumen_util_gwh);
+      const pctUtil = asNum(j.porcentaje_util);
+      const difVol = asNum(j.dif_volumen_diario);
+      const difPct = asNum(j.dif_porcentaje_diario);
 
-        const volUtil = asNum(j.volumen_util_gwh);
-        const pctUtil = asNum(j.porcentaje_util);
-        const difVol = asNum(j.dif_volumen_diario);
-        const difPct = asNum(j.dif_porcentaje_diario);
+      const mes = asNum(j.mes);
+      const anio = asNum(j.año ?? j.anio ?? j.year);
+      const aportesProm = asNum(j.aportes_mensual_promedio);
+      const aportesPctRaw = asNum(j.aportes_porcentaje_mensual);
+      const mediaHist = asNum(j.aportes_media_historica);
+      const difAportes = asNum(j.dif_aportes_mensual);
+      const difAportesPctRaw = asNum(j.dif_aportes_porcentaje_mensual);
+      const normalizePct = (x) => (!Number.isFinite(x) ? NaN : (x <= 1 ? x * 100 : x));
 
-        const mes = asNum(j.mes);
-        const anio = asNum(j.año ?? j.anio ?? j.year);
-        const aportesProm = asNum(j.aportes_mensual_promedio);
-        const aportesPctRaw = asNum(j.aportes_porcentaje_mensual);
-        const mediaHist = asNum(j.aportes_media_historica);
-        const difAportes = asNum(j.dif_aportes_mensual);
-        const difAportesPctRaw = asNum(j.dif_aportes_porcentaje_mensual);
-        const normalizePct = (x) => (!Number.isFinite(x) ? NaN : (x <= 1 ? x * 100 : x));
+      const aportesPct = normalizePct(aportesPctRaw);
+      const difAportesPct = normalizePct(difAportesPctRaw);
 
-        const aportesPct = normalizePct(aportesPctRaw);
-        const difAportesPct = normalizePct(difAportesPctRaw);
+      const i0 = {
+        title: 'Nivel de embalse actual',
+        updated: updatedEmbalse,
+        value: fmtGwh(volUtil),
+        deltaText: fmtSigned(difVol, ' GWh'),
+        deltaDir: dirFrom(difVol),
+        pct: fmtPct(pctUtil),
+        pctDeltaText: fmtSigned(difPct, '%'),
+        pctDeltaDir: dirFrom(difPct),
+        pctValueNum: Number.isFinite(pctUtil) ? pctUtil : 0,
+      };
 
-        const i0 = {
-          title: 'Nivel de embalse actual',
-          updated: updatedEmbalse,
-          value: fmtGwh(volUtil),
-          deltaText: fmtSigned(difVol, ' GWh'),
-          deltaDir: dirFrom(difVol),
-          pct: fmtPct(pctUtil),
-          pctDeltaText: fmtSigned(difPct, '%'),
-          pctDeltaDir: dirFrom(difPct),
-          pctValueNum: Number.isFinite(pctUtil) ? pctUtil : 0,
-        };
+      const i1 = {
+        title: 'Aportes mensuales promedio',
+        updated: (Number.isFinite(mes) && Number.isFinite(anio)) ? `${monthEs(mes)} ${anio}` : '—',
+        value: fmtGwh(aportesProm),
+        deltaText: fmtSigned(difAportes, ' GWh'),
+        deltaDir: dirFrom(difAportes),
+        pct: fmtPct(aportesPct),
+        pctDeltaText: fmtSigned(difAportesPct, '%'),
+        pctDeltaDir: dirFrom(difAportesPct),
+        sub: `Media histórica: ${fmtGwh(mediaHist)}`,
+      };
 
-        const i1 = {
-          title: 'Aportes mensuales promedio',
-          updated: (Number.isFinite(mes) && Number.isFinite(anio)) ? `${monthEs(mes)} ${anio}` : '—',
-          value: fmtGwh(aportesProm),
-          deltaText: fmtSigned(difAportes, ' GWh'),
-          deltaDir: dirFrom(difAportes),
-          pct: fmtPct(aportesPct),
-          pctDeltaText: fmtSigned(difAportesPct, '%'),
-          pctDeltaDir: dirFrom(difAportesPct),
-          sub: `Media histórica: ${fmtGwh(mediaHist)}`,
-        };
-
-        setIndices((prev) => {
-          const copy = [...prev];
-          copy[0] = i0;
-          copy[1] = i1;
-          return copy;
-        });
-      } catch (e) {
-        console.error('[Hidrologia] Error cargando indicadores:', e);
-        setIndices((prev) => {
-          const copy = [...prev];
-          copy[0] = { ...prev[0], updated: 'Error al cargar', value: '—', pct: '—', pctValueNum: 0, deltaText: '—', pctDeltaText: '—' };
-          copy[1] = { ...prev[1], updated: 'Error al cargar', value: '—', pct: '—', sub: 'Media histórica: —', deltaText: '—', pctDeltaText: '—' };
-          return copy;
-        });
-      } finally {
-        if (!abort) setLoadingIdx(false);
-      }
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[0] = i0;
+        copy[1] = i1;
+        return copy;
+      });
+    } catch (e) {
+      console.error('[Hidrologia] Error cargando indicadores:', e);
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[0] = { ...prev[0], updated: 'Error al cargar', value: '—', pct: '—', pctValueNum: 0, deltaText: '—', pctDeltaText: '—' };
+        copy[1] = { ...prev[1], updated: 'Error al cargar', value: '—', pct: '—', sub: 'Media histórica: —', deltaText: '—', pctDeltaText: '—' };
+        return copy;
+      });
+    } finally {
+      setLoadingIdx(false);
     }
-    load();
-    return () => { abort = true; };
-  }, [API_HIDRO]);
+  }, [hidroData]);
 
 // Generación promedio diaria (Hídrica, Térmica, FNCER) + Demanda real
-useEffect(() => {
-  let abort = false;
-  (async () => {
+  const { data: generacionData } = useHidrologiaGeneracion();
+  
+  useEffect(() => {
+    if (!generacionData) return;
+    
     try {
-      const res = await fetch(API_GENERACION, { method: 'POST', mode: 'cors', cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-      const ct = (res.headers.get('content-type') || '').toLowerCase();
-      const j = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-      if (abort || !j) return;
+      const j = generacionData;
 
       const monthEs = (m) => ([
         'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -1315,22 +1234,18 @@ useEffect(() => {
         return copy;
       });
     }
-  })();
-  return () => { abort = true; };
-}, [API_GENERACION]);
+  }, [generacionData]);
 
-// Precios de energía (mínimo/promedio/máximo) + precio marginal de escasez
-useEffect(() => {
-  let abort = false;
-  (async () => {
+  // Precios de energía (mínimo/promedio/máximo) + precio marginal de escasez
+  const { data: preciosData } = useHidrologiaPrecios();
+  
+  useEffect(() => {
+    if (!preciosData) return;
+    
     try {
-      const res = await fetch(API_PRECIOS, { method: 'POST', mode: 'cors', cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-      const ct = (res.headers.get('content-type') || '').toLowerCase();
-      const arr = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-      const j = Array.isArray(arr) && arr.length ? arr[0] : null;
-      if (abort || !j) return;
+      const arr = Array.isArray(preciosData) ? preciosData : [preciosData];
+      const j = arr.length ? arr[0] : null;
+      if (!j) return;
 
       const fmtNum = (v) =>
         Number.isFinite(v) ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : '—';
@@ -1394,9 +1309,7 @@ useEffect(() => {
         return copy;
       });
     }
-  })();
-  return () => { abort = true; };
-}, [API_PRECIOS]);
+  }, [preciosData]);
 
   // Ref del contenido a imprimir (API v3)
   const printRef = useRef(null);

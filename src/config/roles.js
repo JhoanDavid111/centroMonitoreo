@@ -1,5 +1,3 @@
-import { use } from "react";
-
 // src/config/roles.js
 export const ROLES = {
     ADMIN: 'Administrador',
@@ -34,7 +32,7 @@ export const ROLE_PERMISSIONS = {
 
 //Función helper para verificar permisos
 export const hasPermission=(userRole,requieredPermission)=>{
-    if(!useRole || !ROLE_PERMISSIONS[userRole]) return false;
+    if(!userRole || !ROLE_PERMISSIONS[userRole]) return false;
 
     const userPermissions= ROLE_PERMISSIONS[userRole];
 
@@ -48,6 +46,6 @@ export const hasPermission=(userRole,requieredPermission)=>{
 
 //Función para verificar roles
 export const hasRole = (userRole, allowedRoles=[])=>{
-    if(!useRole || allowedRoles.length===0) return true;
+    if(!userRole || allowedRoles.length===0) return true;
     return allowedRoles.includes(userRole);
 };

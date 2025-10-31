@@ -1,5 +1,4 @@
 // src/components/auth/AuthButton.jsx
-// src/components/auth/AuthButton.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { auth, googleProvider, microsoftProvider } from '../../firebase/config';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -30,12 +29,20 @@ export default function AuthButton() {
 
   /**
    * Función memoizada para validar el correo electrónico del usuario con una API externa.
+   * Nota: Esta es una API externa de Google Apps Script, no requiere React Query ya que es una validación puntual.
    */
   const validateEmailWithAPI = useCallback(async (email) => {
     try {
+      // API externa de Google - mantener fetch directo pero con timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`
+        `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorText = await response.text();

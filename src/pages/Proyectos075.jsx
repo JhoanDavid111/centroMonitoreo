@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import bannerProyectos from '../../src/assets/bannerProyectosEstrategia6GW.png';
+import bannerProyectos from '../assets/bannerProyectosEstrategia6GW.png';
 import {
   Banner,
   BannerBackground,

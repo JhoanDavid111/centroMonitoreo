@@ -1,12 +1,12 @@
 // src/components/EnergiaElectrica.jsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import ExportData from 'highcharts/modules/export-data';
 import FullScreen from 'highcharts/modules/full-screen';
 import HighchartsReact from 'highcharts-react-official';
-import { API } from '../config/api';
+import { useEnergiaElectrica } from '../services/graficasService';
 
 // Cargar módulos
 Exporting(Highcharts);
@@ -46,155 +46,116 @@ Highcharts.setOptions({
 });
 
 export function EnergiaElectrica() {
-  const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
-  const [loading, setLoading] = useState(true); // ← Nuevo estado
-  const [error, setError] = useState(null);
   const chartRefs = useRef([]);
+  
+  const { data, isLoading: loading, error } = useEnergiaElectrica(
+    { fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' }
+  );
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-    if (loading) {
-      setError('Error al cargar la imagen: Energía Eléctrica, El servidor está tardando demasiado en responder.Por favor, inténtelo más tarde.');
-      setLoading(false);
-    }
-  }, 20000); // 10 segundos
+  const charts = useMemo(() => {
+    if (!data) return [];
 
-  return () => clearTimeout(timeoutId);
-    async function fetchData() {
-      setLoading(true); // ← Inicia loading
-      try {
-        const res = await fetch(`${API}/v1/graficas/energia_electrica`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ fecha_inicio: '2025-05-05', fecha_fin: '2025-05-06' })
-        });
-        if (!res.ok) {
-          throw new Error(`Error ${res.status}: ${res.statusText}`);
+    const estatuto = data.grafica_estatuto;
+    const fechas = estatuto.map(d => d.fecha);
+    const volUtil = estatuto.map(d => d['Volumen útil del embalse']);
+
+    const precios = data.grafica_precios;
+    const preciosMin = precios.map(d => d['Precio Bolsa Minimo Horario']);
+    const preciosAvg = precios.map(d => d['Precio Bolsa Promedio Horario']);
+    const preciosMax = precios.map(d => d['Precio Bolsa Máximo Horario']);
+
+    const dem = data.grafica_demanda;
+    const demCom = dem.map(d => d['Demanda Comercial por Sistema']);
+    const enerFirm = dem.map(d => d['Energía en Firme Cargo por Confiabilidad']);
+    const obrFirm = dem.map(d => d['Obligación de Energía en Firme']);
+
+    const demRel = data.grafica_demanda_relacion;
+    const relOEF = demRel.map(d => d['Relacion Demanda Comercial / OEF']);
+    const relEFICC = demRel.map(d => d['Relacion Demanda Comercial / EFICC']);
+
+    const volReg = data.grafica_volumen_util_regiones;
+    const regiones = volReg.map(d => d.region);
+    const volRegData = volReg.map(d => d[Object.keys(d).find(k => k !== 'region')]);
+
+    const capTec = data.grafica_capacidad_instalada_tecnologia;
+    const fuentes = capTec.map(d => d.fuente);
+    const capTecData = capTec.map(d => d[Object.keys(d).find(k => k !== 'fuente')]);
+
+    const baseOptions = [
+      {
+        title: { text: 'Volumen útil del embalse (diario)' },
+        subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+        chart: { zoomType: '', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: fechas },
+        yAxis: { title: { text: 'Volumen útil (m³)' } },
+        series: [{ name: 'Volumen útil embalse', data: volUtil }]
+      },
+      {
+        title: { text: 'Precios de Bolsa (horario)' },
+        subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+        chart: { zoomType: '', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: fechas },
+        yAxis: { title: { text: 'Precio (COP)' } },
+        series: [
+          { name: 'Mínimo', data: preciosMin },
+          { name: 'Promedio', data: preciosAvg },
+          { name: 'Máximo', data: preciosMax }
+        ]
+      },
+      {
+        title: { text: 'Demanda vs energía en firme' },
+        subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+        chart: { zoomType: '', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: fechas },
+        yAxis: { title: { text: 'Cantidad' } },
+        series: [
+          { name: 'Demanda Comercial', data: demCom },
+          { name: 'Energía en Firme', data: enerFirm },
+          { name: 'Obligación Energía Firme', data: obrFirm }
+        ]
+      },
+      {
+        title: { text: 'Relación Demanda / Firme' },
+        subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
+        chart: { zoomType: '', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: fechas },
+        yAxis: { title: { text: 'Ratio' } },
+        series: [
+          { name: 'Dem/ OEF', data: relOEF },
+          { name: 'Dem/ EFICC', data: relEFICC }
+        ]
+      },
+      {
+        title: { text: 'Volumen útil por región (mes)' },
+        chart: { type: 'column', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: regiones },
+        yAxis: { title: { text: 'Volumen (m³)' } },
+        series: [{ name: 'Volumen útil', data: volRegData }]
+      },
+      {
+        title: { text: 'Capacidad instalada por tecnología' },
+        chart: { type: 'column', height: 350 },
+        colors: ['#FFC600', '#FFD700', '#FF9900'],
+        xAxis: { categories: fuentes },
+        yAxis: { title: { text: 'Capacidad (GW)' } },
+        series: [{ name: 'Capacidad inst.', data: capTecData }]
       }
+    ];
 
-        const data = await res.json();
-
-        // --- Procesar datos como antes...
-        const estatuto = data.grafica_estatuto;
-        const fechas = estatuto.map(d => d.fecha);
-        const volUtil = estatuto.map(d => d['Volumen útil del embalse']);
-
-        const precios = data.grafica_precios;
-        const preciosMin = precios.map(d => d['Precio Bolsa Minimo Horario']);
-        const preciosAvg = precios.map(d => d['Precio Bolsa Promedio Horario']);
-        const preciosMax = precios.map(d => d['Precio Bolsa Máximo Horario']);
-
-        const dem = data.grafica_demanda;
-        const demCom = dem.map(d => d['Demanda Comercial por Sistema']);
-        const enerFirm = dem.map(d => d['Energía en Firme Cargo por Confiabilidad']);
-        const obrFirm = dem.map(d => d['Obligación de Energía en Firme']);
-
-        const demRel = data.grafica_demanda_relacion;
-        const relOEF = demRel.map(d => d['Relacion Demanda Comercial / OEF']);
-        const relEFICC = demRel.map(d => d['Relacion Demanda Comercial / EFICC']);
-
-        const volReg = data.grafica_volumen_util_regiones;
-        const regiones = volReg.map(d => d.region);
-        const volRegData = volReg.map(d => d[Object.keys(d).find(k => k !== 'region')]);
-
-        const capTec = data.grafica_capacidad_instalada_tecnologia;
-        const fuentes = capTec.map(d => d.fuente);
-        const capTecData = capTec.map(d => d[Object.keys(d).find(k => k !== 'fuente')]);
-
-        const baseOptions = [
-          {
-            title: { text: 'Volumen útil del embalse (diario)' },
-            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
-            chart: { zoomType: '', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: fechas },
-            yAxis: { title: { text: 'Volumen útil (m³)' } },
-            series: [{ name: 'Volumen útil embalse', data: volUtil }]
-          },
-          {
-            title: { text: 'Precios de Bolsa (horario)' },
-            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
-            chart: { zoomType: '', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: fechas },
-            yAxis: { title: { text: 'Precio (COP)' } },
-            series: [
-              { name: 'Mínimo', data: preciosMin },
-              { name: 'Promedio', data: preciosAvg },
-              { name: 'Máximo', data: preciosMax }
-            ]
-          },
-          {
-            title: { text: 'Demanda vs energía en firme' },
-            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
-            chart: { zoomType: '', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: fechas },
-            yAxis: { title: { text: 'Cantidad' } },
-            series: [
-              { name: 'Demanda Comercial', data: demCom },
-              { name: 'Energía en Firme', data: enerFirm },
-              { name: 'Obligación Energía Firme', data: obrFirm }
-            ]
-          },
-          {
-            title: { text: 'Relación Demanda / Firme' },
-            subtitle: { text: 'Fuente: API. 2025-05-05 → 2025-05-06' },
-            chart: { zoomType: '', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: fechas },
-            yAxis: { title: { text: 'Ratio' } },
-            series: [
-              { name: 'Dem/ OEF', data: relOEF },
-              { name: 'Dem/ EFICC', data: relEFICC }
-            ]
-          },
-          {
-            title: { text: 'Volumen útil por región (mes)' },
-            chart: { type: 'column', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: regiones },
-            yAxis: { title: { text: 'Volumen (m³)' } },
-            series: [{ name: 'Volumen útil', data: volRegData }]
-          },
-          {
-            title: { text: 'Capacidad instalada por tecnología' },
-            chart: { type: 'column', height: 350 },
-            colors: ['#FFC600', '#FFD700', '#FF9900'], // ← Aquí
-            xAxis: { categories: fuentes },
-            yAxis: { title: { text: 'Capacidad (GW)' } },
-            series: [{ name: 'Capacidad inst.', data: capTecData }]
-          }
-        ];
-
-        // Inyectamos el fondo gris en cada chart y los botones de exportar
-        const opts = baseOptions.map(opt => ({
-          ...opt,
-          chart: {
-            ...opt.chart,
-            backgroundColor: '#262626'
-          },
-       /*    exporting: {
-            enabled: true,
-            buttons: {
-              contextButton: {
-                menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG']
-              }
-            }
-          } */
-        }));
-
-        setCharts(opts);
-      } catch (err) {
-        console.error('Error cargando datos API', err);
-      }  finally {
-        setLoading(false); // ← Finaliza loading
+    return baseOptions.map(opt => ({
+      ...opt,
+      chart: {
+        ...opt.chart,
+        backgroundColor: '#262626'
       }
-
-    }
-    fetchData();
-  }, [loading]);
+    }));
+  }, [data]);
 
   const isFiltered = selected !== 'all';
   const gridClasses = isFiltered ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
@@ -224,7 +185,7 @@ export function EnergiaElectrica() {
       </div>
     );
   }
-    if (error) {
+  if (error) {
     return (
       <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <svg
@@ -241,10 +202,12 @@ export function EnergiaElectrica() {
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <p className="text-red-500 text-center max-w-md">{error}</p>
+        <p className="text-red-500 text-center max-w-md">{error.message || 'Error al cargar los datos'}</p>
       </div>
     );
   }
+
+  if (!charts || charts.length === 0) return null;
 
   return (
     <section className="mt-8">

@@ -5,8 +5,8 @@ import ExportData from 'highcharts/modules/export-data';
 import Exporting from 'highcharts/modules/exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
-import { useEffect, useState } from 'react';
-import { API } from '../config/api';
+import { useMemo } from 'react';
+import { useGeneracionHorariaPromedio } from '../services/graficasService';
 
 // Carga módulos
 Exporting(Highcharts);
@@ -57,19 +57,6 @@ function areaTooltipFormatter() {
   `;
 }
 
-async function fetchPromedio(payload) {
-  const resp = await fetch(
-      `${API}/v1/graficas/6g_proyecto/generacion_horaria_promedio`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }
-  );
-  if (!resp.ok) throw new Error('Error al consultar generación horaria');
-  return resp.json();
-}
-
 function stackedMax(series, len) {
   let max = 0;
   for (let i = 0; i < len; i++) {
@@ -80,93 +67,99 @@ function stackedMax(series, len) {
 }
 
 export function GeneracionHoraria() {
-  const [opts1, setOpts1] = useState(null);
-  const [opts2, setOpts2] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
+  // Prepara payloads
+  const payload1 = { fecha_inicio: '2022-01-01', fecha_fin: '2022-06-30', meses: 6 };
+  const hoy = new Date();
+  const fecha_fin2 = hoy.toISOString().slice(0,10);
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth()-5,1).toISOString().slice(0,10);
+  const payload2 = { fecha_inicio: inicio, fecha_fin: fecha_fin2, meses: 6 };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // 1) Prepara payloads
-        const payload1 = { fecha_inicio: '2022-01-01', fecha_fin: '2022-06-30', meses: 6 };
-        const hoy       = new Date();
-        const fecha_fin2 = hoy.toISOString().slice(0,10);
-        const inicio    = new Date(hoy.getFullYear(), hoy.getMonth()-5,1)
-                           .toISOString().slice(0,10);
-        const payload2  = { fecha_inicio: inicio, fecha_fin: fecha_fin2, meses: 6 };
+  // Fetch paralelo con React Query
+  const query1 = useGeneracionHorariaPromedio(payload1);
+  const query2 = useGeneracionHorariaPromedio(payload2);
 
-        // 2) Fetch paralelo
-        const [data1, data2] = await Promise.all([
-          fetchPromedio(payload1),
-          fetchPromedio(payload2)
-        ]);
+  const loading = query1.isLoading || query2.isLoading;
+  const error = query1.error || query2.error;
+  const data1 = query1.data;
+  const data2 = query2.data;
 
-        // 3) Horas y series
-        const horas1 = data1.map(d => d.hora);
-        const horas2 = data2.map(d => d.hora);
-        const toMW   = arr => arr.map(v => v * SCALE);
+  const { opts1, opts2 } = useMemo(() => {
+    if (!data1 || !data2) return { opts1: null, opts2: null };
 
-        const series1 = [
-          { name:'TÉRMICA',     data: toMW(data1.map(d=>d.TERMICA)),     color:'#F97316' },
-          { name:'COGENERADOR', data: toMW(data1.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
-          { name:'HIDRÁULICA',  data: toMW(data1.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
-          { name:'SOLAR',       data: toMW(data1.map(d=>d.SOLAR)),       color:'#FFC800' }
-        ];
-        const max1 = Math.ceil(stackedMax(series1, horas1.length)*1.1);
+    const horas1 = data1.map(d => d.hora);
+    const horas2 = data2.map(d => d.hora);
+    const toMW = arr => arr.map(v => v * SCALE);
 
-        // 4) BaseOptions (primer gráfico)
-        const baseOptions = {
-          chart: { type:'area', height:500 },
-          title: { text:'Curva de generación primer semestre 2022' },
-          xAxis: {
-            categories: horas1, tickInterval:1,
-            title: { text:'Hora del día', style:{color:'#ccc'} },
-            labels:{style:{color:'#ccc'}}, gridLineColor:'#333'
-          },
-          yAxis: {
-            min:0, max:max1, tickInterval:Math.ceil(max1/5),
-            title:{text:'Generación (MW/h)',style:{color:'#ccc'}},
-            labels:{style:{color:'#ccc'},formatter(){return fmt(this.value,0);}},
-            gridLineColor:'#333'
-          },
-          tooltip:{ shared:true, backgroundColor: '#262626', style: { color: '#FFF', fontSize: '13px' }, formatter:areaTooltipFormatter },
-          plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
-          series: series1,
-          responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
-        };
+    const series1 = [
+      { name:'TÉRMICA',     data: toMW(data1.map(d=>d.TERMICA)),     color:'#F97316' },
+      { name:'COGENERADOR', data: toMW(data1.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
+      { name:'HIDRÁULICA',  data: toMW(data1.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
+      { name:'SOLAR',       data: toMW(data1.map(d=>d.SOLAR)),       color:'#FFC800' }
+    ];
+    const max1 = Math.ceil(stackedMax(series1, horas1.length)*1.1);
 
-        setOpts1(baseOptions);
+    const baseOptions = {
+      chart: { type:'area', height:500 },
+      title: { text:'Curva de generación primer semestre 2022' },
+      xAxis: {
+        categories: horas1, tickInterval:1,
+        title: { text:'Hora del día', style:{color:'#ccc'} },
+        labels:{style:{color:'#ccc'}}, gridLineColor:'#333'
+      },
+      yAxis: {
+        min:0, max:max1, tickInterval:Math.ceil(max1/5),
+        title:{text:'Generación (MW/h)',style:{color:'#ccc'}},
+        labels:{style:{color:'#ccc'},formatter(){return fmt(this.value,0);}},
+        gridLineColor:'#333'
+      },
+      tooltip:{ shared:true, backgroundColor: '#262626', style: { color: '#FFF', fontSize: '13px' }, formatter:areaTooltipFormatter },
+      plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
+      series: series1,
+      responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
+    };
 
-        // 5) VariantOptions (segundo gráfico)
-        const series2 = [
-          { name:'TÉRMICA',     data: toMW(data2.map(d=>d.TERMICA)),     color:'#F97316' },
-          { name:'COGENERADOR', data: toMW(data2.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
-          { name:'HIDRÁULICA',  data: toMW(data2.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
-          { name:'EÓLICA',      data: toMW(data2.map(d=>d.EOLICA)),      color:'#5DFF97' },
-          { name:'SOLAR',       data: toMW(data2.map(d=>d.SOLAR)),       color:'#FFC800' }
-        ];
-        const max2 = Math.ceil(stackedMax(series2, horas2.length)*1.1);
+    const series2 = [
+      { name:'TÉRMICA',     data: toMW(data2.map(d=>d.TERMICA)),     color:'#F97316' },
+      { name:'COGENERADOR', data: toMW(data2.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
+      { name:'HIDRÁULICA',  data: toMW(data2.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
+      { name:'EÓLICA',      data: toMW(data2.map(d=>d.EOLICA)),      color:'#5DFF97' },
+      { name:'SOLAR',       data: toMW(data2.map(d=>d.SOLAR)),       color:'#FFC800' }
+    ];
+    const max2 = Math.ceil(stackedMax(series2, horas2.length)*1.1);
 
-        const variantOptions = {
-          ...baseOptions,
-          title: { text:'Curva de generación últimos 6 meses' },
-          xAxis: { ...baseOptions.xAxis, categories: horas2 },
-          yAxis: { ...baseOptions.yAxis, max: max2, tickInterval: Math.ceil(max2/5) },
-          series: series2
-        };
+    const variantOptions = {
+      ...baseOptions,
+      title: { text:'Curva de generación últimos 6 meses' },
+      xAxis: { ...baseOptions.xAxis, categories: horas2 },
+      yAxis: { ...baseOptions.yAxis, max: max2, tickInterval: Math.ceil(max2/5) },
+      series: series2
+    };
 
-        setOpts2(variantOptions);
-        setLoading(false);
-      } catch (e) {
-        setError(e.message);
-        setLoading(false);
-      }
-    })();
-  }, []);
+    return { opts1: baseOptions, opts2: variantOptions };
+  }, [data1, data2]);
 
-  if (loading) return <div className="text-white p-6">Cargando gráfica…</div>;
-  if (error)   return <div className="text-red-400 p-6">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+        <div className="flex space-x-2">
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
+          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
+        </div>
+        <p className="text-gray-300 mt-4">Cargando gráfica…</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
+        <p className="text-red-400">Error: {error.message || 'Error al cargar la gráfica'}</p>
+      </div>
+    );
+  }
+
+  if (!opts1 || !opts2) return null;
 
   return (
     <section className="mt-8">

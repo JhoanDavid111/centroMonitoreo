@@ -12,7 +12,7 @@ import DataTable, { createTheme } from 'react-data-table-component';
 import { generatePath, useNavigate } from 'react-router-dom';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
-import { API } from '../config/api';
+import { useListadoProyectosCurvaS, useCurvaS } from '../services/graficasService';
 import GraficaANLA from './GraficaANLA';
 
 // ——— Tema oscuro para DataTable ———
@@ -228,12 +228,9 @@ export default function ProyectoDetalle() {
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Licencias ANLA'];
   const [activeTab, setActiveTab]         = useState(tabs[0]);
   const [proyectos, setProyectos]         = useState([]);
-  const [loadingList, setLoadingList]     = useState(true);
-  const [errorList, setErrorList]         = useState(null);
   const [chartOptions, setChartOptions]   = useState(baseChartOptions);
-  const [loadingCurve, setLoadingCurve]   = useState(false);
-  const [errorCurve, setErrorCurve]       = useState(null);
-   const [showChart, setShowChart]         = useState(false); // Estado para controlar la visibilidad de la gráfica
+  const [showChart, setShowChart]         = useState(false); // Estado para controlar la visibilidad de la gráfica
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
 
   // **Estados de filtros por columna**
@@ -297,33 +294,19 @@ export default function ProyectoDetalle() {
 
 
   // ——— Carga inicial de proyectos ———
+  const { data: proyectosData = [], isLoading: loadingList, error: errorList } = useListadoProyectosCurvaS();
+  
   useEffect(() => {
-    async function fetchList() {
-      setLoadingList(true);
-      setErrorList(null);
-      try {
-        const res  = await fetch(
-          `${API}/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const formatted = data.map(p => ({
-          ...p,
-          fpo: p.fpo ? p.fpo.split('T')[0] : '-',
-          porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
-          estado: (p.estado_proyecto ?? '-'), // ← toma el valor del API
-        }));
-        setProyectos(formatted);
-      } catch (err) {
-        console.error(err);
-        setErrorList('No fue posible cargar los proyectos.');
-      } finally {
-        setLoadingList(false);
-      }
+    if (proyectosData && proyectosData.length > 0) {
+      const formatted = proyectosData.map(p => ({
+        ...p,
+        fpo: p.fpo ? p.fpo.split('T')[0] : '-',
+        porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
+        estado: (p.estado_proyecto ?? '-'),
+      }));
+      setProyectos(formatted);
     }
-    fetchList();
-  }, []);
+  }, [proyectosData]);
 
   // ——— Reflow al redimensionar (mejora render) ———
   useEffect(() => {
@@ -332,145 +315,137 @@ export default function ProyectoDetalle() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-// ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-const handleViewCurve = async (row) => {
-  setShowChart(true); // Mostrar la gráfica
-  setLoadingCurve(true);
-  setErrorCurve(null);
-  const COLOR_REF = '#60A5FA';  // azul
-  const COLOR_SEG = '#A3E635';  // verde
-
-  // Helpers
-  const formatDMY = (iso) => {
-    if (!iso) return '';
-    // esperado: YYYY-MM-DD
-    const [y, m, d] = String(iso).split('-');
-    return (y && m && d) ? `${d}/${m}/${y}` : iso;
+  // ——— Al hacer clic en Curva S ———
+  const handleViewCurve = (row) => {
+    setShowChart(true);
+    setSelectedProjectId(row.id);
   };
 
-  const parse = (arr) =>
-    (arr ?? [])
-      .map(pt => {
-        // arr puede venir con strings (mensaje) o con objetos {fecha, avance, ...}
-        if (!pt || typeof pt === 'string') return null;
-        const iso = (pt.fecha || '').split('T')[0];
-        if (!iso) return null;
-        const t = new Date(iso).getTime();
-        const y = Number(pt.avance);
-        return Number.isFinite(t) && Number.isFinite(y)
-          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-          : null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.x - b.x);
+  // Fetch de curva S usando React Query
+  const { data: curvaData, isLoading: loadingCurve, error: errorCurve } = useCurvaS(selectedProjectId);
 
-  try {
-    const res = await fetch(
-      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const payload = await res.json();
+  // Procesar datos de curva S cuando cambien
+  useEffect(() => {
+    if (!curvaData || !selectedProjectId) return;
 
-    const refRaw = payload?.referencia?.curva;
-    const segRaw = payload?.seguimiento?.curva;
-    const refRad = payload?.referencia?.fecha_radicado || null;
-    const segRad = payload?.seguimiento?.fecha_radicado || null;
+    const COLOR_REF = '#60A5FA';
+    const COLOR_SEG = '#A3E635';
 
-    const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
-    const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
+    const formatDMY = (iso) => {
+      if (!iso) return '';
+      const [y, m, d] = String(iso).split('-');
+      return (y && m && d) ? `${d}/${m}/${y}` : iso;
+    };
 
-    const refData = refIsMsg ? [] : parse(refRaw);
-    const segData = segIsMsg ? [] : parse(segRaw);
+    const parse = (arr) =>
+      (arr ?? [])
+        .map(pt => {
+          if (!pt || typeof pt === 'string') return null;
+          const iso = (pt.fecha || '').split('T')[0];
+          if (!iso) return null;
+          const t = new Date(iso).getTime();
+          const y = Number(pt.avance);
+          return Number.isFinite(t) && Number.isFinite(y)
+            ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+            : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.x - b.x);
 
-    const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
-    const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
+    try {
+      const payload = curvaData;
+      const refRaw = payload?.referencia?.curva;
+      const segRaw = payload?.seguimiento?.curva;
+      const refRad = payload?.referencia?.fecha_radicado || null;
+      const segRad = payload?.seguimiento?.fecha_radicado || null;
 
-    // Construimos series en el orden: Referencia -> Seguimiento
-    const newSeries = [];
+      const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
+      const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
 
-    if (refIsMsg) {
-      newSeries.push({
-        type: 'spline',
-        name: String(refRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
-        data: [],
-        color: COLOR_REF,          // << azul cuando falta referencia
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (refData.length) {
-      newSeries.push({
-        type: 'spline',
-        name: refName,
-        data: refData,
-        color: COLOR_REF
-      });
-    }
+      const refData = refIsMsg ? [] : parse(refRaw);
+      const segData = segIsMsg ? [] : parse(segRaw);
 
-    if (segIsMsg) {
-      newSeries.push({
-        type: 'spline',
-        name: String(segRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
-        data: [],
-        color: COLOR_SEG,          // << VERDE aunque no haya datos
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (segData.length) {
-      newSeries.push({
-        type: 'spline',
-        name: segName,
-        data: segData,
-        color: COLOR_SEG
-      });
-    }
+      const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
+      const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
 
+      const newSeries = [];
 
-    if (newSeries.length === 0) {
-      // No hay ni datos ni mensajes (caso raro)
-      setErrorCurve(`No existe Curva S para el proyecto ${row.id}.`);
+      if (refIsMsg) {
+        newSeries.push({
+          type: 'spline',
+          name: String(refRaw[0]),
+          data: [],
+          color: COLOR_REF,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (refData.length) {
+        newSeries.push({
+          type: 'spline',
+          name: refName,
+          data: refData,
+          color: COLOR_REF
+        });
+      }
+
+      if (segIsMsg) {
+        newSeries.push({
+          type: 'spline',
+          name: String(segRaw[0]),
+          data: [],
+          color: COLOR_SEG,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (segData.length) {
+        newSeries.push({
+          type: 'spline',
+          name: segName,
+          data: segData,
+          color: COLOR_SEG
+        });
+      }
+
+      if (newSeries.length === 0) {
+        setChartOptions(opts => ({
+          ...opts,
+          title: { ...opts.title, text: `Curva S – Proyecto ${selectedProjectId}` },
+          series: []
+        }));
+        return;
+      }
+
+      const selectedRow = proyectos.find(p => p.id === selectedProjectId);
       setChartOptions(opts => ({
         ...opts,
-        title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-        series: []
+        title: { ...opts.title, text: `Curva S – Proyecto ${selectedProjectId}${selectedRow ? ` – ${selectedRow.nombre_proyecto}` : ''}` },
+        legend: {
+          ...opts.legend,
+          useHTML: true,
+          itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
+          labelFormatter: function () {
+            const isPH = this.userOptions && this.userOptions.isPlaceholder;
+            const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+            return `<span style="${style}">${this.name}</span>`;
+          }
+        },
+        series: newSeries
       }));
-      return;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (chartContainerRef.current) {
+        const OFFSET = 80;
+        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+        window.scrollTo({ top, behavior: 'smooth' });
+        setTimeout(() => chartRef.current?.chart?.reflow(), 250);
+      }
     }
-
-    setChartOptions(opts => ({
-      ...opts,
-      title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-      // reforzamos leyenda con useHTML y labelFormatter para placeholders
-      legend: {
-        ...opts.legend,
-        useHTML: true,
-        itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
-        labelFormatter: function () {
-          const isPH = this.userOptions && this.userOptions.isPlaceholder;
-          const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
-          return `<span style="${style}">${this.name}</span>`;
-        }
-      },
-      series: newSeries
-    }));
-  } catch (err) {
-    console.error(err);
-    setErrorCurve('No fue posible cargar la Curva S.');
-  } finally {
-    setLoadingCurve(false);
-    if (chartContainerRef.current) {
-      const OFFSET = 80;
-      const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-      window.scrollTo({ top, behavior: 'smooth' });
-      setTimeout(() => chartRef.current?.chart?.reflow(), 250);
-    }
-  }
-};
+  }, [curvaData, selectedProjectId, proyectos]);
 
 
   function applyGlobal(row) {
@@ -614,7 +589,7 @@ const columnsSimple = [
     selector: row => row.nombre_proyecto,
     sortable: false,
     wrap: true,
-    minWidth: '200px',
+    width: '200px',
     cell: row => {
       const raw = row.nombre_proyecto || '';
       const formatted = titleCase(raw);
@@ -825,7 +800,7 @@ const columnsSimple = [
     selector: row => row.promotor,
     sortable: false,
     wrap: true,
-    minWidth: '200px',
+    width: '200px',
     cell: row => {
       const raw = row.promotor || '';
       const formatted = titleCase(raw);
@@ -864,7 +839,7 @@ const columnsSimple = [
     selector: row => row.departamento,
     sortable: false,
     wrap: true,
-    minWidth: '180px',
+    width: '180px',
     cell: row => {
       const raw = row.departamento || '';
       const formatted = titleCase(raw);
@@ -903,7 +878,7 @@ const columnsSimple = [
     selector: row => row.municipio,
     sortable: false,
     wrap: true,
-    minWidth: '180px',
+    width: '180px',
     cell: row => {
       const raw = row.municipio || '';
       const formatted = titleCase(raw);
@@ -988,8 +963,6 @@ const columnsSeguimiento = [
       </div>
     ),
     ignoreRowClick: true,
-    allowOverflow: true,
-    button: true,
     width: '100px',
   },
     ...columnsSimple
@@ -1089,7 +1062,7 @@ const columnsSeguimiento = [
             {loadingCurve
               ? <p className="text-gray-300">Cargando curva S…</p>
               : errorCurve
-                ? <p className="text-red-500">{errorCurve}</p>
+                ? <p className="text-red-500">{errorCurve.message || 'Error al cargar la Curva S'}</p>
                 : <HighchartsReact
                     highcharts={Highcharts}
                     options={chartOptions}
