@@ -75,7 +75,6 @@ const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.
 const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
 const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
 const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
-const API_CONSOLIDADO = `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 
 
