@@ -27,7 +27,7 @@ export default function IndicatorCard({
     <div className={`bg-[#262626] p-5 rounded-lg border border-[#666666] shadow ${className}`}>
       {/* Header - Corregido para alineación vertical */}
       <div className="flex items-start gap-2 mb-2">
-        <div className="flex items-center gap-2 flex-grow min-h-[24px]">
+        <div className="flex items-center gap-2 flex-grow min-h-[24px] flex-wrap">
           {normalizedIcon && (
             <div className="flex items-center justify-center h-5 w-5 flex-shrink-0">
               {normalizedIcon}
@@ -47,8 +47,8 @@ export default function IndicatorCard({
 
       {/* Valor principal */}
       <div className="flex items-center flex-wrap text-white font-nunito font-bold 
-                      text-lg sm:text-xl md:text-2xl lg:text-[24px] leading-tight tracking-normal mt-3">
-        <span className="truncate max-w-full">{displayValue}</span>
+                      text-base sm:text-lg md:text-xl lg:text-2xl leading-tight tracking-normal mt-3">
+        <span className="max-w-full">{displayValue}</span>
       </div>
 
       {/* Hint opcional */}
