@@ -58,8 +58,8 @@ import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook ca
 const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
 
 
-const API_EXPANDER_EMBALSES = 'http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses';
-const API_EXPANDER_APORTES = 'http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes';
+const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
+const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
 
 const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
 const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
