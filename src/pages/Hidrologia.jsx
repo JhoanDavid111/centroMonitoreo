@@ -45,7 +45,7 @@ const COLORS = {
 // ===== Endpoints =====
 import { API } from '../config/api';
 
-<<<<<<< HEAD
+
 // *** NUEVAS IMPORTACIONES ***
 import TooltipModal from '../components/ui/TooltipModal'; // Asume esta ruta
 import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
