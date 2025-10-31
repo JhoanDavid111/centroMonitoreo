@@ -1,11 +1,9 @@
 // src/components/GraficaDemanda.jsx
-import React, { useMemo, useRef } from 'react';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import React, { useMemo } from 'react';
 import { useGraficaDemanda } from '../services/graficasService';
+import ChartWrapper from './charts/ChartWrapper';
 
 export function GraficaDemanda({ fechaInicio = '2025-05-01', fechaFin = '2025-05-03' }) {
-  const chartRef = useRef(null);
   const { data, isLoading: loading, error } = useGraficaDemanda(
     { fecha_inicio: fechaInicio, fecha_fin: fechaFin }
   );
@@ -32,33 +30,15 @@ export function GraficaDemanda({ fechaInicio = '2025-05-01', fechaFin = '2025-05
     };
   }, [data, fechaInicio, fechaFin]);
 
-  if (loading) {
-    return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
-        </div>
-        <p className="text-gray-300 mt-4">Cargando gráfica de demanda...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
-        <p className="text-red-500">{error.message || 'No fue posible cargar la gráfica de demanda.'}</p>
-      </div>
-    );
-  }
-
-  if (!options) return null;
-
   return (
-    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow relative">
-      <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
-    </div>
+    <ChartWrapper
+      options={options}
+      isLoading={loading}
+      error={error}
+      chartTitle="Demanda vs Energía en Firme"
+      loadingMessage="Cargando gráfica de demanda..."
+      height={350}
+    />
   );
 }
 

@@ -1,11 +1,7 @@
 // src/components/ProjectGrid.jsx
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import Boost from 'highcharts/modules/boost';
-import ExportData from 'highcharts/modules/export-data';
-import Exporting from 'highcharts/modules/exporting';
-import FullScreen from 'highcharts/modules/full-screen';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
 import { ChevronLeft, ChevronRight, Download, Filter, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import DataTable, { createTheme } from 'react-data-table-component';
@@ -85,13 +81,10 @@ const customStyles = {
 };
 
 // ——— Inicializar módulos de Highcharts ———
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
+// Boost module para gráficas de alto rendimiento
 Boost(Highcharts);
 
-// ——— Opciones globales de Highcharts ———
+// ——— Opciones adicionales específicas (complementan configuración centralizada) ———
 Highcharts.setOptions({
   chart: {
     backgroundColor: '#262626',

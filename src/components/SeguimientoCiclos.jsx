@@ -1,19 +1,13 @@
 import { useState, useMemo } from 'react';
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from "highcharts-react-official";
 import Accessibility from 'highcharts/modules/accessibility';
-import ExportData from 'highcharts/modules/export-data';
-import Exporting from 'highcharts/modules/exporting';
-import FullScreen from 'highcharts/modules/full-screen';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
 import { TOOLTIP_CONFIG } from '../constants/tooltip';
 import { useProyectosCiclos } from '../hooks/useProyectosCiclos';
+import ChartLoadingState from './charts/ChartLoadingState';
+import ChartErrorState from './charts/ChartErrorState';
 
-// Carga de módulos de Highcharts
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
+// Carga módulo adicional de accesibilidad
 Accessibility(Highcharts);
 
 // Paleta de colores para las gráficas
@@ -629,16 +623,7 @@ export function GraficaCiclo1({ data }) {
   const chartOptions = useMemo(() => generateChartOptions(data, 1), [data]);
 
   if (!data) {
-    return (
-      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.4s' }}></div>
-        </div>
-        <p className="text-gray-300 mt-4">Cargando gráficas del Ciclo 1...</p>
-      </div>
-    );
+    return <ChartLoadingState message="Cargando gráficas del Ciclo 1..." />;
   }
 
   return (
@@ -687,14 +672,7 @@ export default function SeguimientoCiclos() {
   if (loading) {
     return (
       <div className="p-4 font-sans rounded-lg" style={{ background: '#262626', fontFamily: 'Nunito Sans, sans-serif' }}>
-        <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-          <p className="text-gray-300 mt-4">Cargando datos de proyectos por ciclos...</p>
-        </div>
+        <ChartLoadingState message="Cargando datos de proyectos por ciclos..." />
       </div>
     );
   }
@@ -702,15 +680,7 @@ export default function SeguimientoCiclos() {
   if (error) {
     return (
       <div className="p-4 font-sans rounded-lg" style={{ background: '#262626', fontFamily: 'Nunito Sans, sans-serif' }}>
-        <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-red-500 text-center max-w-md mb-4">{error}</p>
-          <button onClick={refetch} className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition-colors">
-            Reintentar
-          </button>
-        </div>
+        <ChartErrorState error={error} onRetry={refetch} />
       </div>
     );
   }

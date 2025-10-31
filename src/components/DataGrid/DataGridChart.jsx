@@ -1,10 +1,8 @@
 // src/components/DataGrid/DataGridChart.jsx
 
 import HighchartsReact from 'highcharts-react-official';
-import Highcharts from 'highcharts';
-import { highchartsTheme } from './styles/highcharts';
-import { use, useEffect, useRef } from 'react';
-import { Blocks } from 'lucide-react';
+import Highcharts, { highchartsTheme } from './styles/highcharts';
+import { useEffect, useRef } from 'react';
 
 const DataGridChart = ({ options, loading, error }) => {
   const chartRef= useRef(null);

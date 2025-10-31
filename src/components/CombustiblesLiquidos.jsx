@@ -1,48 +1,7 @@
 // src/components/CombustiblesLiquidos.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-
-// Cargar módulos
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// Tema oscuro global con Nunito Sans y fondo #262626
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif', textAlign:'left' },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
-  },
-  title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif', align: 'left' } },
-  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif', textAlign: 'left' } },
-  xAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor:  '#333'
-  },
-  yAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor:  '#333'
-  },
-  legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize:'12px' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#262626',
-    style:           { color: '#fff', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' }
-  }
-});
 
 export function CombustiblesLiquidos() {
   const [charts, setCharts] = useState([]);

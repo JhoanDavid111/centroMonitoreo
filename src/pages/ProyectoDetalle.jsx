@@ -6,10 +6,7 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import ExportData from 'highcharts/modules/export-data';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import proyectoDetalleImg from '../assets/proyectoDetalle.png';
 import EnergiaElectricaOn from '../assets/svg-icons/EnergiaElectrica-On.svg';
@@ -18,21 +15,6 @@ import LocationOn from '../assets/svg-icons/location-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CalendarDarkmodeAmarillo from '../assets/svg-icons/calendarDarkmodeAmarillo.svg';
 import { useInformacionProyecto, useCurvaS } from '../services/graficasService';
-
-// ===== Inicialización Highcharts =====
-Exporting(Highcharts);
-ExportData(Highcharts);
-OfflineExporting(Highcharts);
-
-Highcharts.setOptions({
-  chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff', fontSize: '16px', fontWeight: 600 } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
-  xAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, gridLineColor: '#333' },
-  yAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, title: { style: { color: '#ccc' } }, gridLineColor: '#333' },
-  legend: { itemStyle: { color: '#ccc' }, itemHoverStyle: { color: '#fff' }, itemHiddenStyle: { color: '#666' } },
-  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' } }
-});
 
 // ===== Estilos locales =====
 const YELLOW = '#FFC800';

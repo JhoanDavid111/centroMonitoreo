@@ -11,7 +11,7 @@ import {
   BannerTitle
 } from '../components/ui/Banner';
 
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -705,26 +705,17 @@ function HidroTabs({ data, regionSummary = {} }) {
           <thead className="bg-[#1f1f1f]">
             {tab === 'resumen' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th> {/* <- antes era Variación Volumen */}
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th> {/* <- MW */}
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
               </tr>
             )}
             {tab === 'embalses' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Volumen (GWh-día)</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad (GWh-día)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Volumen (GWh-día)</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad (GWh-día)</th>
               </tr>
             )}
             {tab === 'aportes' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes (GWh-día)</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Porcentaje de aportes</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Media histórica (GWh-día)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes (GWh-día)</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Porcentaje de aportes</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Media histórica (GWh-día)</th>
               </tr>
             )}
           </thead>
@@ -748,7 +739,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                       {region}
                     </button>
                   </td>
-
                   {/* Columnas de métricas por pestaña (se ven aun colapsado) */}
                   {tab === 'resumen' && (
                     <>
@@ -774,7 +764,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                       </td>
                     </>
                   )}
-
                   {tab === 'embalses' && (
                     <>
                       {/* Volumen (GWh-día) – consolidado por región */}
@@ -804,7 +793,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                       </td>
                     </>
                   )}
-
                   {tab === 'aportes' && (
                     <>
                       {/* Aportes (GWh-día) – consolidado por región */}
@@ -839,7 +827,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                     <td className="px-3 py-2 text-gray-200">
                       <div className="pl-6">{r.embalse}</div>
                     </td>
-
                     {tab === 'resumen' && (
                       <>
                         <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
@@ -853,7 +840,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                         </td>
                       </>
                     )}
-
                     {tab === 'embalses' && (
                       <>
                         <td className="px-3 py-2 text-gray-200">
@@ -868,7 +854,6 @@ function HidroTabs({ data, regionSummary = {} }) {
                         </td>
                       </>
                     )}
-
                     {tab === 'aportes' && (
                       <>
                         <td className="px-3 py-2 text-gray-200">
@@ -889,8 +874,6 @@ function HidroTabs({ data, regionSummary = {} }) {
               </React.Fragment>
             );
           })}
-
-
           </tbody>
         </table>
       </div>

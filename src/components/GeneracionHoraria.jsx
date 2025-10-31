@@ -1,61 +1,15 @@
 // src/components/GeneracionHoraria.jsx
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-import ExportData from 'highcharts/modules/export-data';
-import Exporting from 'highcharts/modules/exporting';
-import FullScreen from 'highcharts/modules/full-screen';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
 import { useMemo } from 'react';
 import { useGeneracionHorariaPromedio } from '../services/graficasService';
-
-// Carga módulos
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// Tema global
-Highcharts.setOptions({
-  chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { align: 'left', style: { color: '#fff' } },
-  subtitle: { style: { color: '#aaa' } },
-  legend: {
-    itemStyle: { color: '#ccc' },
-    itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: { backgroundColor: '#262626', style: { color: '#fff', fontSize: '13px' }, useHTML: true, },
-});
+import ChartLoadingState from './charts/ChartLoadingState';
+import ChartErrorState from './charts/ChartErrorState';
+import { getColorForTechnology } from '../lib/chart-colors';
+import { areaTooltipFormatter } from '../lib/chart-tooltips';
 
 const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
 const SCALE = 1000;
-
-function areaTooltipFormatter() {
-  const pts = this.points || [];
-  const total = pts.reduce((s, p) => s + p.y, 0);
-  const rows = pts
-    .map(
-      (p) => `
-    <tr>
-      <td style="padding:4px 8px 4px 0; white-space:nowrap;">
-        <span style="color:${p.series.color}; fontSize:20px;">● </span> ${p.series.name}:
-      </td>
-      <td style="text-align:right;"><b>${fmt(p.y, 2)} MW/h</b></td>
-    </tr>
-  `
-    )
-    .join('');
-  return `
-    <span style="font-size:12px"><b>Hora: ${this.x}</b></span>
-    <table>${rows}
-      <tr>
-        <td colspan="2" style="border-top:1px solid #555;padding-top:8px">
-          Total: <b style="fontSize: 13px;">${fmt(total, 2)} MW/h</b>
-        </td>
-      </tr>
-    </table>
-  `;
-}
 
 function stackedMax(series, len) {
   let max = 0;
@@ -91,10 +45,10 @@ export function GeneracionHoraria() {
     const toMW = arr => arr.map(v => v * SCALE);
 
     const series1 = [
-      { name:'TÉRMICA',     data: toMW(data1.map(d=>d.TERMICA)),     color:'#F97316' },
-      { name:'COGENERADOR', data: toMW(data1.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
-      { name:'HIDRÁULICA',  data: toMW(data1.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
-      { name:'SOLAR',       data: toMW(data1.map(d=>d.SOLAR)),       color:'#FFC800' }
+      { name:'TÉRMICA',     data: toMW(data1.map(d=>d.TERMICA)),     color: getColorForTechnology('TERMICA') },
+      { name:'COGENERADOR', data: toMW(data1.map(d=>d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
+      { name:'HIDRÁULICA',  data: toMW(data1.map(d=>d.HIDRAULICA)),  color: getColorForTechnology('HIDRAULICA') },
+      { name:'SOLAR',       data: toMW(data1.map(d=>d.SOLAR)),       color: getColorForTechnology('SOLAR') }
     ];
     const max1 = Math.ceil(stackedMax(series1, horas1.length)*1.1);
 
@@ -112,18 +66,18 @@ export function GeneracionHoraria() {
         labels:{style:{color:'#ccc'},formatter(){return fmt(this.value,0);}},
         gridLineColor:'#333'
       },
-      tooltip:{ shared:true, backgroundColor: '#262626', style: { color: '#FFF', fontSize: '13px' }, formatter:areaTooltipFormatter },
+      tooltip:{ shared:true, useHTML: true, formatter: areaTooltipFormatter({ unit: 'MW/h', headerFormat: 'Hora: {x}' }) },
       plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
       series: series1,
       responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
     };
 
     const series2 = [
-      { name:'TÉRMICA',     data: toMW(data2.map(d=>d.TERMICA)),     color:'#F97316' },
-      { name:'COGENERADOR', data: toMW(data2.map(d=>d.COGENERADOR)), color:'#D1D1D0' },
-      { name:'HIDRÁULICA',  data: toMW(data2.map(d=>d.HIDRAULICA)),  color:'#3B82F6' },
-      { name:'EÓLICA',      data: toMW(data2.map(d=>d.EOLICA)),      color:'#5DFF97' },
-      { name:'SOLAR',       data: toMW(data2.map(d=>d.SOLAR)),       color:'#FFC800' }
+      { name:'TÉRMICA',     data: toMW(data2.map(d=>d.TERMICA)),     color: getColorForTechnology('TERMICA') },
+      { name:'COGENERADOR', data: toMW(data2.map(d=>d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
+      { name:'HIDRÁULICA',  data: toMW(data2.map(d=>d.HIDRAULICA)),  color: getColorForTechnology('HIDRAULICA') },
+      { name:'EÓLICA',      data: toMW(data2.map(d=>d.EOLICA)),      color: getColorForTechnology('EOLICA') },
+      { name:'SOLAR',       data: toMW(data2.map(d=>d.SOLAR)),       color: getColorForTechnology('SOLAR') }
     ];
     const max2 = Math.ceil(stackedMax(series2, horas2.length)*1.1);
 
@@ -139,24 +93,11 @@ export function GeneracionHoraria() {
   }, [data1, data2]);
 
   if (loading) {
-    return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
-        </div>
-        <p className="text-gray-300 mt-4">Cargando gráfica…</p>
-      </div>
-    );
+    return <ChartLoadingState message="Cargando gráfica..." />;
   }
   
   if (error) {
-    return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
-        <p className="text-red-400">Error: {error.message || 'Error al cargar la gráfica'}</p>
-      </div>
-    );
+    return <ChartErrorState error={error} />;
   }
 
   if (!opts1 || !opts2) return null;
@@ -178,12 +119,4 @@ export function GeneracionHoraria() {
   );
 }
 
-
-
-
 export default GeneracionHoraria;
-
-
-
-
-

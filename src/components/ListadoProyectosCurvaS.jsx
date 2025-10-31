@@ -1,6 +1,6 @@
 // src/components/ListadoProyectosCurvaS.jsx
 import React, { useMemo } from 'react';
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import { useListadoProyectosCurvaS6G } from '../services/graficasService';
 

@@ -1,49 +1,10 @@
 // src/components/HitosBarras.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useHitosPorCumplir, useProyectosIncumplimientos } from '../services/graficasService';
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-
-// ——— Carga de módulos ———
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// ——— Tema oscuro global con Nunito Sans ———
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
-  },
-  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
-  xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
-  },
-  yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
-  },
-  legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' }
-  }
-});
+import ChartLoadingState from './charts/ChartLoadingState';
+import ChartErrorState from './charts/ChartErrorState';
 
 // Helpers
 const monthAbbrEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -171,7 +132,7 @@ export function HitosBarras() {
   if (loading) {
     return (
       <section className="mt-8 space-y-4">
-        <div className="text-center text-white">Cargando datos...</div>
+        <ChartLoadingState message="Cargando datos..." />
       </section>
     );
   }
@@ -179,7 +140,7 @@ export function HitosBarras() {
   if (error) {
     return (
       <section className="mt-8 space-y-4">
-        <div className="text-center text-red-400">Error: {error.message || 'Error al cargar datos'}</div>
+        <ChartErrorState error={error} />
       </section>
     );
   }
