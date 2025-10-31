@@ -1,5 +1,8 @@
+// src/pages/Hidrologia.jsx
+
 import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
 import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
+import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 import {
   Banner,
   BannerAction,
@@ -41,6 +44,17 @@ const COLORS = {
 
 // ===== Endpoints =====
 import { API } from '../config/api';
+
+// *** NUEVAS IMPORTACIONES ***
+import TooltipModal from '../components/ui/TooltipModal'; // Asume esta ruta
+import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+
+
+// ────────────────────────────────────────────────
+// Mapeo Canónico para Tooltip
+// Este identificador debe coincidir con la clave retornada por tu API de tooltips
+// ────────────────────────────────────────────────
+const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
 
 const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
 const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
@@ -547,7 +561,12 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
 }
 
 function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
-  return (
+// Función de ayuda específica (puedes ajustarla para que muestre contenido diferente)
+  // const handleHelpClick = (cardName) => {
+  //   alert(`Ayuda para la métrica: ${cardName}`);
+  // };
+
+return (
     <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626] w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
@@ -555,8 +574,23 @@ function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multi
       </div>
       <div className="text-white text-xl">{value}</div>
       <div className="text-gray-300 text-sm">{unit}</div>
-      <div className="mt-2">
+      
+      {/* CÓDIGO CLAVE: Colocar el chip y el botón en el mismo flex container */}
+      <div className="mt-2 flex items-center gap-1"> {/* Agregamos 'flex items-center gap-1' */}
         <TrendChip dir={dir}>{delta}</TrendChip>
+
+        {/* Botón de Ayuda (HelpCircle) */}
+       <button
+          onClick={() => onHelpClick(name)} // MODIFICADO: Usa onHelpClick
+          className="flex items-center justify-center 
+            h-6 w-6 
+            rounded-md 
+            bg-neutral-700 hover:bg-neutral-600 transition-colors
+            ml-1"
+          title={`Ayuda sobre ${name}`}
+        >
+          <HelpCircle className="w-4 h-4 text-white" />
+        </button>
       </div>
     </div>
   );
@@ -932,6 +966,11 @@ function useHidroRowsFromApi() {
 
 /* --------------------------------- Página --------------------------------- */
 export default function Hidrologia() {
+  
+
+
+
+
   // ⬇️ AHORA LA GRÁFICA DE APORTES USA API
   const aportesOptions = useAportesOptionsFromApi();
   const desabOptions = useDesabastecimientoOptionsFromApi();
@@ -953,6 +992,45 @@ export default function Hidrologia() {
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
   ][Math.max(0, Math.min(11, (m|0)-1))] || '—');
+
+  // *** ESTADOS Y HOOKS PARA LA MODAL/TOOLTIPS ***
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState('');
+    
+    // 1. Usar el hook de cache centralizado para tooltips
+    const { 
+      tooltips, 
+      loading: loadingTooltips, 
+      error: errorTooltips 
+    } = useTooltipsCache();
+  
+    // Función para cerrar la modal
+    const closeModal = () => {
+      setIsModalOpen(false);
+      setModalTitle('');
+      setModalContent('');
+    };
+  
+    // Función para manejar el clic en el botón de ayuda
+    const handleHelpClick = () => {
+      // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
+      const title = options?.title?.text || 'Capacidad Prueba';
+      
+      // 3. Buscar el contenido en el caché global de tooltips
+      const content = tooltips[CHART_TOOLTIP_ID];
+  
+      if (content) {
+        setModalTitle(title);
+        setModalContent(content);
+        setIsModalOpen(true);
+      } else {
+        setModalTitle('Información no disponible');
+        setModalContent('No se encontró una descripción detallada para esta gráfica.');
+        setIsModalOpen(true);
+      }
+    };
+  
 
   // Fetch indicadores hidráulicos
   useEffect(() => {
@@ -1262,7 +1340,15 @@ useEffect(() => {
           {/* Fila: valor GWh con chip a la derecha */}
           <div className="flex items-center justify-between">
             <p className="text-white text-xl">{indices[0].value}</p>
+
+            <div className="flex items-center gap-2">
             <TrendChip dir={indices[0].deltaDir}>{indices[0].deltaText}</TrendChip>
+            <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+            </div>
           </div>
 
           {/* Divisor */}
@@ -1271,7 +1357,16 @@ useEffect(() => {
           {/* Fila: % con chip a la derecha */}
           <div className="flex items-center justify-between">
             <div className="text-gray-300 text-xl">{indices[0].pct}</div>
+
+            <div className="flex items-center gap-2">
             <TrendChip dir={indices[0].pctDeltaDir}>{indices[0].pctDeltaText}</TrendChip>
+
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+          </div>
           </div>
 
           {/* Barra de nivel */}
@@ -1299,7 +1394,15 @@ useEffect(() => {
           {/* Fila: valor GWh con chip a la derecha */}
           <div className="flex items-center justify-between">
             <p className="text-white text-xl">{indices[1].value}</p>
+
+            <div className="flex items-center gap-2">
             <TrendChip dir={indices[1].deltaDir}>{indices[1].deltaText}</TrendChip>
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+                </div>
           </div>
 
           {/* Divisor */}
@@ -1308,7 +1411,16 @@ useEffect(() => {
           {/* Fila: % con chip a la derecha */}
           <div className="flex items-center justify-between">
             <p className="text-white text-xl">{indices[1].pct}</p>
+
+            <div className="flex items-center gap-2">
             <TrendChip dir={indices[1].pctDeltaDir}>{indices[1].pctDeltaText}</TrendChip>
+             <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
+
+            </div>
           </div>
 
           {/* Media histórica */}
@@ -1341,12 +1453,20 @@ useEffect(() => {
                   />
                 );
               })}
+              
             </div>
 
             <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
+               <div className="flex items-center gap-2">
               <div className="text-white">{indices[2].bottom}</div>
-              <div className="mt-2">
+            
+               
                 <TrendChip dir={indices[2].bottomDir}>{indices[2].bottomDelta}</TrendChip>
+                 <HelpCircle
+                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
+                    title="Ayuda"
+                    // onClick={() => handleHelpClick(card.key)}
+                  />
               </div>
             </div>
           </div>
@@ -1402,14 +1522,49 @@ useEffect(() => {
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <HidroTabs data={hidroRows} />
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+              {/* Ayuda */}
+              <button
+                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+                style={{ width: 30, height: 30 }}
+                title="Ayuda"
+                onClick={handleHelpClick}
+                type="button"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                  <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+                </svg>
+              </button>
+
             <HighchartsReact highcharts={Highcharts} options={aportesOptions} />
           </div>
         </div>
 
         {/* Estatuto de desabastecimiento */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 h-[650px] avoid-break">
+        <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+        {/* Ayuda */}
+        <button
+          className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+          style={{ width: 30, height: 30 }}
+          title="Ayuda"
+          onClick={handleHelpClick}
+          type="button"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+            <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+            <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+          </svg>
+        </button>
+          
           <HighchartsReact highcharts={Highcharts} options={desabOptions} />
+          {/* *** COMPONENTE TOOLTIP MODAL *** */}
+                  <TooltipModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    title={modalTitle}
+                    content={modalContent}
+                  />
         </div>
       </section>
     </>
