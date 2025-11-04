@@ -26,10 +26,14 @@ export function useDataGridCache(tabConfig, activeTab) {
       }
       return response.json();
     } else {
-      // Extraer path de la URL relativa
-      const url = new URL(apiUrl, window.location.origin);
-      const path = url.pathname + url.search;
-      const { data } = await apiClient.post(path, fetchOptions.body || {});
+      // Usar apiClient directamente con el path relativo
+      // apiClient ya tiene baseURL configurado en src/lib/axios.js
+      // Debug: Verificar la URL que se está pasando
+      if (apiUrl.includes('transmision')) {
+        console.log('useDataGridCache - apiUrl recibida:', apiUrl);
+        console.log('useDataGridCache - apiClient baseURL:', apiClient.defaults.baseURL);
+      }
+      const { data } = await apiClient.post(apiUrl, fetchOptions.body || {});
       return data;
     }
   };

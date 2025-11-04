@@ -22,6 +22,11 @@ apiClient.interceptors.request.use(
     // Agregar timestamp para medir tiempo de respuesta
     config.metadata = { startTime: Date.now() };
     
+    // Debug: Log de URLs para detectar duplicación
+    if (config.url && config.url.includes('transmision')) {
+      console.log('Axios Request URL:', config.baseURL + config.url);
+    }
+    
     return config;
   },
   (error) => {
