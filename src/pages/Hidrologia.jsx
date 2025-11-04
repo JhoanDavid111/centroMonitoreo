@@ -67,8 +67,9 @@ import { useGraficaAportes, useGraficaEstatuto } from '../services/graficasServi
 const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
 
 
-const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
-const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
+// Constantes no utilizadas - eliminadas para evitar confusión
+// const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
+// const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
 
 const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
 const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;

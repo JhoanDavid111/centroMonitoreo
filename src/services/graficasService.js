@@ -1,23 +1,6 @@
 // src/services/graficasService.js
 import { useQuery, useQueries } from '@tanstack/react-query';
 import apiClient from '../lib/axios';
-import { API } from '../config/api';
-import axios from 'axios';
-
-// Helper para manejar URLs personalizadas
-const getApiClient = (customUrl) => {
-  if (!customUrl || customUrl.startsWith(API)) {
-    return apiClient;
-  }
-  return axios.create({
-    baseURL: '',
-    timeout: 30000,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-};
 
 /**
  * Funciones de fetch para Gráficas 6GW
@@ -133,10 +116,10 @@ export const fetchGraficaCapacidadInstaladaTecnologia = async (params = {}) => {
 };
 
 export const fetchGraficaEstatuto = async (params = {}) => {
-  const apiEstatuto = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
+  const apiEstatuto = import.meta.env.VITE_API_ESTATUTO;
   
-  // Si es una URL absoluta, usar fetch directo como en el código original
-  if (apiEstatuto.startsWith('http')) {
+  // Si hay variable de entorno y es URL absoluta, usar fetch directo
+  if (apiEstatuto && apiEstatuto.startsWith('http')) {
     const response = await fetch(apiEstatuto, {
       method: 'POST',
       mode: 'cors',
@@ -160,7 +143,7 @@ export const fetchGraficaEstatuto = async (params = {}) => {
     return data;
   }
   
-  // Si es una URL relativa, usar apiClient
+  // Si no hay variable de entorno, usar apiClient con path relativo
   const { data } = await apiClient.post('/v1/graficas/energia_electrica/grafica_estatuto', params);
   return data;
 };
@@ -174,10 +157,27 @@ export const fetchGraficaDemanda = async (params = {}) => {
  * Funciones de fetch para Hidrología
  */
 export const fetchGraficaAportes = async () => {
-  const apiAportes = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
-  const client = getApiClient(apiAportes);
-  const url = apiAportes.startsWith('http') ? apiAportes : `${API}/v1/graficas/hidrologia/grafica_aportes`;
-  const { data } = await client.post(url);
+  const apiAportes = import.meta.env.VITE_API_HIDRO_APORTES;
+  
+  // Si hay variable de entorno, usar URL absoluta con fetch directo
+  if (apiAportes && apiAportes.startsWith('http')) {
+    const response = await fetch(apiAportes, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+  
+  // Si no hay variable de entorno, usar apiClient con path relativo
+  const { data } = await apiClient.post('/v1/graficas/hidrologia/grafica_aportes');
   return data;
 };
 
