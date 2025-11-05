@@ -26,7 +26,11 @@ export function Banner6GW({ onClick }) {
             </button>
           </Link>
         </div>
-        <img src={GWOff} className="w-24 h-24 flex-shrink-0 absolute right-6 top-7"/>
+        <img
+          src={GWOff}
+          alt="6GW+ Icon"
+          className="w-24 h-24 flex-shrink-0 absolute right-6 top-7"
+        />
       
     </div>
   );

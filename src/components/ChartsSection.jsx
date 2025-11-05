@@ -1,1 +1,0 @@
-export function ChartsSection({ charts }) { return <div className='grid grid-cols-2 gap-4 mb-6'>{charts.map((c, idx) => <div key={idx} className='bg-gray-800 p-4 rounded'>{c.titulo}</div>)}</div>; }

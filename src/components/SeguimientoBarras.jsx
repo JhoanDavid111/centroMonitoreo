@@ -1,50 +1,7 @@
 import React, { useState, useRef } from 'react';
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-
-// Carga de módulos
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// Tema oscuro global con Nunito Sans
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: "Nunito Sans, sans-serif" },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
-  },
-  title: { style: { color: "#fff", fontSize: "16px", fontWeight: '600' } },
-  subtitle: { style: { color: "#aaa", fontSize: "12px" } },
-  xAxis: {
-    labels: { style: { color: "#ccc", fontSize: "10px" } },
-    title: { style: { color: "#ccc" } },
-    gridLineColor: '#333'
-  },
-  yAxis: {
-    labels: { style: { color: "#ccc", fontSize: "10px" } },
-    title: { style: { color: "#ccc" } },
-    gridLineColor: '#333'
-  },
-  legend: {
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#112937',
-    style: { color: '#fff', fontSize: '12px' },
-    formatter: function () {
-      return `<b>${this.x}</b><br/>${this.series.name}: <b>${this.y}</b>`;
-    }
-  }
-});
+import HelpButton from './charts/HelpButton';
 
 export function SeguimientoBarras() {
   const chartRef = useRef(null);
@@ -134,32 +91,7 @@ export function SeguimientoBarras() {
         </button>
       </div>
       <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
-          <button
-            className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-            style={{ width: 30, height: 30 }}
-            title="Ayuda"
-            onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')}
-            type="button"
-            >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="rounded-full"
-            >
-              <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-              <text
-                x="12"
-                y="18"
-                textAnchor="middle"
-                fontSize="16"
-                fill="#fff"
-                fontWeight="bold"
-                fontFamily="Nunito Sans, sans-serif"
-                pointerEvents="none"
-              >?</text>
-            </svg>
-        </button>
+          <HelpButton onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')} />
         {/* Gráfica */}
         <HighchartsReact
           highcharts={Highcharts}

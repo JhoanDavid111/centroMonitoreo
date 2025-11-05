@@ -21,9 +21,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Recuperar rol de sessionStorage si existe
     const savedRole = sessionStorage.getItem('userRole');
-      if (savedRole) {
-        setUserRole(savedRole);
-      }const storedRole = sessionStorage.getItem('userRole');
+    if (savedRole) {
+      setUserRole(savedRole);
+    }
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -33,15 +33,14 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-    async function logout() {
-      try {
-        await signOut(auth);
-        setIsDropdownOpen(false);
-        window.location.href = "/CentroMonitoreo"; // Redirigir al home con recarga
-      } catch (error) {
-        console.error("Error al cerrar sesión:", error);
-      }
-    };
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      window.location.href = "/CentroMonitoreo"; // Redirigir al home con recarga
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ currentUser, userRole, updateUserRole, loading, logout }}>

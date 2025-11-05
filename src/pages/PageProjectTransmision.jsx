@@ -1,7 +1,7 @@
 // src/pages/PageProjectTransmision.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchProjectData } from '../service/apiServiceConvocatoriaTransmision';
+import { fetchProjectData } from '../services/transmisionService';
 import {
   ChevronLeft, FileText,
   AlertTriangle,
@@ -232,7 +232,7 @@ const PageProjectTransmision = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen + botón - Ahora con carrusel */}
-          <div className="xl:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+          <div className="lg:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
             <Carousel images={mainCarouselImgs} height="h-72 md:h-96" interval={5000} />
             <div className="mt-3">
               <button
@@ -245,7 +245,7 @@ const PageProjectTransmision = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
             {projectData.milestones.map((milestone, index) => (
               <IndicatorCard
                 key={index}

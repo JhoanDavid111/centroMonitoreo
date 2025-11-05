@@ -248,9 +248,7 @@ const DataGridTable = ({
         </div>
       ),
       ignoreRowClick: true,
-      width: '100px',
-      button: true,
-      compact: true
+      width: '100px'
     };
     
     return [actionColumn, ...processedColumns];
@@ -267,14 +265,17 @@ const DataGridTable = ({
     </div>
   );
 
-  if (error) return (
-    <div className="bg-[#262626] p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <p className="text-red-500 text-center max-w-md">{error}</p>
-    </div>
-  );
+  if (error) {
+    const errorMessage = error?.message || error?.response?.data?.message || String(error || 'Error desconocido');
+    return (
+      <div className="bg-[#262626] p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="text-red-500 text-center max-w-md">{errorMessage}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#262626] p-4 rounded-lg shadow">

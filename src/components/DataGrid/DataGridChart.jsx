@@ -1,10 +1,8 @@
 // src/components/DataGrid/DataGridChart.jsx
 
 import HighchartsReact from 'highcharts-react-official';
-import Highcharts from 'highcharts';
-import { highchartsTheme } from './styles/highcharts';
-import { use, useEffect, useRef } from 'react';
-import { Blocks } from 'lucide-react';
+import Highcharts, { highchartsTheme } from './styles/highcharts';
+import { useEffect, useRef } from 'react';
 
 const DataGridChart = ({ options, loading, error }) => {
   const chartRef= useRef(null);
@@ -20,7 +18,10 @@ const DataGridChart = ({ options, loading, error }) => {
   }, [options]);
 
   if (loading) return <div className="text-center py-8 text-gray-400">Cargando gráfico...</div>;
-  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
+  if (error) {
+    const errorMessage = error?.message || error?.response?.data?.message || String(error || 'Error desconocido');
+    return <div className="text-center py-8 text-red-500">{errorMessage}</div>;
+  }
 
   return (
     <div ref={chartRef} className="mt-6 bg-[#262626] p-4 rounded-lg shadow scroll-anchor">

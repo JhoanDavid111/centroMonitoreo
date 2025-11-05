@@ -1,4 +1,4 @@
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 
 // Configuración de gráficas ANLA

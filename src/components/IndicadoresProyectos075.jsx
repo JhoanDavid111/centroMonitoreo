@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
-import TooltipModal from './ui/TooltipModal'; // Asume esta ruta
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+import TooltipModal from './ui/TooltipModal';
+import { useTooltipsCache } from '../hooks/useTooltipsCache';
+import { useIndicadoresProyectos075 } from '../services/indicadoresService';
 
 // Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -12,7 +13,6 @@ import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 import Proyecto075On       from '../assets/svg-icons/Proyecto075-On.svg';
 import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
 import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
-import { API } from '../config/api';
 
 
 
@@ -79,9 +79,7 @@ const nf2 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFr
 const fmtMW = (mw) => nf2.format(mw ?? 0);
 
 export default function IndicadoresProyectos075() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
-  const [labels, setLabels]   = useState(LABEL_MAP);
+  const [labels, setLabels] = useState(LABEL_MAP);
   const [updated, setUpdated] = useState(new Date().toLocaleDateString('es-CO'));
 
   //**Estados y hooks para la modal tooltips */
@@ -127,26 +125,12 @@ export default function IndicadoresProyectos075() {
 // const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
 //   const heroValue = LABEL_MAP.total_proyectos_bd075.value;
 
- useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError('');
+  const { data, isLoading: loading, error: queryError } = useIndicadoresProyectos075();
 
-    const res = await fetch(
-      `${API}/v1/indicadores/proyectos_075/indicadores_proyectos_075`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // No body requerido
-      }
-    );
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
+  useEffect(() => {
+    if (!data) return;
+    
+    try {
         // Mapear respuesta a los valores de la UI (sin cambiar estilos ni textos)
         const next = { ...LABEL_MAP };
 
@@ -172,15 +156,10 @@ export default function IndicadoresProyectos075() {
 
         setLabels(next);
         setUpdated(new Date().toLocaleDateString('es-CO'));
-      } catch (e) {
-        setError(`No fue posible cargar los indicadores. ${e?.message ?? ''}`.trim());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    } catch (e) {
+        console.error('Error procesando indicadores:', e);
+    }
+  }, [data]);
 
   const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
   const heroValue    = labels.total_proyectos_bd075.value;
@@ -204,8 +183,8 @@ export default function IndicadoresProyectos075() {
     );
   }
 
-  if (error || errorTooltips) {
-    return <div className="text-red-400 p-6">Error: {error}</div>;
+  if (queryError || errorTooltips) {
+    return <div className="text-red-400 p-6">Error: {queryError?.message || errorTooltips || 'Error al cargar los indicadores'}</div>;
   }
 
   const cards = ORDER.map((key) => ({
