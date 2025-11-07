@@ -29,9 +29,10 @@ const MonitoringChart = ({ title, data }) => {
             />
             <Tooltip 
               contentStyle={{
-                backgroundColor: '#1F2937',
-                borderColor: '#374151',
-                borderRadius: '0.5rem'
+                backgroundColor: '#262626',
+                borderColor: '#666',
+                borderRadius: '0.5rem',
+                padding: '10px'
               }}
             />
             <Legend />

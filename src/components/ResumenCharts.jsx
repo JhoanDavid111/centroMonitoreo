@@ -189,7 +189,9 @@ export function ResumenCharts() {
           tooltip: {
             useHTML: true,
             backgroundColor: '#262626',
+            borderColor: '#666',
             style: { color: '#fff', fontSize: '13px' },
+            padding: 10,
             formatter: singlePieTooltipFormatter,
           },
           exporting: { enabled: true }
@@ -244,6 +246,9 @@ export function ResumenCharts() {
           tooltip: {
             shared: true,
             useHTML: true,
+            backgroundColor: '#262626',
+            borderColor: '#666',
+            padding: 10,
             formatter: stackedColumnTooltipFormatter({ unit: 'MW' })
           },
           exporting: { enabled: true }
@@ -278,6 +283,9 @@ export function ResumenCharts() {
           tooltip: {
             shared: true,
             useHTML: true,
+            backgroundColor: '#262626',
+            borderColor: '#666',
+            padding: 10,
             formatter: stackedColumnTooltipFormatter({ unit: 'MW' })
           },
           exporting: { enabled: true }

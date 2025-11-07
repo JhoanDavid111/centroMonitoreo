@@ -999,7 +999,9 @@ function useAportesOptionsFromApi() {
     ],
     tooltip: {
       backgroundColor: '#262626',
-      style: { color: '#FFF', fontSize: '14px' },
+      borderColor: '#666',
+      style: { color: '#FFF', fontSize: '13px' },
+      padding: 10,
       xDateFormat: '%Y-%m',
       shared: true,
       useHTML: true,

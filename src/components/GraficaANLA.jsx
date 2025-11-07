@@ -73,8 +73,9 @@ const resumenANLAOptions = {
     },
     tooltip: {
       backgroundColor: '#262626',
-      borderColor: '#333',
-      style: { color: '#fff', fontSize: '14px' },
+      borderColor: '#666',
+      style: { color: '#fff', fontSize: '13px' },
+      padding: 10,
       headerFormat: '<b>{category}</b><br/>',
       pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
       useHTML: true
@@ -304,8 +305,9 @@ const tiempoPromedioANLAOptions = {
   },
   tooltip: {
     backgroundColor: '#262626',
-    borderColor: '#338',
-    style: { color: '#fff', fontSize: '14px' },
+    borderColor: '#666',
+    style: { color: '#fff', fontSize: '13px' },
+    padding: 10,
     valueSuffix: 'dias',
     pointFormat: 'Promedio de aprobación: <b>{point.y}</b>',
     useHTML: true

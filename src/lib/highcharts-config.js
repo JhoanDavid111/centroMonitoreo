@@ -86,10 +86,12 @@ Highcharts.setOptions({
   },
   tooltip: {
     backgroundColor: '#262626',
+    borderColor: '#666',
     style: { 
       color: '#fff', 
       fontSize: '13px' 
     },
+    padding: 10,
     useHTML: true,
   },
   credits: { enabled: false },

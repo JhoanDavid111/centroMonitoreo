@@ -108,8 +108,10 @@ Highcharts.setOptions({
     itemHiddenStyle: { color: '#666', fontFamily: 'Nunito Sans, sans-serif' },
   },
   tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
+    backgroundColor: '#262626',
+    borderColor: '#666',
+    style: { color: '#fff', fontSize: '13px', fontFamily: 'Nunito Sans, sans-serif' },
+    padding: 10,
   },
 });
 
@@ -177,6 +179,10 @@ const baseChartOptions = {
     hideDelay: 60,
     snap: 16,
     xDateFormat: '%Y-%m-%d',
+    backgroundColor: '#262626',
+    borderColor: '#666',
+    style: { color: '#fff', fontSize: '13px' },
+    padding: 10,
     formatter: function () {
       const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
       const valor = Highcharts.numberFormat(this.y ?? 0, 1);
@@ -1135,4 +1141,3 @@ function exportToCSV(data) {
   link.click();
   document.body.removeChild(link);
 }
-
