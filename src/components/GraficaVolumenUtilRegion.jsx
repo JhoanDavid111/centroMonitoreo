@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaVolumenUtilRegion.jsx
 import React, { useMemo } from 'react';
 import { useGraficaVolumenUtilRegion } from '../services/graficasService';
@@ -25,7 +27,7 @@ export function GraficaVolumenUtilRegion({ fechaInicio = '2025-05-01', fechaFin 
       subtitle: { text: `Fuente: API. ${fechaInicio} → ${fechaFin}`, align: 'left' },
       xAxis: { categories, title: { text: 'Región' } },
       yAxis: { title: { text: 'Volumen útil (GWh)' } },
-      series: [{ name: 'Volumen útil', data: valores, color: '#3B82F6' }],
+      series: [{ name: 'Volumen útil', data: valores, color: tokens.colors.status.info }],
     };
   }, [data, fechaInicio, fechaFin]);
 

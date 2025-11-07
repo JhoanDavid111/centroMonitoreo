@@ -2,6 +2,8 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useState, useMemo } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 import { useHidrologiaConsolidado } from '../services/indicadoresService';
+import tokens from '../styles/theme.js';
+
 
 import { Dialog, DialogContent, DialogTrigger } from "./ui/Dialog";
 
@@ -29,11 +31,11 @@ const TrendChip = ({ dir = '+', children }) => {
       "
       style={{
         backgroundColor: bg,
-        color: '#fff',
+        color: tokens.colors.text.primary,
         border: '1px solid rgba(0,0,0,.15)',
       }}
     >
-      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+      <span className="leading-none" style={{ color: tokens.colors.text.primary }}>{children}</span>
     </span>
   );
 }
@@ -170,7 +172,7 @@ const RegionDialog = ({ coords, damProperties }) => {
               <div className="flex-1 h-3 rounded-sm overflow-hidden bg-[#575756] mx-3">
                 <div
                   className="h-3"
-                  style={{ width: `${embalse_nivel}%`, background: "#22C55E" }}
+                  style={{ width: `${embalse_nivel}%`, background: tokens.colors.status.positive }}
                 />
               </div>
             </div>

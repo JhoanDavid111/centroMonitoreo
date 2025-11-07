@@ -35,7 +35,7 @@ export default function ProjectGridChart({
   return (
     <div
       ref={chartContainerRef}
-      className="mt-6 bg-[#262626] p-4 rounded-lg shadow min-h-[600px] scroll-mt-24"
+      className="mt-6 bg-surface-primary p-4 rounded-lg shadow min-h-[600px] scroll-mt-24"
     >
       {loading ? (
         <ChartLoadingState message="Cargando curva S…" />

@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/pages/ProyectoDetalle.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -28,13 +30,13 @@ const IconPill = ({ children }) => (
 );
 
 const Chip = ({ children, className = '' }) => (
-  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[#3a3a3a] text-gray-200 ${className}`}>
+  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[color:var(--border-subtle)] text-gray-200 ${className}`}>
     {children}
   </span>
 );
 
 const StatCard = ({ icon, title, value }) => (
-  <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
+  <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 mb-1">
       {/* Ícono sin pill/fondo */}
       <span className="inline-flex items-center justify-center w-5 h-5">
@@ -47,7 +49,7 @@ const StatCard = ({ icon, title, value }) => (
 );
 
 const InfoTag = ({ icon, labelText, value }) => (
-  <div className="bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
+  <div className="bg-surface-primary border rounded-xl p-3" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 text-sm" style={{ color: LABEL }}>
       <span className="inline-flex items-center justify-center w-5 h-5">
         {icon}
@@ -79,7 +81,7 @@ const ProgressBar = ({ value }) => {
   const barColor = getColor(v);
 
   return (
-    <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
+    <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
       <div className="text-sm mb-2" style={{ color: LABEL }}>Avances del proyectos</div>
 
       <div
@@ -121,10 +123,10 @@ const baseCurveOptions = {
   chart: {
     type: 'spline',
     height: 520,
-    backgroundColor: '#262626',
+    backgroundColor: tokens.colors.surface.primary,
     animation: false
   },
-  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  title: { text: 'Curva S – Proyecto', style: { color: tokens.colors.text.primary } },
   subtitle: { text: '' },
 
   xAxis: {
@@ -153,7 +155,7 @@ const baseCurveOptions = {
   legend: {
     useHTML: true,
     itemStyle: { color: '#ccc' },
-    itemHoverStyle: { color: '#fff' },
+    itemHoverStyle: { color: tokens.colors.text.primary },
     itemHiddenStyle: { color: '#666' },
     // si la "serie" es un placeholder (mensaje), pintamos el texto en rojo
     labelFormatter: function () {
@@ -424,11 +426,11 @@ export default function ProyectoDetalle() {
 
       {/* Resumen */}
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8">
-        <div className="text-[18px] font-semibold mb-2" style={{ color: '#D1D1D0' }}>Resumen</div>
+        <div className="text-[18px] font-semibold mb-2" style={{ color: tokens.colors.text.secondary }}>Resumen</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen resumen */}
-          <div className="lg:col-span-2 bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
+          <div className="lg:col-span-2 bg-surface-primary border rounded-xl p-3" style={{ borderColor: BORDER }}>
             <div className="rounded-lg overflow-hidden">
               <img
                 src={proyectoDetalleImg}
@@ -469,12 +471,12 @@ export default function ProyectoDetalle() {
         </div>
 
         {/* Curva S */}
-        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>
+        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>
           Seguimiento Curva S
         </div>
         <div
           ref={chartContainerRef}
-          className="bg-[#262626] border rounded-xl p-3 scroll-mt-24"
+          className="bg-surface-primary border rounded-xl p-3 scroll-mt-24"
           style={{ borderColor: BORDER }}
         >
           {curveLoading && <p className="text-gray-300 px-2 py-4">Cargando Curva S…</p>}
@@ -486,7 +488,7 @@ export default function ProyectoDetalle() {
         </div>
 
         {/* Ubicación y detalles */}
-        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>Ubicación y detalles</div>
+        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>Ubicación y detalles</div>
 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
   <InfoTag
     icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}

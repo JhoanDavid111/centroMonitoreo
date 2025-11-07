@@ -80,14 +80,14 @@ const Bar = ({ value = 0, color = 'bg-emerald-500', track = 'bg-neutral-700' }) 
 
 /* ===== UI Components ===== */
 const Chip = ({ children, className = '' }) => (
-  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[#3a3a3a] text-gray-200 ${className}`}>
+  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[color:var(--border-subtle)] text-gray-200 ${className}`}>
     {children}
   </span>
 );
 
 /* ===== Cards ===== */
 const ProgressCard = ({ title, bars = [] }) => (
-  <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+  <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4">
     <h4 className="text-white font-semibold mb-2">{title}</h4>
     {bars.map((b, i) => (
       <div key={i} className="mb-3">
@@ -101,7 +101,7 @@ const ProgressCard = ({ title, bars = [] }) => (
 );
 
 const SmallMetricCard = ({ icon, title, value, updated }) => (
-  <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4">
+  <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4">
     <div className="flex items-center gap-2 mb-2">
       {icon}
       <span className="text-sm font-medium" style={{ color: COLORS.label }}>{title}</span>
@@ -232,7 +232,7 @@ const PageProjectTransmision = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen + botón - Ahora con carrusel */}
-          <div className="lg:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+          <div className="lg:col-span-2 bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-3">
             <Carousel images={mainCarouselImgs} height="h-72 md:h-96" interval={5000} />
             <div className="mt-3">
               <button
@@ -280,7 +280,7 @@ const PageProjectTransmision = () => {
           ))}
 
           {/* Carrusel adicional - Manteniendo el mismo tamaño */}
-          <div className="md:col-span-2 bg-[#262626] border border-[#3a3a3a] rounded-xl p-3">
+          <div className="md:col-span-2 bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-3">
            <Carousel images={secondaryCarouselImgs} height="h-56" interval={5000} />
           </div>
         </div>
@@ -361,7 +361,7 @@ const PageProjectTransmision = () => {
           )}
 
           {/* Nueva card de beneficios del proyecto */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-6 mt-6">
+          <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-6 mt-6">
             <h3 className="text-xl font-semibold mb-4" style={{ color: COLORS.heading }}>Beneficios del proyecto</h3>
             <ul className="space-y-2">
               <li className="flex items-start">

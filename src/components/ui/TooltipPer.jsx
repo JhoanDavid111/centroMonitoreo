@@ -40,7 +40,7 @@ export const TooltipPer = ({
           className={`
             absolute z-50
             bg-gray-800 text-white text-xs rounded p-2
-            shadow-lg ${maxWidth}
+            shadow-soft ${maxWidth}
             ${placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
             ${getAlignmentClasses()}
             ${tooltipClass}

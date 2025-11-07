@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaRelacionDemanda.jsx
 import React, { useMemo } from 'react';
 import { useGraficaRelacionDemanda } from '../services/graficasService';
@@ -22,7 +24,7 @@ export function GraficaRelacionDemanda({ fechaInicio = '2025-05-01', fechaFin = 
       xAxis: { categories, title: { text: 'Fecha' } },
       yAxis: { title: { text: 'Ratio' } },
       series: [
-        { name: 'Dem / OEF', data: dataOEF, color: '#FFC800' },
+        { name: 'Dem / OEF', data: dataOEF, color: tokens.colors.accent.primary },
         { name: 'Dem / EFICC', data: dataEFICC, color: '#4CAF50' }
       ],
     };

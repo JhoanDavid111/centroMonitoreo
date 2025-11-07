@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/config/transmisionGrid.jsx
 import { ImpactBadge } from '../components/ui/ImpactBadge';
 import { TooltipPer } from '../components/ui/TooltipPer';
@@ -235,11 +237,11 @@ export const TRANSMISION_GRID_CONFIG = {
           return {
             title: {
               text: `Avances - ${row.nombre_proyecto}`,
-              style: { color: '#FFFFFF' }
+              style: { color: tokens.colors.text.primary }
             },
             chart: {
               type: 'column',
-              backgroundColor: '#262626',
+              backgroundColor: tokens.colors.surface.primary,
               spacing: [20, 10, 10, 10]
             },
 
@@ -250,7 +252,7 @@ export const TRANSMISION_GRID_CONFIG = {
               tickInterval: 1,
               title: { text: null },
               labels: {
-                style: { color: '#FFFFFF', fontSize: '11px', fontWeight: 'bold' },
+                style: { color: tokens.colors.text.primary, fontSize: '11px', fontWeight: 'bold' },
                 rotation: 0,
                 step: 1,
                 y: 20,
@@ -262,11 +264,11 @@ export const TRANSMISION_GRID_CONFIG = {
             },
 
             yAxis: {
-              title: { text: 'Porcentaje', style: { color: '#FFFFFF' } },
+              title: { text: 'Porcentaje', style: { color: tokens.colors.text.primary } },
               min: 0,
               max: 100,
               labels: {
-                style: { color: '#FFFFFF' },
+                style: { color: tokens.colors.text.primary },
                 formatter: function () { return this.value + '%'; }
               },
               gridLineColor: '#404040'
@@ -280,17 +282,17 @@ export const TRANSMISION_GRID_CONFIG = {
                 groupPadding: 0.1,
                 dataLabels: {
                   enabled: true,
-                  style: { color: '#FFFFFF', fontWeight: 'bold', textOutline: 'none', fontSize: '11px' },
+                  style: { color: tokens.colors.text.primary, fontWeight: 'bold', textOutline: 'none', fontSize: '11px' },
                   formatter: function () { return this.y.toFixed(1) + '%'; }
                 }
               }
             },
             tooltip: {
-              backgroundColor: '#1f1f1f',
+              backgroundColor: tokens.colors.surface.secondary,
               borderColor: '#FFD700',
               borderRadius: 8,
               borderWidth: 1,
-              style: { color: '#FFFFFF', fontSize: '12px' },
+              style: { color: tokens.colors.text.primary, fontSize: '12px' },
               useHTML: true,
               formatter: function () {
                 return `<b>${this.point.name}</b>: ${this.y.toFixed(1)}%`;

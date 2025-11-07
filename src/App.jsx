@@ -1,6 +1,6 @@
 // src/App.jsx
 
-import { use, useRef, useState } from 'react';
+import { use, useRef, useState, lazy, Suspense } from 'react';
 import { Sidebar, SidebarProvider } from './components/Sidebar';
 
 import { Header } from './components/Header';
@@ -24,7 +24,6 @@ import Unauthorized from './pages/Unauthorized';
 // Importación de componentes de dashboard
 import { Banner6GW } from './components/Banner6GW';
 import { IndicadoresResumen } from './components/IndicadoresResumen';
-import { CapacidadInstalada } from './components/CapacidadInstalada';
 import { MapaEmbalses } from './components/MapaEmbalses';
 import { CombustiblesLiquidos } from './components/CombustiblesLiquidos';
 import { TablaProyectosEnergia } from './components/TablaProyectosEnergia';
@@ -33,6 +32,8 @@ import ProyectoDetalle from './pages/ProyectoDetalle';
 import ComunidadesEnergeticasReplica from './pages/ComunidadesEnergeticasReplica';
 import Hidrologia from './pages/Hidrologia';
 import ScrollToTop from './components/ScrollToTop';
+
+const CapacidadInstalada = lazy(() => import('./components/CapacidadInstalada'));
 
 
 
@@ -47,7 +48,7 @@ function AppContent() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-[#1d1d1d]">
+            <div className="flex items-center justify-center min-h-screen bg-[color:var(--surface-overlay)]">
                 <div className="flex flex-col items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFC800] mb-4"></div>
                     <p className="text-white">Verificando credenciales...</p>
@@ -67,7 +68,7 @@ function AppContent() {
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 }}
-                className="h-screen bg-[#262626] flex flex-col items-center justify-center overflow-hidden"
+                className="h-screen bg-surface-primary flex flex-col items-center justify-center overflow-hidden"
             >
                 <div className="w-full max-w-md bg-transparent">
                     <AuthButton />
@@ -89,7 +90,7 @@ function AppContent() {
 
     if (!isAuthorized) {
         return (
-            <div className="min-h-screen bg-[#262626] flex flex-col items-center justify-center p-4">
+            <div className="min-h-screen bg-surface-primary flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md">
                     <AuthButton />
                     <p className="mt-4 text-sm text-red-500 text-center">
@@ -105,7 +106,7 @@ function AppContent() {
             <div className="relative">
                 <Header userRole={userRole} />
 
-                <div className="flex bg-[#1d1d1d] min-h-screen pt-20">
+                <div className="flex bg-[color:var(--surface-overlay)] min-h-screen pt-20">
                     <Sidebar userRole={userRole} />
                     {/* contenedor scrollable con ref */}
                     <div ref={scrollRef} className="flex-1 text-white p-6 overflow-auto">
@@ -122,7 +123,9 @@ function AppContent() {
                                         <>
                                             <Banner6GW />
                                             <IndicadoresResumen />
-                                            <CapacidadInstalada />
+                                            <Suspense fallback={<div className="py-6 text-text-secondary">Cargando capacidad instalada...</div>}>
+                                                <CapacidadInstalada />
+                                            </Suspense>
                                             <MapaEmbalses />
                                             <CombustiblesLiquidos />
                                             <TablaProyectosEnergia />

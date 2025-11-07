@@ -5,6 +5,7 @@ import { useGeneracionDiaria } from '../services/graficasService';
 import ChartWrapper from './charts/ChartWrapper';
 import { getColorForTechnology } from '../lib/chart-colors';
 import { areaTooltipFormatter } from '../lib/chart-tooltips';
+import tokens from '../styles/theme.js';
 
 // Mapeo Canónico para Tooltip
 const CHART_TOOLTIP_ID = 'res_grafica_generacion_real_diaria_tecnologia';
@@ -41,21 +42,21 @@ export function GeneracionDespacho() {
     }));
 
     return {
-      chart: { type: 'area', height: 400, backgroundColor: '#262626' },
+      chart: { type: 'area', height: 400 },
       title: { text: 'Generación real diaria por tecnología' },
       subtitle: { text: '' },
-      legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
+      legend: { itemStyle: { fontSize: tokens.font.size.sm, fontFamily: tokens.font.family } },
       xAxis: {
         categories,
         tickInterval: tickInt,
-        title: { text: 'Fecha', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
-        labels: { rotation: -45, style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } }
+        title: { text: 'Fecha', style: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family, fontSize: tokens.font.size.sm } },
+        labels: { rotation: -45, style: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family, fontSize: tokens.font.size.sm } }
       },
       yAxis: {
-        title: { text: 'Generación (MWh-día)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-        labels: { style: { color: '#CCC', fontFamily: 'Nunito Sans, sans-serif', fontSize: '12px' } },
+        title: { text: 'Generación (MWh-día)', style: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family } },
+        labels: { style: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family, fontSize: tokens.font.size.sm } },
         min: 0,
-        gridLineColor: '#333'
+        gridLineColor: tokens.colors.border.subtle
       },
       plotOptions: {
         area: { stacking: 'normal', marker: { enabled: false } }

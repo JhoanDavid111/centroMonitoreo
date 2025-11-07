@@ -24,7 +24,7 @@ const DataGridChart = ({ options, loading, error }) => {
   }
 
   return (
-    <div ref={chartRef} className="mt-6 bg-[#262626] p-4 rounded-lg shadow scroll-anchor">
+    <div ref={chartRef} className="mt-6 bg-surface-primary p-4 rounded-lg shadow scroll-anchor">
       <HighchartsReact
         highcharts={Highcharts}
         options={{ ...highchartsTheme, ...options }}

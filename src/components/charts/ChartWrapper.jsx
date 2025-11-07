@@ -9,6 +9,7 @@ import TooltipModal from '../ui/TooltipModal';
 import ChartLoadingState from './ChartLoadingState';
 import ChartErrorState from './ChartErrorState';
 import HelpButton from './HelpButton';
+import Card from '../ui/Card';
 
 /**
  * Wrapper reutilizable para gráficas Highcharts
@@ -70,8 +71,8 @@ export default function ChartWrapper({
   
   return (
     <>
-      <div 
-        className={`bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative ${containerClassName}`}
+      <Card
+        className={`p-4 pb-10 relative ${containerClassName}`}
         style={containerStyle}
         {...containerProps}
       >
@@ -85,7 +86,7 @@ export default function ChartWrapper({
           ref={chartRef}
           {...highchartsReactProps}
         />
-      </div>
+      </Card>
       
       {showHelp && (
         <TooltipModal

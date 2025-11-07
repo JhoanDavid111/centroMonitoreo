@@ -12,15 +12,15 @@ export default function TooltipModal({ isOpen, onClose, title, content }) {
     >
       {/* Contenedor del contenido (para detener la propagación del clic y evitar que cierre la modal) */}
       <div 
-        className="bg-[#262626] rounded-xl p-6 w-11/12 max-w-lg shadow-2xl border border-[#666666] transition-all transform scale-100 opacity-100"
+        className="bg-surface-primary rounded-xl p-6 w-11/12 max-w-lg shadow-2xl border border-[color:var(--border-default)] transition-all transform scale-100 opacity-100"
         onClick={(e) => e.stopPropagation()} // Evita que el clic en el contenido cierre la modal
       >
         {/* Encabezado */}
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-semibold text-[#FFC800]">{title}</h3>
+          <h3 className="text-xl font-semibold text-[color:var(--accent-primary)]">{title}</h3>
           <button
             onClick={onClose}
-            className="text-[#D1D1D0] hover:text-white transition-colors"
+            className="text-text-secondary hover:text-white transition-colors"
             aria-label="Cerrar modal"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -28,7 +28,7 @@ export default function TooltipModal({ isOpen, onClose, title, content }) {
         </div>
 
         {/* Contenido */}
-        <p className="text-[#B0B0B0] text-base mb-6">
+        <p className="text-text-muted text-base mb-6">
           {content}
         </p>
 

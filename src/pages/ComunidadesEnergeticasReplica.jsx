@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/pages/ComunidadesEnergeticasReplica.jsx
 import React from "react";
 import bannerImg from "../assets/bannerComunidadesEnergeticas.png";
@@ -16,7 +18,7 @@ const ComunidadesEnergeticasReplica = () => {
   ];
 
   return (
-    <div className="bg-[#1d1d1d] min-h-screen text-white">
+    <div className="bg-[color:var(--surface-overlay)] min-h-screen text-white">
       {/* Banner MÁS BAJO */}
       <div className="relative w-full rounded-b-xl overflow-hidden">
         <img
@@ -42,7 +44,7 @@ const ComunidadesEnergeticasReplica = () => {
           Total de proyectos
         </p>
         <img src={iconCE} alt="Icono Comunidades" className="w-6 h-6" />
-        <span className="text-4xl sm:text-5xl font-extrabold" style={{ color: "#FFC800" }}>
+        <span className="text-4xl sm:text-5xl font-extrabold" style={{ color: tokens.colors.accent.primary }}>
           125
         </span>
       </div>
@@ -53,7 +55,7 @@ const ComunidadesEnergeticasReplica = () => {
           {dataCards.map((card) => (
             <div
               key={card.id}
-              className="bg-[#262626] rounded-lg border border-[#3a3a3a] shadow p-5"
+              className="bg-surface-primary rounded-lg border border-[color:var(--border-subtle)] shadow p-5"
             >
               <div className="flex items-center gap-2 mb-3">
                 <img src={card.icon} alt="icono" className="w-5 h-5" />
@@ -70,7 +72,7 @@ const ComunidadesEnergeticasReplica = () => {
                 </span>
               </div>
 
-              <div className="text-xs text-[#B0B0B0] mt-2">
+              <div className="text-xs text-text-muted mt-2">
                 Actualizado el: {card.date}
               </div>
             </div>

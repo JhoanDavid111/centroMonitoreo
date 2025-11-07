@@ -7,6 +7,8 @@ import ChartLoadingState from './charts/ChartLoadingState';
 import ChartErrorState from './charts/ChartErrorState';
 import { getColorForTechnology } from '../lib/chart-colors';
 import { areaTooltipFormatter } from '../lib/chart-tooltips';
+import Card from './ui/Card';
+import tokens from '../styles/theme.js';
 
 const fmt = (v, dec = 2) => Highcharts.numberFormat(v, dec, ',', '.');
 const SCALE = 1000;
@@ -53,20 +55,24 @@ export function GeneracionHoraria() {
     const max1 = Math.ceil(stackedMax(series1, horas1.length)*1.1);
 
     const baseOptions = {
-      chart: { type:'area', height:500 },
+      chart: { type: 'area', height: 500 },
       title: { text:'Curva de generación primer semestre 2022' },
       xAxis: {
         categories: horas1, tickInterval:1,
-        title: { text:'Hora del día', style:{color:'#ccc'} },
-        labels:{style:{color:'#ccc'}}, gridLineColor:'#333'
+        title: { text: 'Hora del día', style: { color: tokens.colors.text.secondary } },
+        labels: { style: { color: tokens.colors.text.secondary } },
+        gridLineColor: tokens.colors.border.subtle
       },
       yAxis: {
         min:0, max:max1, tickInterval:Math.ceil(max1/5),
-        title:{text:'Generación (MW/h)',style:{color:'#ccc'}},
-        labels:{style:{color:'#ccc'},formatter(){return fmt(this.value,0);}},
-        gridLineColor:'#333'
+        title: { text: 'Generación (MW/h)', style: { color: tokens.colors.text.secondary } },
+        labels: {
+          style: { color: tokens.colors.text.secondary },
+          formatter() { return fmt(this.value, 0); }
+        },
+        gridLineColor: tokens.colors.border.subtle
       },
-      tooltip:{ shared:true, useHTML: true, formatter: areaTooltipFormatter({ unit: 'MW/h', headerFormat: 'Hora: {x}' }) },
+      tooltip: { shared: true, useHTML: true, formatter: areaTooltipFormatter({ unit: 'MW/h', headerFormat: 'Hora: {x}' }) },
       plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
       series: series1,
       responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
@@ -104,16 +110,16 @@ export function GeneracionHoraria() {
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">
+      <h2 className="text-2xl text-text-primary font-semibold mb-4">
         Curva de generación horaria promedio
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow">
+        <Card className="p-4">
           <HighchartsReact highcharts={Highcharts} options={opts1} />
-        </div>
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow">
+        </Card>
+        <Card className="p-4">
           <HighchartsReact highcharts={Highcharts} options={opts2} />
-        </div>
+        </Card>
       </div>
     </section>
   );
