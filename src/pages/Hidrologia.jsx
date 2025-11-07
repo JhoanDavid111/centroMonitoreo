@@ -799,17 +799,19 @@ function HidroTabs({ data, regionSummary = {} }) {
                       {/* Aportes (GWh-día) – consolidado por región */}
                       <td className="px-3 py-2 text-gray-200">
                         {sum && Number.isFinite(sum.aportesGwh)
-                          ? (
-                            <>
+                          ? (<>
                               {sum.aportesGwh.toFixed(2)}
                               <DeltaInline value={Number.isFinite(sum.aportesGwhDelta) ? sum.aportesGwhDelta : NaN} />
-                            </>
-                          )
+                            </>)
                           : '—'}
                       </td>
 
-                      {/* % de aportes – no viene consolidado en el API, lo dejamos en “—” */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
+                      {/* Porcentaje de aportes – usar el MISMO valor de “aportes hídricos” del resumen */}
+                      <td className="px-3 py-2">
+                        {sum
+                          ? <AportesPctCell raw={sum.aportesRaw} value={sum.aportesPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
 
                       {/* Media histórica (GWh-día) – consolidado por región */}
                       <td className="px-3 py-2 text-gray-200">
