@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import tokens from '../styles/theme.js';
+import { useTooltips } from '../services/tooltipsService.js';
+import TooltipModal from './ui/TooltipModal.jsx';
 
 
 // Configuración de gráficas ANLA
@@ -351,6 +354,29 @@ const tiempoPromedioANLAOptions = {
 };
 
 export default function GraficaANLA() {
+  const { data: tooltips } = useTooltips();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+
+  const handleHelpClick = (identifier, title) => {
+    if (tooltips && tooltips[identifier]) {
+      setModalTitle(title);
+      setModalContent(tooltips[identifier]);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle(title);
+      setModalContent('No hay información disponible.');
+      setIsModalOpen(true);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
   return (
     <div className="space-y-6 rounded-lg">
       {/* Gráfico Resumen ANLA */}
@@ -359,7 +385,7 @@ export default function GraficaANLA() {
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Esta gráfica muestra las licencias FNCIER otorgadas por año y tecnología.')}
+          onClick={() => handleHelpClick('proy_grafica_fncer_otorgada', 'Licencias FNCER otorgadas desde 07/08/2022 hasta la fecha')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -419,7 +445,7 @@ export default function GraficaANLA() {
           className="absolute top-[4%] right-[52px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Muestra el tiempo promedio en días que tarda la aprobación de licencias por departamento.')}
+          onClick={() => handleHelpClick('proy_grafica_tiempo_promedio_aprobacion_licencia_dpto', 'Tiempo promedio de aprobación de licencias por departamento')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
@@ -438,6 +464,14 @@ export default function GraficaANLA() {
         </button>
         <HighchartsReact highcharts={Highcharts} options={tiempoPromedioANLAOptions} />
       </div>
+      {isModalOpen && (
+        <TooltipModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalTitle}
+          content={modalContent}
+        />
+      )}
     </div>
   );
 }

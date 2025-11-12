@@ -47,9 +47,9 @@ const COLORS = {
 };
 
 // ===== Endpoints =====
-import { API } from '../config/api';
+
 import TooltipModal from '../components/ui/TooltipModal';
-import { useTooltipsCache } from '../hooks/useTooltipsCache';
+import { useTooltips } from '../services/tooltipsService';
 import {
   useHidrologiaConsolidado,
   useHidrologiaEmbalses,
@@ -63,9 +63,29 @@ import { useGraficaAportes, useGraficaEstatuto } from '../services/graficasServi
 
 // ────────────────────────────────────────────────
 // Mapeo Canónico para Tooltip
-// Este identificador debe coincidir con la clave retornada por tu API de tooltips
 // ────────────────────────────────────────────────
-const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
+const TOOLTIP_IDENTIFIERS_MAP = {
+  
+ 
+
+  hidro_card_embalse_dia: 'hidro_card_embalse_dia',
+  hidro_card_embalse_porcentaje: 'hidro_card_embalse_porcentaje',
+  hidro_card_aporte_mensuales_dia: 'hidro_card_aporte_mensuales_dia',
+  hidro_card_aporte_mensuales_porcentaje: 'hidro_card_aporte_mensuales_porcentaje',
+  hidro_card_generacion_hidrica: 'hidro_card_generacion_hidrica',
+  hidro_card_generacion_termica: 'hidro_card_generacion_termica',
+  hidro_card_generacion_fncer: 'hidro_card_generacion_fncer',
+  hidro_card_generacion_demanda_real: 'hidro_card_generacion_demanda_real',
+  hidro_card_minimo_diario: 'hidro_card_minimo_diario',
+  hidro_card_promedio_diario: 'hidro_card_promedio_diario',
+  hidro_card_maximo_diario: 'hidro_card_maximo_diario',
+  hidro_grafica_aporte_nivel_util_embalse_mes: 'hidro_grafica_aporte_nivel_util_embalse_mes',
+  hidro_grafica_estatuto_desabastecimiento: 'hidro_grafica_estatuto_desabastecimiento',
+
+
+
+
+};
 
 
 // Constantes no utilizadas - eliminadas para evitar confusión
@@ -472,7 +492,7 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
   );
 }
 
-function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
+function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false, onHelpClick }) {
 // Función de ayuda específica (puedes ajustarla para que muestre contenido diferente)
   // const handleHelpClick = (cardName) => {
   //   alert(`Ayuda para la métrica: ${cardName}`);
@@ -493,7 +513,7 @@ return (
 
         {/* Botón de Ayuda (HelpCircle) */}
        <button
-          onClick={() => onHelpClick(name)} // MODIFICADO: Usa onHelpClick
+          onClick={onHelpClick}
           className="flex items-center justify-center 
             h-6 w-6 
             rounded-md 
@@ -1197,12 +1217,12 @@ export default function Hidrologia() {
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
     
-    // 1. Usar el hook de cache centralizado para tooltips
+    // 1. Usar el hook de tooltips para obtener los datos
     const { 
-      tooltips, 
-      loading: loadingTooltips, 
+      data: tooltips = {},
+      isLoading: loadingTooltips, 
       error: errorTooltips 
-    } = useTooltipsCache();
+    } = useTooltips();
   
     // Función para cerrar la modal
     const closeModal = () => {
@@ -1212,12 +1232,9 @@ export default function Hidrologia() {
     };
   
     // Función para manejar el clic en el botón de ayuda
-    const handleHelpClick = () => {
-      // 2. Obtener el título de la gráfica de aportes
-      const title = aportesOptions?.title?.text || 'Aportes y nivel útil de embalses por mes';
-      
-      // 3. Buscar el contenido en el caché global de tooltips
-      const content = tooltips[CHART_TOOLTIP_ID];
+    const handleHelpClick = (cardKey, title) => {
+      const tooltipId = TOOLTIP_IDENTIFIERS_MAP[cardKey];
+      const content = tooltips[tooltipId];
   
       if (content) {
         setModalTitle(title);
@@ -1225,7 +1242,7 @@ export default function Hidrologia() {
         setIsModalOpen(true);
       } else {
         setModalTitle('Información no disponible');
-        setModalContent('No se encontró una descripción detallada para esta gráfica.');
+        setModalContent('No se encontró una descripción detallada para este indicador.');
         setIsModalOpen(true);
       }
     };
@@ -1353,9 +1370,9 @@ export default function Hidrologia() {
       const gF = tmap['FNCER'] || {};
 
       const groups = [
-        { name: 'Hídrica', value: fmtNum(gH.mes_actual), unit: 'GWh-día', delta: mkDelta(gH.diff_abs, gH.diff_pct), dir: dirFrom(gH.diff_abs) },
-        { name: 'Térmica', value: fmtNum(gT.mes_actual), unit: 'GWh-día', delta: mkDelta(gT.diff_abs, gT.diff_pct), dir: dirFrom(gT.diff_abs) },
-        { name: 'FNCER',   value: fmtNum(gF.mes_actual), unit: 'GWh-día', delta: mkDelta(gF.diff_abs, gF.diff_pct), dir: dirFrom(gF.diff_abs) },
+        { name: 'Hídrica', value: fmtNum(gH.mes_actual), unit: 'GWh-día', delta: mkDelta(gH.diff_abs, gH.diff_pct), dir: dirFrom(gH.diff_abs), identifier: 'hidro_card_generacion_hidrica' },
+        { name: 'Térmica', value: fmtNum(gT.mes_actual), unit: 'GWh-día', delta: mkDelta(gT.diff_abs, gT.diff_pct), dir: dirFrom(gT.diff_abs), identifier: 'hidro_card_generacion_termica' },
+        { name: 'FNCER',   value: fmtNum(gF.mes_actual), unit: 'GWh-día', delta: mkDelta(gF.diff_abs, gF.diff_pct), dir: dirFrom(gF.diff_abs), identifier: 'hidro_card_generacion_fncer' },
       ];
 
       const dr = j.demanda_real || {};
@@ -1429,6 +1446,7 @@ export default function Hidrologia() {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_minimo, j.diff_pct_minimo),
           dir: dirFrom(j.diff_abs_minimo),
+          identifier: 'hidro_card_minimo_diario'
         },
         {
           name: 'Promedio\nDiario',
@@ -1436,6 +1454,7 @@ export default function Hidrologia() {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_promedio, j.diff_pct_promedio),
           dir: dirFrom(j.diff_abs_promedio),
+          identifier: 'hidro_card_promedio_diario'
         },
         {
           name: 'Máximo\nDiario',
@@ -1443,6 +1462,7 @@ export default function Hidrologia() {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_maximo, j.diff_pct_maximo),
           dir: dirFrom(j.diff_abs_maximo),
+          identifier: 'hidro_card_maximo_diario'
         },
       ];
 
@@ -1606,7 +1626,7 @@ const handleDownloadPdf = async () => {
             <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_embalse_dia', 'Nivel de embalse actual')}
                   />
             </div>
           </div>
@@ -1624,7 +1644,7 @@ const handleDownloadPdf = async () => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_embalse_porcentaje', 'Nivel de embalse actual')}
                   />
           </div>
           </div>
@@ -1660,7 +1680,7 @@ const handleDownloadPdf = async () => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_aporte_mensuales_dia', 'Aportes mensuales promedio')}
                   />
                 </div>
           </div>
@@ -1677,7 +1697,7 @@ const handleDownloadPdf = async () => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_aporte_mensuales_porcentaje', 'Aportes mensuales promedio')}
                   />
 
             </div>
@@ -1710,6 +1730,7 @@ const handleDownloadPdf = async () => {
                     delta={g.delta}
                     dir={g.dir}
                     icon={customIcon}
+                    onHelpClick={() => handleHelpClick(g.identifier, g.name)}
                   />
                 );
               })}
@@ -1725,7 +1746,7 @@ const handleDownloadPdf = async () => {
                  <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_generacion_demanda_real', 'Demanda real promedio')}
                   />
               </div>
             </div>
@@ -1755,6 +1776,7 @@ const handleDownloadPdf = async () => {
                     dir={g.dir}
                     icon={customIcon}
                     multilineName
+                    onHelpClick={() => handleHelpClick(g.identifier, g.name.replace('\n', ' '))}
                   />
                 );
               })}
@@ -1788,7 +1810,7 @@ const handleDownloadPdf = async () => {
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
               style={{ width: 30, height: 30 }}
               title="Ayuda"
-              onClick={handleHelpClick}
+              onClick={() => handleHelpClick('hidro_grafica_aporte_nivel_util_embalse_mes', 'Aportes y nivel útil de embalses por mes')}
               type="button"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -1807,7 +1829,7 @@ const handleDownloadPdf = async () => {
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={handleHelpClick}
+          onClick={() => handleHelpClick('hidro_grafica_estatuto_desabastecimiento', 'Estatuto de desabastecimiento')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
