@@ -15,9 +15,11 @@ import EnergiaAmarillo from '../assets/svg-icons/6GW-off-act_.svg';
 
 import { useNavigate } from 'react-router-dom';
 import TooltipModal from './ui/TooltipModal';
+import Card from './ui/Card';
 
 import { useIndicadores6GW } from '../services/indicadoresService';
 import { useTooltips } from '../services/tooltipsService';
+import tokens from '../styles/theme.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Normalización y mapeo canónico
@@ -211,16 +213,16 @@ export default function Indicadores6GW() {
 
   if (loading || loadingTooltips) {
     return (
-      <div className="px-4 py-6 text-white">
+      <div className="px-4 py-6 text-text-primary">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
+          <div className="h-8 bg-surface-secondary rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                <div className="h-6 bg-neutral-700 rounded mb-4" />
-                <div className="h-8 bg-neutral-600 rounded mb-2" />
-                <div className="h-3 bg-neutral-700 rounded w-1/2" />
-              </div>
+              <Card key={i} className="p-5">
+                <div className="h-6 bg-surface-secondary rounded mb-4" />
+                <div className="h-8 bg-[color:var(--surface-overlay)] rounded mb-2" />
+                <div className="h-3 bg-surface-secondary rounded w-1/2" />
+              </Card>
             ))}
           </div>
         </div>
@@ -235,91 +237,64 @@ export default function Indicadores6GW() {
     <>
       {/* Encabezado total */}
       <div className="px-4 pt-6">
-        {/* contenedor centrador */}
-        <div className="flex justify-center">
-          {/* grupo contenido (icono + número/subtítulo + botón) */}
-          <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-center">
-            
-            {/* círculo amarillo + icono */}
+        <Card className="flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-5">
+          <div className="flex items-center gap-4">
             <span
               className="inline-flex items-center justify-center rounded-full"
-              style={{ width: 64, height: 64, background: '#FFC800' }}
+              style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
             >
               <img
                 src={EnergiaAmarillo}
                 alt="Energía"
                 className="w-12 h-12 md:w-14 md:h-14"
-                style={{ background: 'transparent' }}
               />
             </span>
-
-            {/* número + subtítulo (subtítulo debajo, alineado a la izquierda) */}
             <div className="flex flex-col leading-tight text-left">
-              <span className="text-[#FFC800] text-3xl lg:text-5xl font-semibold">
+              <span className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold">
                 {formatMW(totalMW)} MW
               </span>
-              <span className="mt-1 text-[#D1D1D0] text-1xl lg:text-[20px]">
+              <span className="mt-1 text-text-secondary text-base lg:text-lg">
                 {heroSubtitle}
               </span>
             </div>
-
-            {/* botón a la derecha */}
-            <button
-              onClick={() => navigate('/proyectos_generacion')}
-              className="bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200 transition"
-            >
-              Ver seguimiento de proyectos
-            </button>
           </div>
-        </div>
+          <button
+            onClick={() => navigate('/proyectos_generacion')}
+            className="inline-flex items-center gap-2 bg-[color:var(--accent-primary)] text-black px-4 py-2 rounded-md shadow-soft hover:bg-[color:var(--accent-warning)] transition"
+          >
+            <Bolt size={16} />
+            Ver seguimiento de proyectos
+          </button>
+        </Card>
       </div>
 
       {/* Tarjetas */}
       <div className="px-2">
-        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices Plan 6GW Plus</h2>
+        <h2 className="text-2xl text-text-primary font-semibold mb-4">Índices Plan 6GW Plus</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cards.map((card, i) => (
-            card.special ? (
-              // Card especial para Zonas no interconectadas (ZNI)
-              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                <div className="flex items-center mb-2">
+          {cards.map((card, i) => {
+            const updatedLabel = card.fixedDate || updated;
+            return (
+              <Card key={i} className="p-5 space-y-3">
+                <div className="flex items-center gap-2">
                   <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                  <span className="text-[18px] font-medium leading-[26px] text-text-secondary">
                     {card.label}
                   </span>
                 </div>
-                <div className="flex text-white text-3xl font-bold">
+                <div className="flex items-center text-text-primary text-3xl font-bold">
                   {formatMW(card.value)} MW
-                  {/**BOTON HELP CON LÓGICA DE CLIC */}
                   <HelpCircle
-                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                    className="text-text-primary cursor-pointer hover:text-text-secondary transition-colors bg-surface-secondary self-center rounded h-6 w-6 p-1 ml-4"
                     title="Ayuda"
                     onClick={() => handleHelpClick(card.key)}
                   />
                 </div>
-                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {card.fixedDate || updated}</div>
-              </div>
-            ) : (
-              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                <div className="flex items-center mb-2">
-                  <img src={card.icon} alt={card.label} className="w-6 h-6 flex-shrink-0" />
-                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
-                    {card.label}
-                  </span>
-                </div>
-                <div className="flex text-white text-3xl font-bold">
-                  {formatMW(card.value)} MW
-                  <HelpCircle
-                    className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
-                    title="Ayuda"
-                    onClick={() => handleHelpClick(card.key)}
-                  />
-                </div>
-                <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-              </div>
-            )
-          ))}
+                <div className="text-xs text-text-muted mt-1">Actualizado el: {updatedLabel}</div>
+              </Card>
+            );
+          })}
         </div>
       </div>
 

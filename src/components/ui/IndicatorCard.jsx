@@ -24,7 +24,7 @@ export default function IndicatorCard({
     : null;
 
   return (
-    <div className={`bg-[#262626] p-5 rounded-lg border border-[#666666] shadow ${className}`}>
+    <div className={`bg-surface-primary p-5 rounded-lg border border-[color:var(--border-default)] shadow ${className}`}>
       {/* Header - Corregido para alineación vertical */}
       <div className="flex items-start gap-2 mb-2">
         <div className="flex items-center gap-2 flex-grow min-h-[24px] flex-wrap">
@@ -33,7 +33,7 @@ export default function IndicatorCard({
               {normalizedIcon}
             </div>
           )}
-          <span className="text-sm sm:text-base md:text-lg font-normal text-[#B0B0B0] leading-tight align-middle">
+          <span className="text-sm sm:text-base md:text-lg font-normal text-text-muted leading-tight align-middle">
             {label}
           </span>
         </div>
@@ -53,14 +53,14 @@ export default function IndicatorCard({
 
       {/* Hint opcional */}
       {hint && (
-        <div className="text-xs sm:text-sm text-[#B0B0B0] mt-1 break-words">
+        <div className="text-xs sm:text-sm text-text-muted mt-1 break-words">
           {hint}
         </div>
       )}
 
       {/* Fecha de actualización */}
       {updated && (
-        <div className="text-xs sm:text-sm text-[#B0B0B0] mt-1">
+        <div className="text-xs sm:text-sm text-text-muted mt-1">
           Actualizado el: {updated}
         </div>
       )}

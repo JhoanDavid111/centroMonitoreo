@@ -1,4 +1,6 @@
 import { useIndicadoresRegionalesHidrologia } from '../services/indicadoresService';
+import tokens from '../styles/theme.js';
+
 
 export const SideInfoHidrologia = () => {
   const { data, isLoading: loading, error } = useIndicadoresRegionalesHidrologia();
@@ -52,7 +54,7 @@ export const SideInfoHidrologia = () => {
             <div className="flex-1 h-3 rounded-2xl overflow-hidden bg-[#575756] mx-3 w-5/6">
               <div
                 className="h-3"
-                style={{ width: `${item["Nivel (%)"]}%`, background: "#22C55E" }}
+                style={{ width: `${item["Nivel (%)"]}%`, background: tokens.colors.status.positive }}
               />
             </div>
           </div>

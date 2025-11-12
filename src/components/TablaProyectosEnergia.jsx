@@ -14,7 +14,7 @@ export function TablaProyectosEnergia() {
   
     return (
       <section className="mt-8">
-        <div className="overflow-x-auto rounded-lg border border-[#666666]">
+        <div className="overflow-x-auto rounded-lg border border-[color:var(--border-default)]">
           <table className="min-w-full divide-y divide-[#666666] text-sm text-white">
             <thead className="bg-[#FFC800] text-black text-left">
               <tr>
@@ -26,7 +26,7 @@ export function TablaProyectosEnergia() {
                 <th className="px-4 py-2">Fecha fin</th>
               </tr>
             </thead>
-            <tbody className="bg-[#262626] divide-y divide-[#666666]">
+            <tbody className="bg-surface-primary divide-y divide-[#666666]">
               {proyectos.map((p, idx) => (
                 <tr key={idx}>
                   <td className="px-4 py-2">{idx + 1}</td>

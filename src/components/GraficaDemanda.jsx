@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaDemanda.jsx
 import React, { useMemo } from 'react';
 import { useGraficaDemanda } from '../services/graficasService';
@@ -23,8 +25,8 @@ export function GraficaDemanda({ fechaInicio = '2025-05-01', fechaFin = '2025-05
       xAxis: { categories, title: { text: 'Fecha' } },
       yAxis: { title: { text: 'Cantidad' } },
       series: [
-        { name: 'Demanda Comercial', data: dataDemCom, color: '#FFC800' },
-        { name: 'Energía en Firme', data: dataEnerFirm, color: '#3B82F6' },
+        { name: 'Demanda Comercial', data: dataDemCom, color: tokens.colors.accent.primary },
+        { name: 'Energía en Firme', data: dataEnerFirm, color: tokens.colors.status.info },
         { name: 'Obligación OEF', data: dataObligOEF, color: '#F97316' }
       ],
     };

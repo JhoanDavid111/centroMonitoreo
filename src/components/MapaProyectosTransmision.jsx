@@ -11,8 +11,8 @@ export default function MapaProyectosTransmision({ mapUrl, title = "Mapa del Pro
         <h2 className="text-2xl font-semibold text-gray-200 mb-4">
           {title}
         </h2>
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow">
-          <div className="w-full h-[600px] rounded-md bg-[#333333] flex items-center justify-center flex-col">
+        <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow">
+          <div className="w-full h-[600px] rounded-md bg-[color:var(--surface-overlay)] flex items-center justify-center flex-col">
             <p className="text-lg text-gray-300 mb-4">No se puede cargar el mapa embebido</p>
             <button
               onClick={() => window.open(mapUrl, '_blank', 'noopener,noreferrer')}
@@ -31,9 +31,9 @@ export default function MapaProyectosTransmision({ mapUrl, title = "Mapa del Pro
       <h2 className="text-2xl font-semibold text-gray-200 mb-4">
         {title}
       </h2>
-      <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+      <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
         {isLoading && (
-          <div className="absolute inset-4 bg-[#333333] rounded-md flex items-center justify-center">
+          <div className="absolute inset-4 bg-[color:var(--surface-overlay)] rounded-md flex items-center justify-center">
             <p className="text-gray-300">Cargando mapa...</p>
           </div>
         )}

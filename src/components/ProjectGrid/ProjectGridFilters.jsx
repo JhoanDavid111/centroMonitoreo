@@ -17,7 +17,7 @@ export default function ProjectGridFilters({
         placeholder="Buscar..."
         value={globalFilter}
         onChange={e => setGlobalFilter(e.target.value)}
-        className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+        className="bg-surface-secondary placeholder-gray-500 text-white rounded p-2 w-1/3"
       />
       <button
         className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"

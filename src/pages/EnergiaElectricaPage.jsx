@@ -17,7 +17,7 @@ export default function EnergiaElectricaPage() {
   const fechaFin = '2025-05-03';
 
   return (
-    <div className="text-white bg-[#262626] min-h-screen p-6 font-sans">
+    <div className="text-white bg-surface-primary min-h-screen p-6 font-sans">
       {/* Indicadores (POST v1/indicadores/energia_electrica) */}
       <IndicadoresEnergia fechaInicio={fechaInicio} fechaFin={fechaFin} />
 

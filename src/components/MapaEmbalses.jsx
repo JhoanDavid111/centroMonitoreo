@@ -64,7 +64,7 @@ export function MapaEmbalses() {
   return (
     <section className="mt-8 grid grid-cols-1 xl:grid-cols-4 gap-6">
       {/* Mapa */}
-      <div className="map-container xl:col-span-3 bg-[#262626] rounded-lg border border-[#666666] shadow overflow-hidden h-[650px] p-2 relative">
+      <div className="map-container xl:col-span-3 bg-surface-primary rounded-lg border border-[color:var(--border-default)] shadow overflow-hidden h-[650px] p-2 relative">
         {/* Controles de zoom */}
         <div className="absolute top-2 right-2 z-10 flex flex-col space-y-2">
           <button
@@ -82,7 +82,7 @@ export function MapaEmbalses() {
         {/* Modal de detalles */}
         {selectedDept && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-            <div className="bg-[#262626] p-6 rounded-lg border border-[#666666] max-w-md w-full">
+            <div className="bg-surface-primary p-6 rounded-lg border border-[color:var(--border-default)] max-w-md w-full">
               <h2 className="text-lg font-bold text-yellow-400 mb-4">
                 DEPARTAMENTO DE {selectedDept.name.toUpperCase()}: {selectedDept.porcentaje.toFixed(2)}%
               </h2>
@@ -123,10 +123,10 @@ export function MapaEmbalses() {
       {/* Estadísticas */}
       <div className="flex flex-col gap-4">
         { /* Nueva card */ }
-        <div className="flex flex-col gap-3 p-5 bg-[#262626] border border-[#575756] rounded-lg" >
+        <div className="flex flex-col gap-3 p-5 bg-surface-primary border border-[#575756] rounded-lg" >
           <div className="flex items-start gap-3">
             <img src={HidroOn} alt='Generación hidráulica' className="w-6 h-6 flex-shrink-0"/>
-            <h3 className="text-[18px] font-normal leading-[26px] text-[#B0B0B0] font-sans">
+            <h3 className="text-[18px] font-normal leading-[26px] text-text-muted font-sans">
               Total nacional
             </h3>
           </div>
@@ -147,7 +147,7 @@ export function MapaEmbalses() {
             />
           </div>
 
-          <div className="text-xs text-[#B0B0B0]">
+          <div className="text-xs text-text-muted">
             Actualizado el: 8/5/2025 – Volumen útil diario %
           </div>
         </div>
@@ -156,7 +156,7 @@ export function MapaEmbalses() {
         {embalses.map((e, i) => (
           <div
             key={i}
-            className="bg-[#262626] p-3 rounded-lg border border-[#666666] text-white flex gap-3 items-center"
+            className="bg-surface-primary p-3 rounded-lg border border-[color:var(--border-default)] text-white flex gap-3 items-center"
           >
             <span className="text-[20px] text-[#d1d1d0]">{e.region}:</span>
             <span className="font-semibold text-[20px]">{e.porcentaje.toFixed(2)}%</span>

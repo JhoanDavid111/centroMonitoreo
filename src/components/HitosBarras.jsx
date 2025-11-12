@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/HitosBarras.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useHitosPorCumplir, useProyectosIncumplimientos } from '../services/graficasService';
@@ -61,7 +63,7 @@ export function HitosBarras() {
               dataLabels: {
                 enabled: true,
                 formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
-                style: { fontWeight: 'bold', color: '#fff' },
+                style: { fontWeight: 'bold', color: tokens.colors.text.primary },
                 y: -10
               },
               pointPadding: 0.1,
@@ -72,7 +74,7 @@ export function HitosBarras() {
             {
               name: 'Hitos por cumplir',
               data: data1,
-              color: '#3B82F6'
+              color: tokens.colors.status.info
             }
           ]
         };
@@ -106,7 +108,7 @@ export function HitosBarras() {
               dataLabels: {
                 enabled: true,
                 formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
-                style: { fontWeight: 'bold', color: '#fff' },
+                style: { fontWeight: 'bold', color: tokens.colors.text.primary },
                 y: -10
               },
               pointPadding: 0.1,
@@ -147,12 +149,12 @@ export function HitosBarras() {
 
   return (
     <section className="mt-8 space-y-4">
-      <h2 className="text-2xl text-[#D1D1D0] font-semibold">
+      <h2 className="text-2xl text-text-secondary font-semibold">
         Seguimiento de hitos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Chart 1 */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+        <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
           {/* Botón de ayuda */}
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
@@ -179,7 +181,7 @@ export function HitosBarras() {
         </div>
 
         {/* Chart 2 */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+        <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
           {/* Botón de ayuda */}
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import HelpButton from './charts/HelpButton';
+import tokens from '../styles/theme.js';
+
 
 export function SeguimientoBarras() {
   const chartRef = useRef(null);
@@ -25,7 +27,7 @@ export function SeguimientoBarras() {
 
   const options = {
     chart: { type: 'column', height: 360 },
-    title: { text: 'No. de proyectos vs porcentaje de avance', style: { color: '#fff' } },
+    title: { text: 'No. de proyectos vs porcentaje de avance', style: { color: tokens.colors.text.primary } },
     subtitle: { text: 'Fuente: XM_2020-2024', style: { color: '#aaa' } },
     xAxis: {
       categories,
@@ -50,7 +52,7 @@ export function SeguimientoBarras() {
     plotOptions: {
       column: {
         colorByPoint: false,
-        color: '#FFC800'
+        color: tokens.colors.accent.primary
       }
     },
     legend: {
@@ -90,7 +92,7 @@ export function SeguimientoBarras() {
           Numero de proyectos
         </button>
       </div>
-      <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+      <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
           <HelpButton onClick={() => alert('Ok puedes mostrar ayuda contextual o abrir un modal.')} />
         {/* Gráfica */}
         <HighchartsReact

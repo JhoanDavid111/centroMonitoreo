@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/ListadoProyectosCurvaS.jsx
 import React, { useMemo } from 'react';
 import Highcharts from '../lib/highcharts-config';
@@ -13,24 +15,24 @@ export function ListadoProyectosCurvaS() {
     return {
       chart: {
         type: 'spline',
-        backgroundColor: '#262626',
+        backgroundColor: tokens.colors.surface.primary,
         plotBorderColor: '#444',
         plotBorderWidth: 1
       },
       title: {
         text: 'Curva S de Proyectos',
-        style: { color: '#fff', fontSize: '20px' }
+        style: { color: tokens.colors.text.primary, fontSize: '20px' }
       },
       xAxis: {
         categories: proyectos.map(p => p.id),
         title: { text: 'ID del Proyecto', style: { color: '#ccc' } },
         labels: { style: { color: '#ccc' } },
-        gridLineColor: '#444'
+        gridLineColor: tokens.colors.border.subtle
       },
       yAxis: {
         title: { text: '% de Avance', style: { color: '#ccc' } },
         labels: { style: { color: '#ccc' } },
-        gridLineColor: '#444',
+        gridLineColor: tokens.colors.border.subtle,
         max: 100,
         min: 0
       },
@@ -50,7 +52,7 @@ export function ListadoProyectosCurvaS() {
 
   if (loading) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+      <div className="bg-surface-primary p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
@@ -63,7 +65,7 @@ export function ListadoProyectosCurvaS() {
 
   if (error) {
     return (
-      <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow">
+      <div className="bg-surface-primary p-4 rounded border border-gray-700 shadow">
         <p className="text-red-500">{error.message || 'No fue posible cargar el listado de proyectos para curva S.'}</p>
       </div>
     );
@@ -72,7 +74,7 @@ export function ListadoProyectosCurvaS() {
   if (!chartOptions) return null;
 
   return (
-    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow mb-8">
+    <div className="bg-surface-primary p-4 rounded border border-gray-700 shadow mb-8">
       <h2 className="text-2xl font-semibold mb-4 text-white">Proyectos (Curva S)</h2>
 
       <div className="mb-6 relative">

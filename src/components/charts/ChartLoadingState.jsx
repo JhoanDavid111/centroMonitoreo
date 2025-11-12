@@ -3,7 +3,7 @@
 
 export default function ChartLoadingState({ message = 'Cargando gráfica...' }) {
   return (
-    <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+    <div className="bg-surface-primary p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-64">
       <div className="flex space-x-2">
         <div 
           className="w-3 h-3 rounded-full animate-bounce" 

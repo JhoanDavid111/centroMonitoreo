@@ -7,6 +7,8 @@ import ExportData from 'highcharts/modules/export-data';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import FullScreen from 'highcharts/modules/full-screen';
 
+import tokens from '../styles/theme.js';
+
 // ────────────────────────────────────────────────
 // Carga de módulos Highcharts
 // ────────────────────────────────────────────────
@@ -22,74 +24,77 @@ FullScreen(Highcharts);
 // ────────────────────────────────────────────────
 Highcharts.setOptions({
   chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' },
+    backgroundColor: tokens.colors.surface.primary,
+    style: { fontFamily: tokens.font.family },
     plotBorderWidth: 0,
     plotBackgroundColor: 'transparent',
   },
   title: {
     align: 'left',
-    style: { 
-      color: '#fff', 
-      fontSize: '16px', 
-      fontWeight: '600',
-      fontFamily: 'Nunito Sans, sans-serif' 
-    }
+    style: {
+      color: tokens.colors.text.primary,
+      fontSize: tokens.font.size.lg,
+      fontWeight: tokens.font.weight.semibold,
+      fontFamily: tokens.font.family,
+    },
   },
   subtitle: {
-    style: { 
-      color: '#aaa', 
-      fontSize: '12px',
-      fontFamily: 'Nunito Sans, sans-serif' 
-    }
+    style: {
+      color: tokens.colors.text.muted,
+      fontSize: tokens.font.size.sm,
+      fontFamily: tokens.font.family,
+    },
   },
   xAxis: {
-    labels: { 
-      style: { 
-        color: '#ccc', 
-        fontSize: '12px',
-        fontFamily: 'Nunito Sans, sans-serif' 
-      } 
+    labels: {
+      style: {
+        color: tokens.colors.text.secondary,
+        fontSize: tokens.font.size.sm,
+        fontFamily: tokens.font.family,
+      },
     },
-    title: { 
-      style: { 
-        color: '#ccc',
-        fontFamily: 'Nunito Sans, sans-serif' 
-      } 
+    title: {
+      style: {
+        color: tokens.colors.text.secondary,
+        fontFamily: tokens.font.family,
+      },
     },
-    gridLineColor: '#333'
+    gridLineColor: tokens.colors.border.subtle,
   },
   yAxis: {
-    labels: { 
-      style: { 
-        color: '#ccc', 
-        fontSize: '12px',
-        fontFamily: 'Nunito Sans, sans-serif' 
-      } 
+    labels: {
+      style: {
+        color: tokens.colors.text.secondary,
+        fontSize: tokens.font.size.sm,
+        fontFamily: tokens.font.family,
+      },
     },
-    title: { 
-      style: { 
-        color: '#ccc',
-        fontFamily: 'Nunito Sans, sans-serif' 
-      } 
+    title: {
+      style: {
+        color: tokens.colors.text.secondary,
+        fontFamily: tokens.font.family,
+      },
     },
-    gridLineColor: '#333'
+    gridLineColor: tokens.colors.border.subtle,
   },
   legend: {
-    itemStyle: { 
-      color: '#ccc', 
-      fontFamily: 'Nunito Sans, sans-serif',
-      fontSize: '12px' 
+    itemStyle: {
+      color: tokens.colors.text.secondary,
+      fontFamily: tokens.font.family,
+      fontSize: tokens.font.size.sm,
     },
-    itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
+    itemHoverStyle: { color: tokens.colors.text.primary },
+    itemHiddenStyle: { color: tokens.colors.text.muted },
   },
   tooltip: {
-    backgroundColor: '#262626',
-    style: { 
-      color: '#fff', 
-      fontSize: '13px' 
+    backgroundColor: tokens.colors.surface.primary,
+    borderColor: tokens.colors.border.default,
+    style: {
+      color: tokens.colors.text.primary,
+      fontSize: tokens.font.size.base,
+      fontFamily: tokens.font.family,
     },
+    padding: parseInt(tokens.spacing.lg, 10),
     useHTML: true,
   },
   credits: { enabled: false },
@@ -100,7 +105,7 @@ Highcharts.setOptions({
 // (Extraído de DataGrid/styles/highcharts.js)
 // ────────────────────────────────────────────────
 export const highchartsTheme = {
-  colors: ['#FFC800', '#FF7043', '#66BB6A', '#42A5F5', '#AB47BC', '#EC407A', '#26C6DA', '#D4E157'],
+  colors: tokens.colors.chart,
   exporting: {
     enabled: true,
     buttons: {

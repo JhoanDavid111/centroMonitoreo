@@ -31,18 +31,19 @@ import html2canvas from 'html2canvas';
 
 
 import { DamMap } from '../components/DamMap';
+import tokens from '../styles/theme.js';
 
 // ===== Paleta =====
 const COLORS = {
-  down: '#EF4444',
-  up: '#22C55E',
-  blue: '#3B82F6',
-  gray: '#D1D1D0',
-  yellow: '#FFC800',
-  chipText: '#111827',
-  darkBg: '#262626',
-  darkBg2: '#1f1f1f',
-  border: '#3a3a3a',
+  down: tokens.colors.status.negative,
+  up: tokens.colors.status.positive,
+  blue: tokens.colors.status.info,
+  gray: tokens.colors.text.secondary,
+  yellow: tokens.colors.accent.primary,
+  chipText: tokens.colors.text.inverse,
+  darkBg: tokens.colors.surface.primary,
+  darkBg2: tokens.colors.surface.secondary,
+  border: tokens.colors.border.subtle,
 };
 
 // ===== Endpoints =====
@@ -355,7 +356,7 @@ const defaultIndices = [
 
 function TrendChip({ dir = 'up', children }) {
   const isUp = dir === 'up';
-  const bg = isUp ? '#22C55E' : '#EF4444';
+  const bg = isUp ? tokens.colors.status.positive : tokens.colors.status.negative;
   return (
     <span
       className="
@@ -365,13 +366,13 @@ function TrendChip({ dir = 'up', children }) {
       "
       style={{
         backgroundColor: bg,
-        color: '#fff',
+        color: tokens.colors.text.primary,
         border: '1px solid rgba(0,0,0,.15)',
         fontSize: '12px'
       }}
     >
       <span aria-hidden className="text-base leading-none">{isUp ? '↑' : '↓'}</span>
-      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+      <span className="leading-none" style={{ color: tokens.colors.text.primary }}>{children}</span>
     </span>
   );
 }
@@ -390,16 +391,16 @@ function injectStylesForGeneral(html) {
     .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
-      background: #1f1f1f !important;
+      background: ${COLORS.darkBg2} !important;
       color: ${COLORS.gray} !important;
       border-color: ${COLORS.border} !important;
     }
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
-    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: ${COLORS.border} !important; background: transparent !important; }
     .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
-    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+    .table-hover tbody tr:hover { background: ${COLORS.darkBg2} !important; }
     .text-muted, .muted, small { color: ${COLORS.gray} !important; }
     .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
     .progress .progress-bar { background: ${COLORS.blue} !important; }
@@ -422,7 +423,7 @@ function injectStylesForAportes(html) {
     .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
-      background: #1f1f1f !important;
+      background: ${COLORS.darkBg2} !important;
       color: ${COLORS.gray} !important;
       border-color: ${COLORS.border} !important;
     }
@@ -430,9 +431,9 @@ function injectStylesForAportes(html) {
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
-    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: ${COLORS.border} !important; background: transparent !important; }
     .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
-    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+    .table-hover tbody tr:hover { background: ${COLORS.darkBg2} !important; }
     .text-muted, .muted, small { color: ${COLORS.gray} !important; }
     .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
     .progress .progress-bar { transition: background-color .25s ease; }
@@ -449,7 +450,7 @@ function injectStylesForAportes(html) {
     function colorFor(p){
       if (p > 90) return '${COLORS.blue}';
       if (p >= 60) return '${COLORS.up}';
-      if (p >= 30) return '#F59E0B';
+      if (p >= 30) return '${tokens.colors.status.warning}';
       return '${COLORS.down}';
     }
     var bars = document.querySelectorAll('.progress .progress-bar, .progress-bar');
@@ -498,7 +499,7 @@ function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multi
   // };
 
 return (
-    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626] w-full min-w-40">
+    <div className="rounded-lg border border-[color:var(--border-subtle)] p-3 bg-surface-primary w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
         <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
@@ -625,9 +626,9 @@ function useHidroRows(chart3Html, tablaHidrologiaCompleta) {
 
 // Badge +/- con color
 function DeltaBadge({ value, suffix = '%', className='' }) {
-  if (!Number.isFinite(value)) return <span className={`text-gray-400 ${className}`}>—</span>;
+  if (!Number.isFinite(value)) return <span className={`text-text-muted ${className}`}>—</span>;
   const pos = value >= 0;
-  const color = pos ? '#22C55E' : '#EF4444';
+  const color = pos ? tokens.colors.status.positive : tokens.colors.status.negative;
   const sign = pos ? '+' : '';
   return <span className={className} style={{color}}>{`${sign}${value.toFixed(2)}${suffix}`}</span>;
 }
@@ -640,7 +641,7 @@ function DeltaInline({
   parens = true,
 }) {
   if (!Number.isFinite(value) || value === 0) return null;
-  const color = value > 0 ? '#22C55E' : '#EF4444';
+  const color = value > 0 ? tokens.colors.status.positive : tokens.colors.status.negative;
   const sign  = value > 0 && showPlus ? '+' : '';
   const text  = `${parens ? '(' : ''}${sign}${value.toFixed(decimals)}${suffix}${parens ? ')' : ''}`;
   return <span className="ml-1" style={{ color }}>{text}</span>;
@@ -650,10 +651,10 @@ function DeltaInline({
 function NivelBar({ pct }) {
   const p = Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
 
-  let bar = '#3B82F6';
-  if (p < 30) bar = '#EF4444';
-  else if (p < 60) bar = '#F59E0B';
-  else if (p < 90) bar = '#22C55E';
+  let bar = tokens.colors.status.info;
+  if (p < 30) bar = tokens.colors.status.negative;
+  else if (p < 60) bar = tokens.colors.status.warning;
+  else if (p < 90) bar = tokens.colors.status.positive;
 
   return (
     <div className="w-full">
@@ -662,7 +663,7 @@ function NivelBar({ pct }) {
           {Number.isFinite(pct) ? `${Math.round(pct)}%` : '—'}
         </span>
       </div>
-      <div className="relative h-3 rounded bg-[#1f1f1f] border border-[#3a3a3a] overflow-hidden">
+      <div className="relative h-3 rounded bg-surface-secondary border border-[color:var(--border-subtle)] overflow-hidden">
         <div
           className="absolute inset-y-0 left-0"
           style={{ width: `${p}%`, background: bar }}
@@ -702,8 +703,8 @@ function HidroTabs({ data, regionSummary = {} }) {
   };
 
   return (
-    <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl overflow-hidden">
-      <div className="px-3 pt-3 border-b border-[#3a3a3a]">
+    <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="px-3 pt-3 border-b border-[color:var(--border-subtle)]">
         <div className="flex gap-6">
           {[
             ['resumen','Resumen'],
@@ -723,7 +724,7 @@ function HidroTabs({ data, regionSummary = {} }) {
 
       <div className="p-3">
         <table className="w-full text-sm">
-          <thead className="bg-[#1f1f1f]">
+          <thead className="bg-surface-secondary">
             {tab === 'resumen' && (
               <tr>
                 <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
@@ -748,7 +749,7 @@ function HidroTabs({ data, regionSummary = {} }) {
             return (
               <React.Fragment key={region}>
                 {/* Fila de región visible en vista colapsada con las 4 columnas */}
-                <tr className="bg-[#262626] border-b border-[#3a3a3a] hover:bg-[#2a2a2a]">
+                <tr className="bg-surface-primary border-b border-[color:var(--border-subtle)] hover:bg-[#2a2a2a]">
                   {/* Columna: Región + botón expandir */}
                   <td className="px-3 py-2">
                     <button
@@ -819,17 +820,19 @@ function HidroTabs({ data, regionSummary = {} }) {
                       {/* Aportes (GWh-día) – consolidado por región */}
                       <td className="px-3 py-2 text-gray-200">
                         {sum && Number.isFinite(sum.aportesGwh)
-                          ? (
-                            <>
+                          ? (<>
                               {sum.aportesGwh.toFixed(2)}
                               <DeltaInline value={Number.isFinite(sum.aportesGwhDelta) ? sum.aportesGwhDelta : NaN} />
-                            </>
-                          )
+                            </>)
                           : '—'}
                       </td>
 
-                      {/* % de aportes – no viene consolidado en el API, lo dejamos en “—” */}
-                      <td className="px-3 py-2 text-gray-400">—</td>
+                      {/* Porcentaje de aportes – usar el MISMO valor de “aportes hídricos” del resumen */}
+                      <td className="px-3 py-2">
+                        {sum
+                          ? <AportesPctCell raw={sum.aportesRaw} value={sum.aportesPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
 
                       {/* Media histórica (GWh-día) – consolidado por región */}
                       <td className="px-3 py-2 text-gray-200">
@@ -989,14 +992,14 @@ function useAportesOptionsFromApi() {
     title: {
       text: 'Aportes y nivel útil de embalses por mes',
       align: 'left',
-      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: tokens.colors.text.primary }
     },
     xAxis: {
       type: 'datetime',
       min: range.minX,
       max: range.maxX,
       gridLineWidth: 1,
-      gridLineColor: '#444',
+      gridLineColor: tokens.colors.border.subtle,
       tickPixelInterval: 130,
       labels: {
         rotation: -45, align: 'right', autoRotation: undefined,
@@ -1008,16 +1011,24 @@ function useAportesOptionsFromApi() {
       { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
       { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
     ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
+    legend: {
+      layout: 'horizontal',
+      align: 'center',
+      verticalAlign: 'bottom',
+      y: 20,
+      itemStyle: { color: tokens.colors.text.primary, fontSize: '16px' }
+    },
     plotOptions: { series: { marker: { radius: 3, enabled: false }, lineWidth: 2, turboThreshold: 0 } },
     series: [
-      { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
+      { name: 'Aportes (GWh-dia)', type: 'line', color: tokens.colors.status.positive, data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', data: series.s2, tooltip: { valueSuffix: ' GWh-dia' } },
-      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
+      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: tokens.colors.status.info, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
     ],
     tooltip: {
-      backgroundColor: '#262626',
-      style: { color: '#FFF', fontSize: '14px' },
+      backgroundColor: tokens.colors.surface.primary,
+      borderColor: tokens.colors.border.default,
+      style: { color: tokens.colors.text.primary, fontSize: '13px' },
+      padding: 10,
       xDateFormat: '%Y-%m',
       shared: true,
       useHTML: true,
@@ -1112,14 +1123,14 @@ function useDesabastecimientoOptionsFromApi() {
     title: {
       text: 'Estatuto de desabastecimiento',
       align: 'left',
-      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: tokens.colors.text.primary }
     },
     xAxis: {
       type: 'datetime',
       min: range.minX,
       max: range.maxX,
       gridLineWidth: 1,
-      gridLineColor: '#444',
+      gridLineColor: tokens.colors.border.subtle,
       labels: {
         rotation: -45,
         align: 'right',
@@ -1143,17 +1154,17 @@ function useDesabastecimientoOptionsFromApi() {
     legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
     plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
     series: [
-      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: series.pBolsa },
+      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: tokens.colors.status.positive, data: series.pBolsa },
       { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: series.pEscasez },
-      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
+      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: tokens.colors.status.info, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
       ...(series.sendaPct.length
         ? [{ name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: series.sendaPct, tooltip: { valueSuffix: '%' } }]
         : []),
     ],
     tooltip: {
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       valueDecimals: 2,
-      style: { color: '#FFF', fontSize: '14px' },
+      style: { color: tokens.colors.text.primary, fontSize: '14px' },
       shared: true,
       useHTML: true,
       formatter: function () {
@@ -1487,7 +1498,7 @@ export default function Hidrologia() {
       break-inside: avoid; page-break-inside: avoid;
     }
     iframe { width: 100% !important; border: 1px solid #e5e7eb; }
-    .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
+    .shadow, .shadow-md, .shadow-soft { box-shadow: none !important; }
     body { font-family: Nunito Sans, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
   `;
 
@@ -1511,7 +1522,7 @@ const handleDownloadPdf = async () => {
 
     // Captura el nodo completo
     const canvas = await html2canvas(printRef.current, {
-      backgroundColor: '#262626',   // respeta el fondo dark
+      backgroundColor: tokens.colors.surface.primary,   // respeta el fondo dark
       scale,
       useCORS: true,
       logging: false,
@@ -1603,7 +1614,7 @@ const handleDownloadPdf = async () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1 */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
           <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
 
           {/* Fila: valor GWh con chip a la derecha */}
@@ -1640,7 +1651,7 @@ const handleDownloadPdf = async () => {
 
           {/* Barra de nivel */}
           <div className="mt-3 flex items-center gap-3">
-            <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#1f1f1f] border border-[#3a3a3a]">
+            <div className="flex-1 h-3 rounded-full overflow-hidden bg-surface-secondary border border-[color:var(--border-subtle)]">
               <div
                 className="h-3"
                 style={{
@@ -1653,7 +1664,7 @@ const handleDownloadPdf = async () => {
         </div>
 
         {/* Card 2 */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
           <TitleRow
             title="Aportes mensuales promedio"
             updated={indices[1].updated}
@@ -1697,7 +1708,7 @@ const handleDownloadPdf = async () => {
         </div>
 
           {/* Card 3 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold text-gray-300">Generación promedio diaria</span>
               <span className="text-xs text-gray-400">{indices[2].updated}</span>
@@ -1726,7 +1737,7 @@ const handleDownloadPdf = async () => {
               
             </div>
 
-            <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
+            <div className="mt-4 rounded-lg border border-[color:var(--border-subtle)] p-3">
                <div className="flex items-center gap-2">
               <div className="text-white">{indices[2].bottom}</div>
             
@@ -1742,7 +1753,7 @@ const handleDownloadPdf = async () => {
           </div>
 
           {/* Card 4 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold text-gray-300">{indices[3].title}</span>
               <span className="text-xs text-gray-400">{indices[3].updated}</span>
@@ -1785,7 +1796,7 @@ const handleDownloadPdf = async () => {
         </div>
 
         {/* Mapa */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
             <SideInfoHidrologia />
             <DamMap/>
         </div>
@@ -1793,7 +1804,7 @@ const handleDownloadPdf = async () => {
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <HidroTabs data={hidroRows} regionSummary={regionSummary} />
-          <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+          <div className="w-full bg-surface-primary p-4 pb-10 rounded-lg border border-[color:var(--border-default)] shadow relative">
             {/* Ayuda */}
             <button
               className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
@@ -1812,7 +1823,7 @@ const handleDownloadPdf = async () => {
         </div>
 
         {/* Estatuto de desabastecimiento */}
-        <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+        <div className="w-full bg-surface-primary p-4 pb-10 rounded-lg border border-[color:var(--border-default)] shadow relative">
         {/* Ayuda */}
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

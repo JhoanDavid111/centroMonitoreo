@@ -48,18 +48,18 @@ export default function SeguimientoIndices() {
 
   return (
       <section className="mb-6">
-        <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Índices</h2>
+        <h2 className="text-2xl text-text-secondary font-semibold mb-4">Índices</h2>
 
         {/* Grid responsiva */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {indicadores.map((i, idx) => (
               <div
                   key={idx}
-                  className="flex flex-col gap-3 p-5 bg-[#262626] border border-[#575756] rounded-lg"
+                  className="flex flex-col gap-3 p-5 bg-surface-primary border border-[#575756] rounded-lg"
               >
                 <div className="flex items-start gap-3">
                   {i.icono}
-                  <h3 className="text-[18px] font-normal leading-[26px] text-[#B0B0B0] font-sans">
+                  <h3 className="text-[18px] font-normal leading-[26px] text-text-muted font-sans">
                     {i.titulo}
                   </h3>
                 </div>
@@ -78,7 +78,7 @@ export default function SeguimientoIndices() {
                   </div>
                 </div>
 
-                <div className="text-xs text-[#B0B0B0]">
+                <div className="text-xs text-text-muted">
                   {i.fecha}
                 </div>
               </div>

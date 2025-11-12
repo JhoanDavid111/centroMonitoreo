@@ -5,6 +5,8 @@ import { HelpCircle } from 'lucide-react';
 import TooltipModal from './ui/TooltipModal';
 import { useTooltipsCache } from '../hooks/useTooltipsCache';
 import { useIndicadoresProyectos075 } from '../services/indicadoresService';
+import Card from './ui/Card';
+import tokens from '../styles/theme.js';
 
 // Ícono de las tarjetas y del hero
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -166,16 +168,16 @@ export default function IndicadoresProyectos075() {
 
   if (loading || loadingTooltips) {
     return (
-      <div className="px-4 py-6 text-white">
+      <div className="px-4 py-6 text-text-primary">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-700 rounded w-1/2 mx-auto" />
+          <div className="h-8 bg-surface-secondary rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {ORDER.map((_, i) => (
-              <div key={i} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-                <div className="h-6 bg-neutral-700 rounded mb-4" />
-                <div className="h-8 bg-neutral-600 rounded mb-2" />
-                <div className="h-3 bg-neutral-700 rounded w-1/2" />
-              </div>
+              <Card key={i} className="p-5">
+                <div className="h-6 bg-surface-secondary rounded mb-4" />
+                <div className="h-8 bg-[color:var(--surface-overlay)] rounded mb-2" />
+                <div className="h-3 bg-surface-secondary rounded w-1/2" />
+              </Card>
             ))}
           </div>
         </div>
@@ -198,49 +200,49 @@ export default function IndicadoresProyectos075() {
     <>
       {/* ───────── Indicador general (hero) ───────── */}
       <div className="px-4 pt-6 text-center">
-        <div className="inline-flex items-center gap-4">
+        <Card className="inline-flex flex-col items-center gap-4 px-8 py-6 md:flex-row md:justify-center">
           <span
             className="inline-flex items-center justify-center rounded-full"
-            style={{ width: 64, height: 64, background: '#FFC800' }}
+            style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
           >
             <img
               src={EnergiaAmarillo}
               alt="Energía"
               className="w-12 h-12 md:w-14 md:h-14"
-              style={{ background: 'transparent' }}
             />
           </span>
-          <span className=" leading-tight text-[#FFC800] text-3xl lg:text-5xl font-semibold">
-            {heroValue}
-          </span>
-        </div>
-
-        <div className="mt-2 text-[#D1D1D0] text-1xl lg:text-[20px]">
-          {heroSubtitle}
-        </div>
+          <div className="text-left md:text-center">
+            <p className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold leading-tight">
+              {heroValue}
+            </p>
+            <p className="mt-2 text-text-secondary text-base lg:text-lg">
+              {heroSubtitle}
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* ───────── Tarjetas: 3 por fila ───────── */}
       <div className="px-2 mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {cards.map(({ key, icon, label, value }) => (
-            <div key={key} className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow">
-              <div className="flex items-center mb-2">
+            <Card key={key} className="p-5 space-y-3">
+              <div className="flex items-center gap-2">
                 <img src={icon} alt={label} className="w-6 h-6 flex-shrink-0" />
-                <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                <span className="text-[18px] font-medium leading-[26px] text-text-secondary">
                   {label}
                 </span>
               </div>
-              <div className="flex text-white text-2xl font-bold">
+              <div className="flex items-center text-text-primary text-2xl font-bold">
                 {value}
                 <HelpCircle
-                  className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 ml-4"
+                  className="text-text-primary cursor-pointer hover:text-text-secondary transition-colors bg-surface-secondary self-center rounded h-6 w-6 p-1 ml-4"
                   title="Ayuda"
                   onClick={() => handleHelpClick(key)}
                 />
               </div>
-              <div className="text-xs text-[#B0B0B0] mt-1">Actualizado el: {updated}</div>
-            </div>
+              <div className="text-xs text-text-muted mt-1">Actualizado el: {updated}</div>
+            </Card>
           ))}
         </div>
       </div>

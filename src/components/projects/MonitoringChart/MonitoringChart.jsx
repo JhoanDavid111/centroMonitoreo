@@ -7,6 +7,7 @@ import {
   ChartWrapper
 } from './MonitoringChart.styles';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import tokens from '../../../styles/theme.js';
 
 const MonitoringChart = ({ title, data }) => {
   return (
@@ -29,9 +30,10 @@ const MonitoringChart = ({ title, data }) => {
             />
             <Tooltip 
               contentStyle={{
-                backgroundColor: '#1F2937',
-                borderColor: '#374151',
-                borderRadius: '0.5rem'
+                backgroundColor: tokens.colors.surface.primary,
+                borderColor: tokens.colors.border.default,
+                borderRadius: '0.5rem',
+                padding: tokens.spacing.lg
               }}
             />
             <Legend />
