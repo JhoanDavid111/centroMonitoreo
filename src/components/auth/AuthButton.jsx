@@ -1,4 +1,5 @@
-// src/components/auth/AuthButton.jsx
+import tokens from '../../styles/theme.js';
+
 // src/components/auth/AuthButton.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { auth, googleProvider, microsoftProvider } from '../../firebase/config';
@@ -30,12 +31,20 @@ export default function AuthButton() {
 
   /**
    * Función memoizada para validar el correo electrónico del usuario con una API externa.
+   * Nota: Esta es una API externa de Google Apps Script, no requiere React Query ya que es una validación puntual.
    */
   const validateEmailWithAPI = useCallback(async (email) => {
     try {
+      // API externa de Google - mantener fetch directo pero con timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`
+        `https://script.google.com/macros/s/AKfycbwAOie4leu3GxulRCYziBv0-OTqyXxkJ77JUBFwBa4xvfUlKiTqGdvhXaLSm7UtJMp9/exec?email=${encodeURIComponent(email)}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -183,7 +192,7 @@ export default function AuthButton() {
     return (
       <div className="flex items-center justify-center w-full">
         <div className="flex flex-col items-center">
-          <svg className="animate-spin h-12 w-12 text-[#FFC800]" viewBox="0 0 24 24">
+          <svg className="animate-spin h-12 w-12 text-[color:var(--accent-primary)]" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.25"/>
             <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
           </svg>
@@ -214,14 +223,14 @@ export default function AuthButton() {
           }}
         >
           Datos en acción que impulsan la<br />
-          <strong style={{ color: '#FFC800', fontWeight: 700 }}>
+          <strong style={{ color: tokens.colors.accent.primary, fontWeight: 700 }}>
             Transición Energética Justa
           </strong>.
         </p>
       </div>
 
       {/* Tarjeta de autenticación */}
-      <div className="bg-[#1d1d1d] bg-opacity-70 border border-[#666666] rounded-lg p-8 shadow-md w-full text-white">
+      <div className="bg-[color:var(--surface-overlay)] bg-opacity-70 border border-[color:var(--border-default)] rounded-lg p-8 shadow-md w-full text-white">
         {/* Logo UPME centrado */}
         <div className="flex justify-center mb-6">
           <img src={logo} alt="Logo Energia UPME" className="h-16 object-contain" />

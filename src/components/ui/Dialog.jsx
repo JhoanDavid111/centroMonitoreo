@@ -83,7 +83,7 @@ const DialogContent = ({ children }) => {
       />
 
       {/* Content */}
-      <div className="relative z-[30000] max-w-lg sm:w-11/12 md: 11/12 lg:w-full bg-[#323232] text-white p-6 rounded-lg shadow-lg">
+      <div className="relative z-[30000] max-w-lg sm:w-11/12 md: 11/12 lg:w-full bg-[#323232] text-white p-6 rounded-lg shadow-soft">
         <button
           className="absolute top-4 right-4 p-2"
           onClick={() => setOpen(false)}

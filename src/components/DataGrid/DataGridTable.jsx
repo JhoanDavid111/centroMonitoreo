@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
 import { useMemo, useState, useCallback } from 'react';
-import { darkTheme } from './styles/darkTheme';
+import { darkTableStyles, registerDarkDataTableTheme } from './styles/darkTheme';
+import tokens from '../../styles/theme.js';
+
+registerDarkDataTableTheme();
 import ojoAmarillo from '../../assets/ojoAmarillo.svg';
 import curvaSAmarillo from '../../assets/curvaSAmarillo.svg';
 
@@ -28,73 +31,75 @@ const DataGridTable = ({
   
   // Memoizar estilos para evitar recreación en cada render
   const customStyles = useMemo(() => ({
+    ...darkTableStyles,
     tableWrapper: {
       style: {
         overflow: 'visible',
-      }
+      },
     },
     table: {
       style: {
+        ...(darkTableStyles.table?.style || {}),
         overflow: 'visible',
-      }
+      },
     },
     headCells: {
       style: {
-        fontSize: '16px',
-        fontWeight: 600,
-        color: '#ffffff',
-        backgroundColor: '#262626',
+        fontSize: tokens.font.size.lg,
+        fontWeight: tokens.font.weight.semibold,
+        color: tokens.colors.text.primary,
+        backgroundColor: tokens.colors.surface.primary,
         overflow: 'visible',
-        paddingLeft: '8px',
-        paddingRight: '8px',
+        paddingLeft: tokens.spacing.sm,
+        paddingRight: tokens.spacing.sm,
       },
     },
     cells: {
       style: {
-        fontSize: '14px',
-        fontWeight: 400,
-        color: '#cccccc',
+        fontSize: tokens.font.size.base,
+        fontWeight: tokens.font.weight.regular,
+        color: tokens.colors.text.secondary,
         overflow: 'visible',
-        paddingLeft: '8px',
-        paddingRight: '8px',
+        paddingLeft: tokens.spacing.sm,
+        paddingRight: tokens.spacing.sm,
       },
     },
     rows: {
       style: {
-        backgroundColor: '#262626',
+        backgroundColor: tokens.colors.surface.primary,
         '&:not(:last-of-type)': {
           borderBottomStyle: 'solid',
           borderBottomWidth: '1px',
-          borderBottomColor: '#1d1d1d',
+          borderBottomColor: tokens.colors.border.subtle,
         },
       },
       highlightOnHoverStyle: {
-        backgroundColor: '#3a3a3a',
+        backgroundColor: tokens.colors.surface.secondary,
         transition: '0.2s ease-in-out',
       },
       stripedStyle: {
-        backgroundColor: '#1d1d1d',
+        backgroundColor: tokens.colors.surface.secondary,
       },
     },
     pagination: {
       style: {
-        backgroundColor: '#262626',
-        color: '#cccccc',
-        borderTop: '1px solid #1d1d1d',
-        padding: '8px',
+        backgroundColor: tokens.colors.surface.primary,
+        color: tokens.colors.text.secondary,
+        borderTop: `1px solid ${tokens.colors.border.subtle}`,
+        padding: tokens.spacing.sm,
       },
     },
     paginationButtons: {
       style: {
-        color: '#cccccc',
+        color: tokens.colors.text.secondary,
         '&:hover': {
-          backgroundColor: '#3a3a3a',
+          backgroundColor: tokens.colors.surface.secondary,
         },
         '& svg': {
-          stroke: '#cccccc',
+          stroke: tokens.colors.text.secondary,
         },
         '& svg path': {
-          stroke: '#cccccc',
+          stroke: tokens.colors.text.secondary,
         },
       },
     },
@@ -181,13 +186,13 @@ const DataGridTable = ({
               </div>
             </div>
             {openFilter === col.selector && (
-              <div className="absolute top-full left-0 mt-1 bg-[#1f1f1f] p-2 rounded shadow-lg z-50">
+              <div className="absolute top-full left-0 mt-1 bg-surface-secondary p-2 rounded shadow-soft z-50">
                 <input
                   type="text"
                   placeholder="Buscar..."
                   value={filters[col.selector] || ''}
                   onChange={e => setFilters({ ...filters, [col.selector]: e.target.value })}
-                  className="bg-[#262626] text-white p-1 text-sm w-32 rounded"
+                  className="bg-surface-primary text-white p-1 text-sm w-32 rounded"
                   autoFocus
                   aria-label={`Buscar en ${col.name}`}
                 />
@@ -248,16 +253,14 @@ const DataGridTable = ({
         </div>
       ),
       ignoreRowClick: true,
-      width: '100px',
-      button: true,
-      compact: true
+      width: '100px'
     };
     
     return [actionColumn, ...processedColumns];
   }, [showActionsColumn, processedColumns, isSTR, showCurveButton, onViewChart]);
 
   if (loading) return (
-    <div className="bg-[#262626] p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
+    <div className="bg-surface-primary p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
       <div className="flex space-x-2">
         <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-400" style={{ animationDelay: '0s' }} />
         <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-400" style={{ animationDelay: '0.2s' }} />
@@ -267,24 +270,27 @@ const DataGridTable = ({
     </div>
   );
 
-  if (error) return (
-    <div className="bg-[#262626] p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <p className="text-red-500 text-center max-w-md">{error}</p>
-    </div>
-  );
+  if (error) {
+    const errorMessage = error?.message || error?.response?.data?.message || String(error || 'Error desconocido');
+    return (
+      <div className="bg-surface-primary p-6 rounded-lg shadow flex flex-col items-center justify-center h-64">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="text-red-500 text-center max-w-md">{errorMessage}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-[#262626] p-4 rounded-lg shadow">
+    <div className="bg-surface-primary p-4 rounded-lg shadow">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <input
           type="text"
           placeholder="Buscar..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-full sm:w-1/3 focus:outline-none focus:ring-1 focus:ring-yellow-400"
+          className="bg-surface-secondary placeholder-gray-500 text-white rounded p-2 w-full sm:w-1/3 focus:outline-none focus:ring-1 focus:ring-yellow-400"
           aria-label="Buscar en todos los campos"
         />
         <button

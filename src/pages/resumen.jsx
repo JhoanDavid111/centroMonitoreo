@@ -1,5 +1,6 @@
-import bannerResumen from '../../src/assets/bannerResumenEstrategia6GW.png';
-import Plan6Svg from '../../src/assets/Plan6gw+2.svg';
+import { lazy, Suspense } from 'react';
+import bannerResumen from '../assets/bannerResumenEstrategia6GW.png';
+import Plan6Svg from '../assets/Plan6gw+2.svg';
 import {
   Banner,
   BannerAction,
@@ -8,15 +9,28 @@ import {
   BannerTitle
 } from '../components/ui/Banner';
 
-import { CapacidadInstalada } from '../components/CapacidadInstalada';
-import ComunidadesResumen from '../components/ComunidadesResumen';
-import { GeneracionDespacho } from '../components/GeneracionDespacho';
-import { GeneracionHoraria } from '../components/GeneracionHoraria';
-import MapasCreg from '../components/MapasCreg';
+// Componentes críticos cargados de forma normal (prioridad alta)
 import { ResumenCharts } from '../components/ResumenCharts';
+import { GeneracionDespacho } from '../components/GeneracionDespacho';
+import Indicadores6GW from '../components/Indicadores6GW';
 
+// Componentes menos críticos con lazy loading (prioridad baja)
+const CapacidadInstalada = lazy(() => import('../components/CapacidadInstalada'));
+const ComunidadesResumen = lazy(() => import('../components/ComunidadesResumen'));
+const GeneracionHoraria = lazy(() => import('../components/GeneracionHoraria'));
+const MapasCreg = lazy(() => import('../components/MapasCreg'));
 
-import Indicadores6GW from '../components/Indicadores6GW'; // <-- nuevo
+// Componente de carga para Suspense
+const LoadingFallback = ({ message = 'Cargando...' }) => (
+  <div className="bg-surface-primary p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[300px]">
+    <div className="flex space-x-2">
+      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
+      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
+      <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }}></div>
+    </div>
+    <p className="text-gray-300 mt-4">{message}</p>
+  </div>
+);
 
 export default function Resumen() {
   return (
@@ -52,16 +66,29 @@ export default function Resumen() {
       {/* Aquí renderizamos el nuevo componente que maneja su propio fetch */}
       <Indicadores6GW />
 
-      {/* Resto de secciones */}
-      <div className="px-2">
-        <CapacidadInstalada />
-      </div>
-      <div className="px-2">
-        <ComunidadesResumen />
-      </div>
+      {/* Resto de secciones en el orden original */}
+      <Suspense fallback={<LoadingFallback message="Cargando capacidad instalada..." />}>
+        <div className="px-2">
+          <CapacidadInstalada />
+        </div>
+      </Suspense>
+
+      <Suspense fallback={<LoadingFallback message="Cargando comunidades energéticas..." />}>
+        <div className="px-2">
+          <ComunidadesResumen />
+        </div>
+      </Suspense>
+
       <ResumenCharts />
-      <MapasCreg />      
-      <GeneracionHoraria />
+
+      <Suspense fallback={<LoadingFallback message="Cargando mapas CREG..." />}>
+        <MapasCreg />
+      </Suspense>
+
+      <Suspense fallback={<LoadingFallback message="Cargando generación horaria..." />}>
+        <GeneracionHoraria />
+      </Suspense>
+
       <GeneracionDespacho />
     </div>
   );

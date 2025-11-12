@@ -1,6 +1,6 @@
 // src/pages/Hidrologia.jsx
 
-import bannerHidrologia from '../../src/assets/bannerHidrologia.png';
+import bannerHidrologia from '../assets/bannerHidrologia.png';
 import { SideInfoHidrologia } from "../components/SideInfoHidrologia";
 import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
 import {
@@ -11,7 +11,7 @@ import {
   BannerTitle
 } from '../components/ui/Banner';
 
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -26,49 +26,77 @@ import arrowsDarkmodeAmarilloIcon from '../assets/svg-icons/arrowsDarkmodeAmaril
 import chart1Html from '../data/Chart1.html?raw';
 import chart3Html from '../data/Chart3.html?raw';
 import tablaHidrologiaCompleta from '../data/tabla_hidrologia-completa.html?raw';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 import { DamMap } from '../components/DamMap';
+import tokens from '../styles/theme.js';
 
 // ===== Paleta =====
 const COLORS = {
-  down: '#EF4444',
-  up: '#22C55E',
-  blue: '#3B82F6',
-  gray: '#D1D1D0',
-  yellow: '#FFC800',
-  chipText: '#111827',
-  darkBg: '#262626',
-  darkBg2: '#1f1f1f',
-  border: '#3a3a3a',
+  down: tokens.colors.status.negative,
+  up: tokens.colors.status.positive,
+  blue: tokens.colors.status.info,
+  gray: tokens.colors.text.secondary,
+  yellow: tokens.colors.accent.primary,
+  chipText: tokens.colors.text.inverse,
+  darkBg: tokens.colors.surface.primary,
+  darkBg2: tokens.colors.surface.secondary,
+  border: tokens.colors.border.subtle,
 };
 
 // ===== Endpoints =====
-import { API } from '../config/api';
 
-
-// *** NUEVAS IMPORTACIONES ***
-import TooltipModal from '../components/ui/TooltipModal'; // Asume esta ruta
-import { useTooltipsCache } from '../hooks/useTooltipsCache'; // Usar el hook cacheado
+import TooltipModal from '../components/ui/TooltipModal';
+import { useTooltips } from '../services/tooltipsService';
+import {
+  useHidrologiaConsolidado,
+  useHidrologiaEmbalses,
+  useHidrologiaAportes,
+  useHidrologiaHidraulicos,
+  useHidrologiaGeneracion,
+  useHidrologiaPrecios
+} from '../services/indicadoresService';
+import { useGraficaAportes, useGraficaEstatuto } from '../services/graficasService';
 
 
 // ────────────────────────────────────────────────
 // Mapeo Canónico para Tooltip
-// Este identificador debe coincidir con la clave retornada por tu API de tooltips
 // ────────────────────────────────────────────────
-const CHART_TOOLTIP_ID = 'res_grafica_capacidad_instalada_tecnologia'; // EJEMPLO: Ajusta esta clave si es necesario
+const TOOLTIP_IDENTIFIERS_MAP = {
+  
+ 
+
+  hidro_card_embalse_dia: 'hidro_card_embalse_dia',
+  hidro_card_embalse_porcentaje: 'hidro_card_embalse_porcentaje',
+  hidro_card_aporte_mensuales_dia: 'hidro_card_aporte_mensuales_dia',
+  hidro_card_aporte_mensuales_porcentaje: 'hidro_card_aporte_mensuales_porcentaje',
+  hidro_card_generacion_hidrica: 'hidro_card_generacion_hidrica',
+  hidro_card_generacion_termica: 'hidro_card_generacion_termica',
+  hidro_card_generacion_fncer: 'hidro_card_generacion_fncer',
+  hidro_card_generacion_demanda_real: 'hidro_card_generacion_demanda_real',
+  hidro_card_minimo_diario: 'hidro_card_minimo_diario',
+  hidro_card_promedio_diario: 'hidro_card_promedio_diario',
+  hidro_card_maximo_diario: 'hidro_card_maximo_diario',
+  hidro_grafica_aporte_nivel_util_embalse_mes: 'hidro_grafica_aporte_nivel_util_embalse_mes',
+  hidro_grafica_estatuto_desabastecimiento: 'hidro_grafica_estatuto_desabastecimiento',
 
 
-const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
-const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
-
-const API_HIDRO = import.meta.env.VITE_API_HIDRO || `${API}/v1/indicadores/hidrologia/indicadores_hidraulicos`;
-const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `${API}/v1/graficas/hidrologia/grafica_aportes`;
-const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `${API}/v1/graficas/energia_electrica/grafica_estatuto`;
-const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `${API}/v1/indicadores/hidrologia/indicadores_generacion_sin`;
-const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `${API}/v1/indicadores/hidrologia/indicadores_precios_energia`;
-const API_CONSOLIDADO = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 
+};
+
+
+// Constantes no utilizadas - eliminadas para evitar confusión
+// const API_EXPANDER_EMBALSES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses`;
+// const API_EXPANDER_APORTES = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_aportes`;
+
+const API_HIDRO = import.meta.env.VITE_API_HIDRO || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_hidraulicos`;
+const API_APORTES = import.meta.env.VITE_API_HIDRO_APORTES || `http://192.168.8.138:8002/v1/graficas/hidrologia/grafica_aportes`;
+const API_ESTATUTO = import.meta.env.VITE_API_ESTATUTO || `http://192.168.8.138:8002/v1/graficas/energia_electrica/grafica_estatuto`;
+const API_GENERACION = import.meta.env.VITE_API_HIDRO_GENERACION || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_generacion_sin`;
+const API_PRECIOS = import.meta.env.VITE_API_HIDRO_PRECIOS || `http://192.168.8.138:8002/v1/indicadores/hidrologia/indicadores_precios_energia`;
 
 
 
@@ -144,98 +172,137 @@ function parseValueAndDelta(s) {
   return { value, delta };
 }
 
+function deltaPctFromText(txt) {
+  const m = String(txt || '').match(/\(([^)]+)\)/); // contenido entre paréntesis
+  if (!m) return NaN;
+  return pctNum(m[1]); // reaprovecha tu pctNum
+}
+
 
 function parseMW(v) {
   if (typeof v === 'number') return v;
   return num(v);
 }
 
-function useHidroRowsFromConsolidado() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
+function AportesPctCell({ raw, value }) {
+  // raw: texto original ("+81.3%", "-4.7%", "39.8%")
+  // value: número (81.3, -4.7, 39.8)
+  const txt = (raw ?? '').trim();
+  const hasExplicitPlus  = /^[\s+]*\+/.test(txt);
+  const hasExplicitMinus = /^[\s-]*-/.test(txt) || txt.startsWith('−'); // considera guion y '−'
+  const hasSign = hasExplicitPlus || hasExplicitMinus;
 
-  useEffect(() => {
-    let abort = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(API_CONSOLIDADO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          headers: { Accept: 'application/json' }
-        });
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort) return;
-
-        const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
-        const out = [];
-
-        for (const reg of regiones) {
-          const regionName = String(reg?.nombre || '').trim();
-          const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
-
-          for (const e of embalses) {
-            const embalse = String(e?.nombre || '').trim();
-
-            // --- pestaña RESUMEN ---
-            // nivel -> porcentaje (para la barra)
-            const nivelResumenPct = pctNum(e?.resumen?.nivel);
-            // aportes_hidricos -> badge con signo
-            const aportesResumenPct = pctNum(e?.resumen?.aportes_hidricos);
-            // capacidad generación MW
-            const capacidadMW = parseMW(e?.resumen?.capacidad_generacion_mw);
-
-            // --- pestaña EMBALSES ---
-            const { value: volGwh, delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
-            const nivelEmbalsePct = pctNum(e?.detalle_embalse?.nivel);
-            const capacidadGwhDia = num(e?.detalle_embalse?.capacidad_gwh_dia);
-
-            // --- pestaña APORTES ---
-            const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
-            const aportesPct = pctNum(e?.detalle_aportes?.porcentaje);
-            const mediaHistGwhDia = num(e?.detalle_aportes?.media_historica_gwh_dia);
-
-            out.push({
-              region: regionName,
-              embalse,
-
-              // resumen
-              nivelPct: Number.isFinite(nivelEmbalsePct) ? nivelEmbalsePct : nivelResumenPct, // usamos detalle si viene, sino resumen
-              aportesPct: aportesResumenPct,
-              capacidadMW,
-
-              // embalses
-              volumenGwh: volGwh,
-              cambioGwh: volDelta,
-              capacidadGwhDia,
-
-              // aportes
-              aportesGwh,
-              aportesGwhDelta: aportesDelta, // no existía; lo usamos en UI
-              mediaHistoricaGwhDia: mediaHistGwhDia,
-              aportesPctDetalle: aportesPct, // por si quieres usarlo en esa pestaña
-            });
-          }
-        }
-
-        // ordenamos por región/embalse
-        out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
-        if (!abort) setRows(out);
-      } catch (e) {
-        console.error('[Consolidado] Error cargando:', e);
-        if (!abort) setRows([]);
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    })();
-    return () => { abort = true; };
-  }, []);
-
-  return { rows, loading };
+  if (hasSign) {
+    // Usa DeltaBadge con el número; se colorea verde si >=0, rojo si <0
+    return <DeltaBadge value={Number.isFinite(value) ? value : NaN} suffix="%" />;
+  }
+  // Sin signo explícito → neutro
+  const shown = Number.isFinite(value) ? `${value.toFixed(2)}%` : (txt || '—');
+  return <span className="text-gray-200">{shown}</span>;
 }
 
+
+function useHidroRowsFromConsolidado() {
+  const { data, isLoading: loading } = useHidrologiaConsolidado();
+  
+  const { rows, regionSummary } = useMemo(() => {
+    if (!data) return { rows: [], regionSummary: {} };
+    
+    const regiones = Array.isArray(data?.regiones) ? data.regiones : [];
+    const out = [];
+    const summary = {}; // region -> { ... }
+
+    for (const reg of regiones) {
+      const regionName = String(reg?.nombre || '').trim();
+
+      // ---- RESUMEN POR REGIÓN (solo para la fila colapsada de la región) ----
+      const nivelRegionPct    = pctNum(reg?.resumen?.nivel);
+      const aportesRegionRaw  = String(reg?.resumen?.aportes_hidricos ?? '').trim();
+      const aportesRegionPct  = pctNum(aportesRegionRaw);
+      const capacidadRegionMW = parseMW(reg?.resumen?.capacidad_generacion_mw);
+
+      const volumenRegionGwh       = num(reg?.resumen?.volumen_gwh_dia);
+      const deltaVolumenRegionGwh  = num(reg?.resumen?.delta_volumen_gwh_dia);
+      const capacidadUtilRegionGwh = num(reg?.resumen?.capacidad_util_gwh_dia);
+
+      const aportesRegionGwh       = num(reg?.resumen?.aportes_gwh_dia_region);
+      const mediaHistRegionGwh     = num(reg?.resumen?.media_historica_aportes_gwh_dia_region);
+
+      summary[regionName] = {
+        // pestaña Resumen
+        nivelPct: nivelRegionPct,
+        aportesRaw: aportesRegionRaw,
+        aportesPct: aportesRegionPct,
+        capacidadMW: capacidadRegionMW,
+
+        // pestaña Embalses
+        volumenGwh: volumenRegionGwh,
+        cambioGwh: deltaVolumenRegionGwh,
+        capacidadGwhDia: capacidadUtilRegionGwh,
+
+        // pestaña Aportes
+        aportesGwh: aportesRegionGwh,
+        mediaHistoricaGwhDia: mediaHistRegionGwh,
+
+        // sin % regional de "aportes del total"
+        porcentajeTexto: '',
+        aportesGwhDelta: NaN,
+      };
+
+      // === Filas por embalse (igual que ya tenías, solo guardamos también el "raw" de aportes de resumen) ===
+      const embalses = Array.isArray(reg?.embalses) ? reg.embalses : [];
+      for (const e of embalses) {
+        const embalse = String(e?.nombre || '').trim();
+
+        // --- datos del embalse (SIEMPRE del embalse) ---
+        const nivelEmbalsePctResumen  = pctNum(e?.resumen?.nivel);
+        const aportesHidRaw           = String(e?.resumen?.aportes_hidricos ?? '').trim();
+        const aportesHidPctResumen    = pctNum(aportesHidRaw);
+        const capacidadMWEmbalse      = parseMW(e?.resumen?.capacidad_generacion_mw);
+
+        // detalle embalse
+        const { value: volGwh,  delta: volDelta } = parseValueAndDelta(e?.detalle_embalse?.volumen_gwh_dia);
+        const nivelEmbalsePctDetalle  = pctNum(e?.detalle_embalse?.nivel);
+        const capacidadGwhDiaEmbalse  = num(e?.detalle_embalse?.capacidad_gwh_dia);
+
+        // detalle aportes
+        const { value: aportesGwh, delta: aportesDelta } = parseValueAndDelta(e?.detalle_aportes?.aportes_gwh_dia);
+        const porcentajeTexto       = String(e?.detalle_aportes?.porcentaje ?? '').trim();
+        const aportesPctDetalleNum  = pctNum(e?.detalle_aportes?.porcentaje);
+        const mediaHistGwhDiaEmb    = num(e?.detalle_aportes?.media_historica_gwh_dia);
+
+        out.push({
+          region: regionName,
+          embalse: String(e?.nombre || '').trim(),
+
+          // pestaña RESUMEN (del embalse, sin mezclar región)
+          nivelPct: Number.isFinite(nivelEmbalsePctDetalle) ? nivelEmbalsePctDetalle : nivelEmbalsePctResumen,
+          aportesHidricosPct: aportesHidPctResumen,
+          aportesHidricosRaw: aportesHidRaw,
+          capacidadMW: capacidadMWEmbalse,
+
+          // pestaña EMBALSES
+          volumenGwh: volGwh,
+          cambioGwh: volDelta,
+          capacidadGwhDia: capacidadGwhDiaEmbalse,
+
+          // pestaña APORTES
+          aportesGwh,
+          aportesGwhDelta: aportesDelta,
+          mediaHistoricaGwhDia: mediaHistGwhDiaEmb,
+          aportesPctDetalle: aportesPctDetalleNum,
+          porcentajeTexto,
+        });
+      }
+    }
+
+    // ordenamos por región/embalse
+    out.sort((a,b)=> a.region.localeCompare(b.region) || a.embalse.localeCompare(b.embalse));
+    return { rows: out, regionSummary: summary };
+  }, [data]);
+
+  return { rows, loading, regionSummary };
+}
 
 
 /* ======================= Índices (defaults) ======================= */
@@ -289,7 +356,7 @@ const defaultIndices = [
 
 function TrendChip({ dir = 'up', children }) {
   const isUp = dir === 'up';
-  const bg = isUp ? '#22C55E' : '#EF4444';
+  const bg = isUp ? tokens.colors.status.positive : tokens.colors.status.negative;
   return (
     <span
       className="
@@ -299,13 +366,13 @@ function TrendChip({ dir = 'up', children }) {
       "
       style={{
         backgroundColor: bg,
-        color: '#fff',
+        color: tokens.colors.text.primary,
         border: '1px solid rgba(0,0,0,.15)',
         fontSize: '12px'
       }}
     >
       <span aria-hidden className="text-base leading-none">{isUp ? '↑' : '↓'}</span>
-      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+      <span className="leading-none" style={{ color: tokens.colors.text.primary }}>{children}</span>
     </span>
   );
 }
@@ -324,16 +391,16 @@ function injectStylesForGeneral(html) {
     .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
-      background: #1f1f1f !important;
+      background: ${COLORS.darkBg2} !important;
       color: ${COLORS.gray} !important;
       border-color: ${COLORS.border} !important;
     }
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
-    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: ${COLORS.border} !important; background: transparent !important; }
     .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
-    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+    .table-hover tbody tr:hover { background: ${COLORS.darkBg2} !important; }
     .text-muted, .muted, small { color: ${COLORS.gray} !important; }
     .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
     .progress .progress-bar { background: ${COLORS.blue} !important; }
@@ -356,7 +423,7 @@ function injectStylesForAportes(html) {
     .thead, .thead-dark, .thead-light,
     .dataTables_wrapper .dataTables_scrollHead,
     .dataTables_wrapper .dataTables_scrollHeadInner {
-      background: #1f1f1f !important;
+      background: ${COLORS.darkBg2} !important;
       color: ${COLORS.gray} !important;
       border-color: ${COLORS.border} !important;
     }
@@ -364,9 +431,9 @@ function injectStylesForAportes(html) {
     table, .table { color: ${COLORS.gray} !important; border-color: ${COLORS.border} !important; }
     table tbody tr, .table tbody tr, tr[role="row"] { background: ${COLORS.darkBg} !important; }
     table tbody tr:nth-child(even), .table tbody tr:nth-child(even) { background: ${COLORS.darkBg2} !important; }
-    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: #2e2e2e !important; background: transparent !important; }
+    table tbody td, .table tbody td, table tbody th, .table tbody th { border-color: ${COLORS.border} !important; background: transparent !important; }
     .table-striped tbody tr:nth-of-type(odd) { background: ${COLORS.darkBg} !important; }
-    .table-hover tbody tr:hover { background: #2a2a2a !important; }
+    .table-hover tbody tr:hover { background: ${COLORS.darkBg2} !important; }
     .text-muted, .muted, small { color: ${COLORS.gray} !important; }
     .progress { background: ${COLORS.darkBg2} !important; border: 1px solid ${COLORS.border} !important; height: 14px !important; }
     .progress .progress-bar { transition: background-color .25s ease; }
@@ -383,7 +450,7 @@ function injectStylesForAportes(html) {
     function colorFor(p){
       if (p > 90) return '${COLORS.blue}';
       if (p >= 60) return '${COLORS.up}';
-      if (p >= 30) return '#F59E0B';
+      if (p >= 30) return '${tokens.colors.status.warning}';
       return '${COLORS.down}';
     }
     var bars = document.querySelectorAll('.progress .progress-bar, .progress-bar');
@@ -425,14 +492,14 @@ function TitleRow({ title, updated, icon = hidrologiaIcon }) {
   );
 }
 
-function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false }) {
+function MiniStatTile({ name, value, unit, delta, dir = 'up', icon = null, multilineName=false, onHelpClick }) {
 // Función de ayuda específica (puedes ajustarla para que muestre contenido diferente)
   // const handleHelpClick = (cardName) => {
   //   alert(`Ayuda para la métrica: ${cardName}`);
   // };
 
 return (
-    <div className="rounded-lg border border-[#3a3a3a] p-3 bg-[#262626] w-full min-w-40">
+    <div className="rounded-lg border border-[color:var(--border-subtle)] p-3 bg-surface-primary w-full min-w-40">
       <div className="flex items-center gap-2 mb-1">
         {icon && <img src={icon} alt="" className="w-6 h-6 md:w-7 md:h-7 opacity-90" />}
         <span className={`font-semibold text-gray-300 ${multilineName ? 'whitespace-pre-line' : ''}`}>{name}</span>
@@ -446,7 +513,7 @@ return (
 
         {/* Botón de Ayuda (HelpCircle) */}
        <button
-          onClick={() => onHelpClick(name)} // MODIFICADO: Usa onHelpClick
+          onClick={onHelpClick}
           className="flex items-center justify-center 
             h-6 w-6 
             rounded-md 
@@ -559,9 +626,9 @@ function useHidroRows(chart3Html, tablaHidrologiaCompleta) {
 
 // Badge +/- con color
 function DeltaBadge({ value, suffix = '%', className='' }) {
-  if (!Number.isFinite(value)) return <span className={`text-gray-400 ${className}`}>—</span>;
+  if (!Number.isFinite(value)) return <span className={`text-text-muted ${className}`}>—</span>;
   const pos = value >= 0;
-  const color = pos ? '#22C55E' : '#EF4444';
+  const color = pos ? tokens.colors.status.positive : tokens.colors.status.negative;
   const sign = pos ? '+' : '';
   return <span className={className} style={{color}}>{`${sign}${value.toFixed(2)}${suffix}`}</span>;
 }
@@ -574,7 +641,7 @@ function DeltaInline({
   parens = true,
 }) {
   if (!Number.isFinite(value) || value === 0) return null;
-  const color = value > 0 ? '#22C55E' : '#EF4444';
+  const color = value > 0 ? tokens.colors.status.positive : tokens.colors.status.negative;
   const sign  = value > 0 && showPlus ? '+' : '';
   const text  = `${parens ? '(' : ''}${sign}${value.toFixed(decimals)}${suffix}${parens ? ')' : ''}`;
   return <span className="ml-1" style={{ color }}>{text}</span>;
@@ -584,10 +651,10 @@ function DeltaInline({
 function NivelBar({ pct }) {
   const p = Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
 
-  let bar = '#3B82F6';
-  if (p < 30) bar = '#EF4444';
-  else if (p < 60) bar = '#F59E0B';
-  else if (p < 90) bar = '#22C55E';
+  let bar = tokens.colors.status.info;
+  if (p < 30) bar = tokens.colors.status.negative;
+  else if (p < 60) bar = tokens.colors.status.warning;
+  else if (p < 90) bar = tokens.colors.status.positive;
 
   return (
     <div className="w-full">
@@ -596,7 +663,7 @@ function NivelBar({ pct }) {
           {Number.isFinite(pct) ? `${Math.round(pct)}%` : '—'}
         </span>
       </div>
-      <div className="relative h-3 rounded bg-[#1f1f1f] border border-[#3a3a3a] overflow-hidden">
+      <div className="relative h-3 rounded bg-surface-secondary border border-[color:var(--border-subtle)] overflow-hidden">
         <div
           className="absolute inset-y-0 left-0"
           style={{ width: `${p}%`, background: bar }}
@@ -616,7 +683,7 @@ function groupByRegion(rows) {
   return Array.from(map.entries());
 }
 
-function HidroTabs({ data }) {
+function HidroTabs({ data, regionSummary = {} }) {
   const [tab, setTab] = useState('resumen');
   const [open, setOpen] = useState(() => new Set());
   const groups = useMemo(() => groupByRegion(data), [data]);
@@ -636,8 +703,8 @@ function HidroTabs({ data }) {
   };
 
   return (
-    <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl overflow-hidden">
-      <div className="px-3 pt-3 border-b border-[#3a3a3a]">
+    <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="px-3 pt-3 border-b border-[color:var(--border-subtle)]">
         <div className="flex gap-6">
           {[
             ['resumen','Resumen'],
@@ -657,95 +724,180 @@ function HidroTabs({ data }) {
 
       <div className="p-3">
         <table className="w-full text-sm">
-          <thead className="bg-[#1f1f1f]">
+          <thead className="bg-surface-secondary">
             {tab === 'resumen' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes hídricos</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad generación (MW)</th>
               </tr>
             )}
             {tab === 'embalses' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Volumen (GWh-día)</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad (GWh-día)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Volumen (GWh-día)</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Nivel</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Capacidad (GWh-día)</th>
               </tr>
             )}
             {tab === 'aportes' && (
               <tr>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes (GWh-día)</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Porcentaje de aportes</th>
-                <th className="text-left px-3 py-2 text-gray-300 font-medium">Media histórica (GWh-día)</th>
+                <th className="text-left px-3 py-2 text-gray-300 font-medium">Región / Embalse</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Aportes (GWh-día)</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Porcentaje de aportes</th><th className="text-left px-3 py-2 text-gray-300 font-medium">Media histórica (GWh-día)</th>
               </tr>
             )}
           </thead>
 
           <tbody>
-            {groups.map(([region, rows]) => (
+          {groups.map(([region, rows]) => {
+            const sum = regionSummary[region] || null;
+
+            return (
               <React.Fragment key={region}>
-                <tr className="bg-[#262626] border-b border-[#3a3a3a]">
-                  <td colSpan={4} className="px-3 py-2">
+                {/* Fila de región visible en vista colapsada con las 4 columnas */}
+                <tr className="bg-surface-primary border-b border-[color:var(--border-subtle)] hover:bg-[#2a2a2a]">
+                  {/* Columna: Región + botón expandir */}
+                  <td className="px-3 py-2">
                     <button
                       className="text-gray-200 font-semibold inline-flex items-center gap-2"
                       onClick={() => toggle(region)}
+                      aria-expanded={open.has(region)}
                     >
                       <span className="inline-block w-5 text-center">{open.has(region) ? '−' : '+'}</span>
                       {region}
                     </button>
                   </td>
+                  {/* Columnas de métricas por pestaña (se ven aun colapsado) */}
+                  {tab === 'resumen' && (
+                    <>
+                      {/* Nivel */}
+                      <td className="px-3 py-2 align-top w-[290px]">
+                        {sum && Number.isFinite(sum.nivelPct)
+                          ? <NivelBar pct={sum.nivelPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Aportes hídricos (verde si +, rojo si −, neutro si sin signo) */}
+                      <td className="px-3 py-2">
+                        {sum
+                          ? <AportesPctCell raw={sum.aportesRaw} value={sum.aportesPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Capacidad generación (MW) */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.capacidadMW)
+                          ? sum.capacidadMW.toLocaleString('es-CO', { maximumFractionDigits: 0 })
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+                  {tab === 'embalses' && (
+                    <>
+                      {/* Volumen (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.volumenGwh)
+                          ? (
+                            <>
+                              {sum.volumenGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.cambioGwh) ? sum.cambioGwh : NaN} />
+                            </>
+                          )
+                          : '—'}
+                      </td>
+
+                      {/* Nivel % – consolidado por región */}
+                      <td className="px-3 py-2 align-top w-[290px]">
+                        {sum && Number.isFinite(sum.nivelPct)
+                          ? <NivelBar pct={sum.nivelPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Capacidad útil (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.capacidadGwhDia)
+                          ? sum.capacidadGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+                  {tab === 'aportes' && (
+                    <>
+                      {/* Aportes (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.aportesGwh)
+                          ? (<>
+                              {sum.aportesGwh.toFixed(2)}
+                              <DeltaInline value={Number.isFinite(sum.aportesGwhDelta) ? sum.aportesGwhDelta : NaN} />
+                            </>)
+                          : '—'}
+                      </td>
+
+                      {/* Porcentaje de aportes – usar el MISMO valor de “aportes hídricos” del resumen */}
+                      <td className="px-3 py-2">
+                        {sum
+                          ? <AportesPctCell raw={sum.aportesRaw} value={sum.aportesPct} />
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+
+                      {/* Media histórica (GWh-día) – consolidado por región */}
+                      <td className="px-3 py-2 text-gray-200">
+                        {sum && Number.isFinite(sum.mediaHistoricaGwhDia)
+                          ? sum.mediaHistoricaGwhDia.toFixed(2)
+                          : '—'}
+                      </td>
+                    </>
+                  )}
+
                 </tr>
 
+                {/* Filas por embalse (solo cuando está expandido) */}
                 {open.has(region) && rows.map((r) => (
                   <tr key={`${region}::${r.embalse}`} className="border-b border-[#2e2e2e] hover:bg-[#2a2a2a]">
                     <td className="px-3 py-2 text-gray-200">
                       <div className="pl-6">{r.embalse}</div>
                     </td>
-
                     {tab === 'resumen' && (
                       <>
                         <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2"><DeltaBadge value={r.aportesPct} /></td>
+                        <td className="px-3 py-2">
+                          <AportesPctCell raw={r.aportesHidricosRaw} value={r.aportesHidricosPct} />
+                        </td>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.capacidadMW)
-                            ? r.capacidadMW.toLocaleString('es-CO')
+                            ? r.capacidadMW.toLocaleString('es-CO', { maximumFractionDigits: 0 })
                             : '—'}
                         </td>
                       </>
                     )}
-
                     {tab === 'embalses' && (
                       <>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.volumenGwh) ? r.volumenGwh.toFixed(2) : '—'}
-                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : 0} />
+                          <DeltaInline value={Number.isFinite(r.cambioGwh) ? r.cambioGwh : NaN} />
                         </td>
-                        <td className="px-3 py-2 align-top w-[290px]"><NivelBar pct={r.nivelPct} /></td>
-                        <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.capacidadGwhDia) ? r.capacidadGwhDia.toFixed(2) : '—'}</td>
+                        <td className="px-3 py-2 align-top w-[290px]">
+                          <NivelBar pct={r.nivelPct} />
+                        </td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.capacidadGwhDia) ? r.capacidadGwhDia.toFixed(2) : '—'}
+                        </td>
                       </>
                     )}
-
                     {tab === 'aportes' && (
                       <>
                         <td className="px-3 py-2 text-gray-200">
                           {Number.isFinite(r.aportesGwh) ? r.aportesGwh.toFixed(2) : '—'}
                           <DeltaInline value={Number.isFinite(r.aportesGwhDelta) ? r.aportesGwhDelta : NaN} />
                         </td>
-                        <td className="px-3 py-2 text-gray-200">
-                          {Number.isFinite(r.aportesPctDetalle)
-                            ? `${r.aportesPctDetalle.toFixed(1)}%`
-                            : (Number.isFinite(r.aportesPct) ? `${r.aportesPct.toFixed(1)}%` : '—')}
+                        <td className="px-3 py-2">
+                          <AportesPctCell raw={r.porcentajeTexto} value={r.aportesPctDetalle} />
                         </td>
-                        <td className="px-3 py-2 text-gray-400">{Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}</td>
+                        <td className="px-3 py-2 text-gray-200">
+                          {Number.isFinite(r.mediaHistoricaGwhDia) ? r.mediaHistoricaGwhDia.toFixed(2) : '—'}
+                        </td>
                       </>
                     )}
+
                   </tr>
                 ))}
               </React.Fragment>
-            ))}
+            );
+          })}
           </tbody>
         </table>
       </div>
@@ -754,39 +906,21 @@ function HidroTabs({ data }) {
 }
 
 function useHidroRowsFromApi() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: embData, isLoading: loadingEmb } = useHidrologiaEmbalses();
+  const { data: apoData, isLoading: loadingApo } = useHidrologiaAportes();
+  
+  const loading = loadingEmb || loadingApo;
+  
+  const rows = useMemo(() => {
+    if (!embData || !apoData) return [];
 
-  useEffect(() => {
-    let abort = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        // === 1️⃣ Fetch de embalses ===
-        const resEmb = await fetch(API_EXPANDER_EMBALSES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        const embData = await resEmb.json();
-        console.log('[Expander Embalses] Respuesta completa:', embData);
+    const embalses = Array.isArray(embData?.resumen_detallado_embalse)
+      ? embData.resumen_detallado_embalse
+      : [];
+    console.log('[Expander Embalses] Total embalses:', embalses.length);
 
-        const embalses = Array.isArray(embData?.resumen_detallado_embalse)
-          ? embData.resumen_detallado_embalse
-          : [];
-        console.log('[Expander Embalses] Total embalses:', embalses.length);
-
-        // === 2️⃣ Fetch de aportes ===
-        const resApo = await fetch(API_EXPANDER_APORTES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        const apoData = await resApo.json();
-        console.log('[Expander Aportes] Respuesta completa:', apoData);
-
-        const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
-        console.log('[Expander Aportes] Total aportes:', aportes.length);
+    const aportes = Array.isArray(apoData?.data) ? apoData.data : [];
+    console.log('[Expander Aportes] Total aportes:', aportes.length);
 
         // === 3️⃣ Mapeo y merge ===
         const mapAportes = new Map();
@@ -817,84 +951,55 @@ function useHidroRowsFromApi() {
           };
         });
 
-        console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
-        if (!abort) setRows(merged);
-      } catch (err) {
-        console.error('[Hidrología Expander] Error al cargar datos:', err);
-        if (!abort) setRows([]);
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    };
-    load();
-    return () => { abort = true; };
-  }, []);
+    console.log('[Hidrología Merge Final] Ejemplo de fila:', merged[0]);
+    return merged;
+  }, [embData, apoData]);
 
   return { rows, loading };
 }
 
 function useAportesOptionsFromApi() {
-  const [series, setSeries] = React.useState({ s1: [], s2: [], s3: [] }); // GWh, Media Histórica, % útil
-  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
+  const { data, isLoading } = useGraficaAportes();
+  
+  const { series, range } = useMemo(() => {
+    if (!data || !Array.isArray(data)) return { 
+      series: { s1: [], s2: [], s3: [] }, 
+      range: { minX: undefined, maxX: undefined } 
+    };
 
-  React.useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(API_APORTES, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const s1 = [], s2 = [], s3 = [];
+    for (const row of data) {
+      const x = ymToUtc(row.mes);
+      if (!Number.isFinite(x)) continue;
+      const gwh   = Number(row.aportes_gwh);
+      const media = Number(row.aportes_media_historica);
+      const pct   = Number(row.porcentaje_util);
+      if (Number.isFinite(gwh))   s1.push([x, gwh]);
+      if (Number.isFinite(media)) s2.push([x, media]);
+      if (Number.isFinite(pct))   s3.push([x, pct]);
+    }
+    s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
 
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !Array.isArray(data)) return;
+    const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
+    const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
+    const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
 
-        const s1 = [], s2 = [], s3 = [];
-        for (const row of data) {
-          const x = ymToUtc(row.mes);
-          if (!Number.isFinite(x)) continue;
-          const gwh   = Number(row.aportes_gwh);
-          const media = Number(row.aportes_media_historica);
-          const pct   = Number(row.porcentaje_util);
-          if (Number.isFinite(gwh))   s1.push([x, gwh]);
-          if (Number.isFinite(media)) s2.push([x, media]);
-          if (Number.isFinite(pct))   s3.push([x, pct]);
-        }
-        s1.sort((a,b)=>a[0]-b[0]); s2.sort((a,b)=>a[0]-b[0]); s3.sort((a,b)=>a[0]-b[0]);
+    return { series: { s1, s2, s3 }, range: { minX, maxX } };
+  }, [data]);
 
-        const allX = [...s1, ...s2, ...s3].map(p=>p[0]);
-        const minX = allX.length ? Math.max(Math.min(...allX), EPOCH_FLOOR) : undefined;
-        const maxX = allX.length ? Math.min(Math.max(...allX), HARD_MAX_JUL2025) : undefined;
-
-        setSeries({ s1, s2, s3 });
-        setRange({ minX, maxX });
-      } catch (err) {
-        console.error('[Aportes API] Error:', err);
-        setSeries({ s1: [], s2: [], s3: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return React.useMemo(() => ({
+  return useMemo(() => ({
     chart: { backgroundColor: COLORS.darkBg, height: 650, marginTop: 80, marginBottom: 180, spacingBottom: 40 },
     title: {
       text: 'Aportes y nivel útil de embalses por mes',
       align: 'left',
-      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: tokens.colors.text.primary }
     },
     xAxis: {
       type: 'datetime',
       min: range.minX,
       max: range.maxX,
       gridLineWidth: 1,
-      gridLineColor: '#444',
+      gridLineColor: tokens.colors.border.subtle,
       tickPixelInterval: 130,
       labels: {
         rotation: -45, align: 'right', autoRotation: undefined,
@@ -906,16 +1011,24 @@ function useAportesOptionsFromApi() {
       { title: { text: 'Aportes (GWh-día)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } } },
       { title: { text: 'Nivel (%)', style: { color: COLORS.gray } }, labels: { style: { color: COLORS.gray } }, opposite: true }
     ],
-    legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: '#fff', fontSize: '16px' } },
+    legend: {
+      layout: 'horizontal',
+      align: 'center',
+      verticalAlign: 'bottom',
+      y: 20,
+      itemStyle: { color: tokens.colors.text.primary, fontSize: '16px' }
+    },
     plotOptions: { series: { marker: { radius: 3, enabled: false }, lineWidth: 2, turboThreshold: 0 } },
     series: [
-      { name: 'Aportes (GWh-dia)', type: 'line', color: '#05d80a', data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
+      { name: 'Aportes (GWh-dia)', type: 'line', color: tokens.colors.status.positive, data: series.s1, tooltip: { valueSuffix: ' GWh-dia' } },
       { name: 'Aportes Media Histórica (GWh-dia)', type: 'line', color: COLORS.yellow, dashStyle: 'Dash', data: series.s2, tooltip: { valueSuffix: ' GWh-dia' } },
-      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: COLORS.blue, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
+      { name: 'Nivel de Embalse Util (%)', type: 'area', yAxis: 1, color: tokens.colors.status.info, fillOpacity: 0.3, lineWidth: 1, data: series.s3, tooltip: { valueSuffix: '%' } },
     ],
     tooltip: {
-      backgroundColor: '#262626',
-      style: { color: '#FFF', fontSize: '14px' },
+      backgroundColor: tokens.colors.surface.primary,
+      borderColor: tokens.colors.border.default,
+      style: { color: tokens.colors.text.primary, fontSize: '13px' },
+      padding: 10,
       xDateFormat: '%Y-%m',
       shared: true,
       useHTML: true,
@@ -936,31 +1049,18 @@ function useAportesOptionsFromApi() {
 }
 
 function useDesabastecimientoOptionsFromApi() {
-  const [series, setSeries] = React.useState({
-    pBolsa: [],        // Precio de Bolsa en Períodos Punta
-    pEscasez: [],      // Precio Marginal de Escasez
-    nivelPct: [],      // Volumen útil del embalse (%)
-    sendaPct: []       // Senda de referencia (%)
-  });
-  const [range, setRange] = React.useState({ minX: undefined, maxX: undefined });
-
-  React.useEffect(() => {
-    let abort = false;
-    const ac = new AbortController();
-
-    (async () => {
-      try {
-        const res = await fetch(API_ESTATUTO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-          signal: ac.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const data = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !Array.isArray(data)) return;
+  const { data, isLoading, error } = useGraficaEstatuto();
+  
+  const { series, range } = useMemo(() => {
+    if (!data || !Array.isArray(data)) {
+      if (error && import.meta.env.DEV) {
+        console.error('[Estatuto API] Error:', error);
+      }
+      return {
+        series: { pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] },
+        range: { minX: undefined, maxX: undefined }
+      };
+    }
 
         const pBolsa = [];
         const pEscasez = [];
@@ -988,24 +1088,30 @@ function useDesabastecimientoOptionsFromApi() {
           if (Number.isFinite(senda))   sendaPct.push([x, senda]);
         }
 
-        [pBolsa, pEscasez, nivelPct, sendaPct].forEach(a => a.sort((a1, a2) => a1[0] - a2[0]));
-        const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
-        const minX = allX.length ? Math.min(...allX) : undefined;
-        const maxX = allX.length ? Math.max(...allX) : undefined;
+    [pBolsa, pEscasez, nivelPct, sendaPct].forEach(a => a.sort((a1, a2) => a1[0] - a2[0]));
+    const allX = [...pBolsa, ...pEscasez, ...nivelPct, ...sendaPct].map(p => p[0]);
+    const minX = allX.length ? Math.min(...allX) : undefined;
+    const maxX = allX.length ? Math.max(...allX) : undefined;
 
-        setSeries({ pBolsa, pEscasez, nivelPct, sendaPct });
-        setRange({ minX, maxX });
-      } catch (e) {
-        console.error('[Estatuto API] Error:', e);
-        setSeries({ pBolsa: [], pEscasez: [], nivelPct: [], sendaPct: [] });
-        setRange({ minX: undefined, maxX: undefined });
-      }
-    })();
+    return { series: { pBolsa, pEscasez, nivelPct, sendaPct }, range: { minX, maxX } };
+  }, [data]);
 
-    return () => { abort = true; ac.abort(); };
-  }, []);
-
-  return React.useMemo(() => ({
+  return useMemo(() => {
+    if (!range.minX || !range.maxX) {
+      return {
+        chart: {
+          backgroundColor: COLORS.darkBg,
+          height: 600,
+        },
+        title: {
+          text: isLoading ? 'Cargando gráfica de estatuto...' : 'Estatuto de desabastecimiento',
+          style: { color: COLORS.gray }
+        },
+        series: []
+      };
+    }
+    
+    return {
     chart: {
       zooming: { type: 'x' },
       backgroundColor: COLORS.darkBg,
@@ -1017,14 +1123,14 @@ function useDesabastecimientoOptionsFromApi() {
     title: {
       text: 'Estatuto de desabastecimiento',
       align: 'left',
-      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: '#fff' }
+      style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px', color: tokens.colors.text.primary }
     },
     xAxis: {
       type: 'datetime',
       min: range.minX,
       max: range.maxX,
       gridLineWidth: 1,
-      gridLineColor: '#444',
+      gridLineColor: tokens.colors.border.subtle,
       labels: {
         rotation: -45,
         align: 'right',
@@ -1048,17 +1154,17 @@ function useDesabastecimientoOptionsFromApi() {
     legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom', y: 20, itemStyle: { color: COLORS.gray, fontSize: '16px' } },
     plotOptions: { series: { marker: { enabled: false }, turboThreshold: 0 } },
     series: [
-      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: '#05d80a', data: series.pBolsa },
+      { name: 'Precio de bolsa en períodos punta (COP/kWh)', type: 'spline', yAxis: 0, color: tokens.colors.status.positive, data: series.pBolsa },
       { name: 'Precio marginal de escasez (COP/kWh)',        type: 'spline', yAxis: 0, color: COLORS.yellow, dashStyle: 'ShortDash', data: series.pEscasez },
-      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: COLORS.blue, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
+      { name: 'Nivel de embalse útil (%)',                   type: 'areaspline', yAxis: 1, color: tokens.colors.status.info, fillOpacity: 0.2, data: series.nivelPct, tooltip: { valueSuffix: '%' } },
       ...(series.sendaPct.length
         ? [{ name: 'Senda de referencia (%)', type: 'spline', yAxis: 1, color: COLORS.down, dashStyle: 'Dot', data: series.sendaPct, tooltip: { valueSuffix: '%' } }]
         : []),
     ],
     tooltip: {
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       valueDecimals: 2,
-      style: { color: '#FFF', fontSize: '14px' },
+      style: { color: tokens.colors.text.primary, fontSize: '14px' },
       shared: true,
       useHTML: true,
       formatter: function () {
@@ -1072,7 +1178,8 @@ function useDesabastecimientoOptionsFromApi() {
         return `<div style="padding:0px;">${header}${rows}</div>`;
       },
     },
-  }), [series, range]);
+  };
+  }, [series, range, isLoading]);
 }
 
 
@@ -1087,7 +1194,7 @@ export default function Hidrologia() {
   const aportesOptions = useAportesOptionsFromApi();
   const desabOptions = useDesabastecimientoOptionsFromApi();
   const [tab, setTab] = useState('aportes');
-  const { rows: hidroRows, loading: loadingHidroRows } = useHidroRowsFromConsolidado();
+  const { rows: hidroRows, loading: loadingHidroRows, regionSummary } = useHidroRowsFromConsolidado();
 
   // === Índices desde API (sin cambios) ===
   const [indices, setIndices] = useState(defaultIndices);
@@ -1110,12 +1217,12 @@ export default function Hidrologia() {
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
     
-    // 1. Usar el hook de cache centralizado para tooltips
+    // 1. Usar el hook de tooltips para obtener los datos
     const { 
-      tooltips, 
-      loading: loadingTooltips, 
+      data: tooltips = {},
+      isLoading: loadingTooltips, 
       error: errorTooltips 
-    } = useTooltipsCache();
+    } = useTooltips();
   
     // Función para cerrar la modal
     const closeModal = () => {
@@ -1125,12 +1232,9 @@ export default function Hidrologia() {
     };
   
     // Función para manejar el clic en el botón de ayuda
-    const handleHelpClick = () => {
-      // 2. Obtener el título de la gráfica (puede ser del estado 'options' o un valor por defecto)
-      const title = options?.title?.text || 'Capacidad Prueba';
-      
-      // 3. Buscar el contenido en el caché global de tooltips
-      const content = tooltips[CHART_TOOLTIP_ID];
+    const handleHelpClick = (cardKey, title) => {
+      const tooltipId = TOOLTIP_IDENTIFIERS_MAP[cardKey];
+      const content = tooltips[tooltipId];
   
       if (content) {
         setModalTitle(title);
@@ -1138,112 +1242,99 @@ export default function Hidrologia() {
         setIsModalOpen(true);
       } else {
         setModalTitle('Información no disponible');
-        setModalContent('No se encontró una descripción detallada para esta gráfica.');
+        setModalContent('No se encontró una descripción detallada para este indicador.');
         setIsModalOpen(true);
       }
     };
   
 
   // Fetch indicadores hidráulicos
+  const { data: hidroData, isLoading: loadingHidro } = useHidrologiaHidraulicos();
+  
   useEffect(() => {
-    let abort = false;
-    async function load() {
-      setLoadingIdx(true);
-      try {
-        const res = await fetch(API_HIDRO, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-store',
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    if (!hidroData) return;
+    
+    setLoadingIdx(true);
+    try {
+      const j = hidroData;
 
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const j = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-        if (abort || !j) return;
+      const asNum = (v) => {
+        const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
+        return Number.isFinite(n) ? n : NaN;
+      };
 
-        const asNum = (v) => {
-          const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
-          return Number.isFinite(n) ? n : NaN;
-        };
+      const fecha = j.fecha;
+      const [yy, mm, dd] = String(fecha || '').split('-');
+      const updatedEmbalse = (yy && mm && dd) ? `${dd.padStart(2,'0')}/${mm.padStart(2,'0')}/${yy}` : '—';
 
-        const fecha = j.fecha;
-        const [yy, mm, dd] = String(fecha || '').split('-');
-        const updatedEmbalse = (yy && mm && dd) ? `${dd.padStart(2,'0')}/${mm.padStart(2,'0')}/${yy}` : '—';
+      const volUtil = asNum(j.volumen_util_gwh);
+      const pctUtil = asNum(j.porcentaje_util);
+      const difVol = asNum(j.dif_volumen_diario);
+      const difPct = asNum(j.dif_porcentaje_diario);
 
-        const volUtil = asNum(j.volumen_util_gwh);
-        const pctUtil = asNum(j.porcentaje_util);
-        const difVol = asNum(j.dif_volumen_diario);
-        const difPct = asNum(j.dif_porcentaje_diario);
+      const mes = asNum(j.mes);
+      const anio = asNum(j.año ?? j.anio ?? j.year);
+      const aportesProm = asNum(j.aportes_mensual_promedio);
+      const aportesPctRaw = asNum(j.aportes_porcentaje_mensual);
+      const mediaHist = asNum(j.aportes_media_historica);
+      const difAportes = asNum(j.dif_aportes_mensual);
+      const difAportesPctRaw = asNum(j.dif_aportes_porcentaje_mensual);
+      const normalizePct = (x) => (!Number.isFinite(x) ? NaN : (x <= 1 ? x * 100 : x));
 
-        const mes = asNum(j.mes);
-        const anio = asNum(j.año ?? j.anio ?? j.year);
-        const aportesProm = asNum(j.aportes_mensual_promedio);
-        const aportesPctRaw = asNum(j.aportes_porcentaje_mensual);
-        const mediaHist = asNum(j.aportes_media_historica);
-        const difAportes = asNum(j.dif_aportes_mensual);
-        const difAportesPctRaw = asNum(j.dif_aportes_porcentaje_mensual);
-        const normalizePct = (x) => (!Number.isFinite(x) ? NaN : (x <= 1 ? x * 100 : x));
+      const aportesPct = normalizePct(aportesPctRaw);
+      const difAportesPct = normalizePct(difAportesPctRaw);
 
-        const aportesPct = normalizePct(aportesPctRaw);
-        const difAportesPct = normalizePct(difAportesPctRaw);
+      const i0 = {
+        title: 'Nivel de embalse actual',
+        updated: updatedEmbalse,
+        value: fmtGwh(volUtil),
+        deltaText: fmtSigned(difVol, ' GWh'),
+        deltaDir: dirFrom(difVol),
+        pct: fmtPct(pctUtil),
+        pctDeltaText: fmtSigned(difPct, '%'),
+        pctDeltaDir: dirFrom(difPct),
+        pctValueNum: Number.isFinite(pctUtil) ? pctUtil : 0,
+      };
 
-        const i0 = {
-          title: 'Nivel de embalse actual',
-          updated: updatedEmbalse,
-          value: fmtGwh(volUtil),
-          deltaText: fmtSigned(difVol, ' GWh'),
-          deltaDir: dirFrom(difVol),
-          pct: fmtPct(pctUtil),
-          pctDeltaText: fmtSigned(difPct, '%'),
-          pctDeltaDir: dirFrom(difPct),
-          pctValueNum: Number.isFinite(pctUtil) ? pctUtil : 0,
-        };
+      const i1 = {
+        title: 'Aportes mensuales promedio',
+        updated: (Number.isFinite(mes) && Number.isFinite(anio)) ? `${monthEs(mes)} ${anio}` : '—',
+        value: fmtGwh(aportesProm),
+        deltaText: fmtSigned(difAportes, ' GWh'),
+        deltaDir: dirFrom(difAportes),
+        pct: fmtPct(aportesPct),
+        pctDeltaText: fmtSigned(difAportesPct, '%'),
+        pctDeltaDir: dirFrom(difAportesPct),
+        sub: `Media histórica: ${fmtGwh(mediaHist)}`,
+      };
 
-        const i1 = {
-          title: 'Aportes mensuales promedio',
-          updated: (Number.isFinite(mes) && Number.isFinite(anio)) ? `${monthEs(mes)} ${anio}` : '—',
-          value: fmtGwh(aportesProm),
-          deltaText: fmtSigned(difAportes, ' GWh'),
-          deltaDir: dirFrom(difAportes),
-          pct: fmtPct(aportesPct),
-          pctDeltaText: fmtSigned(difAportesPct, '%'),
-          pctDeltaDir: dirFrom(difAportesPct),
-          sub: `Media histórica: ${fmtGwh(mediaHist)}`,
-        };
-
-        setIndices((prev) => {
-          const copy = [...prev];
-          copy[0] = i0;
-          copy[1] = i1;
-          return copy;
-        });
-      } catch (e) {
-        console.error('[Hidrologia] Error cargando indicadores:', e);
-        setIndices((prev) => {
-          const copy = [...prev];
-          copy[0] = { ...prev[0], updated: 'Error al cargar', value: '—', pct: '—', pctValueNum: 0, deltaText: '—', pctDeltaText: '—' };
-          copy[1] = { ...prev[1], updated: 'Error al cargar', value: '—', pct: '—', sub: 'Media histórica: —', deltaText: '—', pctDeltaText: '—' };
-          return copy;
-        });
-      } finally {
-        if (!abort) setLoadingIdx(false);
-      }
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[0] = i0;
+        copy[1] = i1;
+        return copy;
+      });
+    } catch (e) {
+      console.error('[Hidrologia] Error cargando indicadores:', e);
+      setIndices((prev) => {
+        const copy = [...prev];
+        copy[0] = { ...prev[0], updated: 'Error al cargar', value: '—', pct: '—', pctValueNum: 0, deltaText: '—', pctDeltaText: '—' };
+        copy[1] = { ...prev[1], updated: 'Error al cargar', value: '—', pct: '—', sub: 'Media histórica: —', deltaText: '—', pctDeltaText: '—' };
+        return copy;
+      });
+    } finally {
+      setLoadingIdx(false);
     }
-    load();
-    return () => { abort = true; };
-  }, [API_HIDRO]);
+  }, [hidroData]);
 
 // Generación promedio diaria (Hídrica, Térmica, FNCER) + Demanda real
-useEffect(() => {
-  let abort = false;
-  (async () => {
+  const { data: generacionData } = useHidrologiaGeneracion();
+  
+  useEffect(() => {
+    if (!generacionData) return;
+    
     try {
-      const res = await fetch(API_GENERACION, { method: 'POST', mode: 'cors', cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-      const ct = (res.headers.get('content-type') || '').toLowerCase();
-      const j = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-      if (abort || !j) return;
+      const j = generacionData;
 
       const monthEs = (m) => ([
         'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -1279,9 +1370,9 @@ useEffect(() => {
       const gF = tmap['FNCER'] || {};
 
       const groups = [
-        { name: 'Hídrica', value: fmtNum(gH.mes_actual), unit: 'GWh-día', delta: mkDelta(gH.diff_abs, gH.diff_pct), dir: dirFrom(gH.diff_abs) },
-        { name: 'Térmica', value: fmtNum(gT.mes_actual), unit: 'GWh-día', delta: mkDelta(gT.diff_abs, gT.diff_pct), dir: dirFrom(gT.diff_abs) },
-        { name: 'FNCER',   value: fmtNum(gF.mes_actual), unit: 'GWh-día', delta: mkDelta(gF.diff_abs, gF.diff_pct), dir: dirFrom(gF.diff_abs) },
+        { name: 'Hídrica', value: fmtNum(gH.mes_actual), unit: 'GWh-día', delta: mkDelta(gH.diff_abs, gH.diff_pct), dir: dirFrom(gH.diff_abs), identifier: 'hidro_card_generacion_hidrica' },
+        { name: 'Térmica', value: fmtNum(gT.mes_actual), unit: 'GWh-día', delta: mkDelta(gT.diff_abs, gT.diff_pct), dir: dirFrom(gT.diff_abs), identifier: 'hidro_card_generacion_termica' },
+        { name: 'FNCER',   value: fmtNum(gF.mes_actual), unit: 'GWh-día', delta: mkDelta(gF.diff_abs, gF.diff_pct), dir: dirFrom(gF.diff_abs), identifier: 'hidro_card_generacion_fncer' },
       ];
 
       const dr = j.demanda_real || {};
@@ -1315,22 +1406,18 @@ useEffect(() => {
         return copy;
       });
     }
-  })();
-  return () => { abort = true; };
-}, [API_GENERACION]);
+  }, [generacionData]);
 
-// Precios de energía (mínimo/promedio/máximo) + precio marginal de escasez
-useEffect(() => {
-  let abort = false;
-  (async () => {
+  // Precios de energía (mínimo/promedio/máximo) + precio marginal de escasez
+  const { data: preciosData } = useHidrologiaPrecios();
+  
+  useEffect(() => {
+    if (!preciosData) return;
+    
     try {
-      const res = await fetch(API_PRECIOS, { method: 'POST', mode: 'cors', cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-      const ct = (res.headers.get('content-type') || '').toLowerCase();
-      const arr = ct.includes('application/json') ? await res.json() : JSON.parse(await res.text());
-      const j = Array.isArray(arr) && arr.length ? arr[0] : null;
-      if (abort || !j) return;
+      const arr = Array.isArray(preciosData) ? preciosData : [preciosData];
+      const j = arr.length ? arr[0] : null;
+      if (!j) return;
 
       const fmtNum = (v) =>
         Number.isFinite(v) ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : '—';
@@ -1359,6 +1446,7 @@ useEffect(() => {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_minimo, j.diff_pct_minimo),
           dir: dirFrom(j.diff_abs_minimo),
+          identifier: 'hidro_card_minimo_diario'
         },
         {
           name: 'Promedio\nDiario',
@@ -1366,6 +1454,7 @@ useEffect(() => {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_promedio, j.diff_pct_promedio),
           dir: dirFrom(j.diff_abs_promedio),
+          identifier: 'hidro_card_promedio_diario'
         },
         {
           name: 'Máximo\nDiario',
@@ -1373,6 +1462,7 @@ useEffect(() => {
           unit: 'COP/kWh',
           delta: mkDelta(j.diff_abs_maximo, j.diff_pct_maximo),
           dir: dirFrom(j.diff_abs_maximo),
+          identifier: 'hidro_card_maximo_diario'
         },
       ];
 
@@ -1394,9 +1484,7 @@ useEffect(() => {
         return copy;
       });
     }
-  })();
-  return () => { abort = true; };
-}, [API_PRECIOS]);
+  }, [preciosData]);
 
   // Ref del contenido a imprimir (API v3)
   const printRef = useRef(null);
@@ -1410,7 +1498,7 @@ useEffect(() => {
       break-inside: avoid; page-break-inside: avoid;
     }
     iframe { width: 100% !important; border: 1px solid #e5e7eb; }
-    .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
+    .shadow, .shadow-md, .shadow-soft { box-shadow: none !important; }
     body { font-family: Nunito Sans, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
   `;
 
@@ -1421,6 +1509,86 @@ useEffect(() => {
     copyStyles: true,
     removeAfterPrint: true,
   });
+
+  // ---- Descargar PDF (html2canvas + jsPDF) ----
+const [downloading, setDownloading] = useState(false);
+
+const handleDownloadPdf = async () => {
+  if (!printRef.current || downloading) return;
+  setDownloading(true);
+  try {
+    // Asegura calidad en pantallas HiDPI
+    const scale = Math.max(2, window.devicePixelRatio || 1);
+
+    // Captura el nodo completo
+    const canvas = await html2canvas(printRef.current, {
+      backgroundColor: tokens.colors.surface.primary,   // respeta el fondo dark
+      scale,
+      useCORS: true,
+      logging: false,
+      // html2canvas ya soporta SVG; foreignObject mejora algunos casos
+      foreignObjectRendering: true,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+
+    // Configura PDF A4 (mm)
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth  = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Ajuste de escala manteniendo proporción
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    // Si ocupa más de una página, la partimos “desplazando” el alto
+    let position = 0;
+    let remaining = imgHeight;
+
+    // Tip: usamos la misma imagen, pero movemos el “recorte” con addImage options
+    // jsPDF no recorta, así que hacemos paginado por “slice” dibujando el mismo bitmap
+    // en offsets verticales.
+    // Para calidad y performance, convertimos a px->mm con la misma proporción.
+    const pxPageHeight = Math.floor((pageHeight * canvas.width) / pageWidth); // alto equivalente en px por página
+    let sY = 0;
+
+    while (remaining > 0) {
+      // Crea un canvas “slice” por página
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width  = canvas.width;
+      pageCanvas.height = Math.min(pxPageHeight, canvas.height - sY);
+
+      const ctx = pageCanvas.getContext('2d');
+      ctx.drawImage(
+        canvas,
+        0, sY,                    // src x,y
+        canvas.width, pageCanvas.height, // src w,h
+        0, 0,                     // dst x,y
+        canvas.width, pageCanvas.height  // dst w,h
+      );
+
+      const pageImgData = pageCanvas.toDataURL('image/png');
+      const pageImgHeight = (pageCanvas.height * imgWidth) / canvas.width;
+
+      if (position > 0) pdf.addPage();
+      pdf.addImage(pageImgData, 'PNG', 0, 0, imgWidth, pageImgHeight, undefined, 'FAST');
+
+      remaining -= pageImgHeight;
+      sY += pageCanvas.height;
+      position += pageImgHeight;
+    }
+
+    pdf.save('hidrologia.pdf');
+  } catch (e) {
+    console.error('[PDF] Error generando PDF:', e);
+    alert('No se pudo generar el PDF. Revisa la consola para más detalles.');
+  } finally {
+    setDownloading(false);
+  }
+};
+
 
   return (
     <>
@@ -1446,7 +1614,7 @@ useEffect(() => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1 */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
           <TitleRow title="Nivel de embalse actual" updated={indices[0].updated} />
 
           {/* Fila: valor GWh con chip a la derecha */}
@@ -1458,7 +1626,7 @@ useEffect(() => {
             <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_embalse_dia', 'Nivel de embalse actual')}
                   />
             </div>
           </div>
@@ -1476,14 +1644,14 @@ useEffect(() => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1 "
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_embalse_porcentaje', 'Nivel de embalse actual')}
                   />
           </div>
           </div>
 
           {/* Barra de nivel */}
           <div className="mt-3 flex items-center gap-3">
-            <div className="flex-1 h-3 rounded-full overflow-hidden bg-[#1f1f1f] border border-[#3a3a3a]">
+            <div className="flex-1 h-3 rounded-full overflow-hidden bg-surface-secondary border border-[color:var(--border-subtle)]">
               <div
                 className="h-3"
                 style={{
@@ -1496,7 +1664,7 @@ useEffect(() => {
         </div>
 
         {/* Card 2 */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
           <TitleRow
             title="Aportes mensuales promedio"
             updated={indices[1].updated}
@@ -1512,7 +1680,7 @@ useEffect(() => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_aporte_mensuales_dia', 'Aportes mensuales promedio')}
                   />
                 </div>
           </div>
@@ -1529,7 +1697,7 @@ useEffect(() => {
              <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_aporte_mensuales_porcentaje', 'Aportes mensuales promedio')}
                   />
 
             </div>
@@ -1540,7 +1708,7 @@ useEffect(() => {
         </div>
 
           {/* Card 3 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold text-gray-300">Generación promedio diaria</span>
               <span className="text-xs text-gray-400">{indices[2].updated}</span>
@@ -1562,13 +1730,14 @@ useEffect(() => {
                     delta={g.delta}
                     dir={g.dir}
                     icon={customIcon}
+                    onHelpClick={() => handleHelpClick(g.identifier, g.name)}
                   />
                 );
               })}
               
             </div>
 
-            <div className="mt-4 rounded-lg border border-[#3a3a3a] p-3">
+            <div className="mt-4 rounded-lg border border-[color:var(--border-subtle)] p-3">
                <div className="flex items-center gap-2">
               <div className="text-white">{indices[2].bottom}</div>
             
@@ -1577,14 +1746,14 @@ useEffect(() => {
                  <HelpCircle
                     className="text-white cursor-pointer hover:text-gray-300 bg-neutral-700 self-center rounded h-6 w-6 p-1"
                     title="Ayuda"
-                    // onClick={() => handleHelpClick(card.key)}
+                    onClick={() => handleHelpClick('hidro_card_generacion_demanda_real', 'Demanda real promedio')}
                   />
               </div>
             </div>
           </div>
 
           {/* Card 4 */}
-          <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-4 avoid-break">
+          <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-4 avoid-break">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold text-gray-300">{indices[3].title}</span>
               <span className="text-xs text-gray-400">{indices[3].updated}</span>
@@ -1607,6 +1776,7 @@ useEffect(() => {
                     dir={g.dir}
                     icon={customIcon}
                     multilineName
+                    onHelpClick={() => handleHelpClick(g.identifier, g.name.replace('\n', ' '))}
                   />
                 );
               })}
@@ -1626,41 +1796,40 @@ useEffect(() => {
         </div>
 
         {/* Mapa */}
-        <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
+        <div className="bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl avoid-break flex flex-col-reverse lg:flex-row overflow-hidden">
             <SideInfoHidrologia />
             <DamMap/>
         </div>
 
         {/* Tabla + Gráfica Aportes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <HidroTabs data={hidroRows} />
-          <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
-              {/* Ayuda */}
-              <button
-                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
-                style={{ width: 30, height: 30 }}
-                title="Ayuda"
-                onClick={handleHelpClick}
-                type="button"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
-                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
-                  <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
-                </svg>
-              </button>
-
+          <HidroTabs data={hidroRows} regionSummary={regionSummary} />
+          <div className="w-full bg-surface-primary p-4 pb-10 rounded-lg border border-[color:var(--border-default)] shadow relative">
+            {/* Ayuda */}
+            <button
+              className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+              style={{ width: 30, height: 30 }}
+              title="Ayuda"
+              onClick={() => handleHelpClick('hidro_grafica_aporte_nivel_util_embalse_mes', 'Aportes y nivel útil de embalses por mes')}
+              type="button"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
+                <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                <text x="12" y="18" textAnchor="middle" fontSize="16" fill="#fff" fontWeight="bold" fontFamily="Nunito Sans, sans-serif">?</text>
+              </svg>
+            </button>
             <HighchartsReact highcharts={Highcharts} options={aportesOptions} />
           </div>
         </div>
 
         {/* Estatuto de desabastecimiento */}
-        <div className="w-full bg-[#262626] p-4 pb-10 rounded-lg border border-[#666666] shadow relative">
+        <div className="w-full bg-surface-primary p-4 pb-10 rounded-lg border border-[color:var(--border-default)] shadow relative">
         {/* Ayuda */}
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={handleHelpClick}
+          onClick={() => handleHelpClick('hidro_grafica_estatuto_desabastecimiento', 'Estatuto de desabastecimiento')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { API } from '../config/api';
+import { useIndicadoresRegionalesHidrologia } from '../services/indicadoresService';
+import tokens from '../styles/theme.js';
+
 
 export const SideInfoHidrologia = () => {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const { data, isLoading: loading, error } = useIndicadoresRegionalesHidrologia();
 
   const colorMap = {
     ANTIOQUIA: '#9168EA',
@@ -14,29 +14,10 @@ export const SideInfoHidrologia = () => {
     VALLE: '#32BF6F'
   };
 
-  useEffect(() => {
-    const fetchDataLabelDam = async () => {
-      try {
-        const response = await fetch(`${API}/v1/indicadores/hidrologia/indicadores_regionales`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (!response.ok) {
-          throw new Error("Error fetching data")
-        }
-        const data = await response.json()
-        setData(data.resumen_hidrologico)
-      } catch (error) {
-        setErrorMessage(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchDataLabelDam();
-  }, [data])
+  const datos = data?.resumen_hidrologico || [];
 
   if (loading) return <div>Cargando datos...</div>;
+  if (error) return <div>Error cargando datos: {error.message}</div>;
 
   return (
     <div className="pl-4 pt-4 pr-2 w-full lg:max-w-[400px] flex flex-col gap-y-4 bg-[#323232] rounded-tr-lg rounded-tl-lg overflow-y-scroll max-h-[500px] lg:max-h-[800px]">
@@ -45,7 +26,7 @@ export const SideInfoHidrologia = () => {
       </span>
 
       <ul className="w-full h-full">
-        {data.map((item, idx) => (
+        {datos.map((item, idx) => (
           <div
             key={idx}
             className="pb-2 border-b-2 border-[#575756] w-full"
@@ -73,7 +54,7 @@ export const SideInfoHidrologia = () => {
             <div className="flex-1 h-3 rounded-2xl overflow-hidden bg-[#575756] mx-3 w-5/6">
               <div
                 className="h-3"
-                style={{ width: `${item["Nivel (%)"]}%`, background: "#22C55E" }}
+                style={{ width: `${item["Nivel (%)"]}%`, background: tokens.colors.status.positive }}
               />
             </div>
           </div>

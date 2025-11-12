@@ -1,48 +1,12 @@
+import tokens from '../styles/theme.js';
+
 // src/components/HitosBarras.jsx
 import React, { useEffect, useRef, useState } from 'react';
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
+import { useHitosPorCumplir, useProyectosIncumplimientos } from '../services/graficasService';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-
-// ——— Carga de módulos ———
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// ——— Tema oscuro global con Nunito Sans ———
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
-  },
-  title:    { style: { color: '#fff', fontSize: '16px', fontWeight: '600' } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
-  xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
-  },
-  yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px' } },
-    title:  { style: { color: '#ccc' } },
-    gridLineColor: '#333'
-  },
-  legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px' }
-  }
-});
+import ChartLoadingState from './charts/ChartLoadingState';
+import ChartErrorState from './charts/ChartErrorState';
 
 // Helpers
 const monthAbbrEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -53,41 +17,21 @@ const fmtMesYY = (yyyy_mm) => {
   return `${monthAbbrEs[mi]}-${y.slice(2)}`;
 };
 
-// Endpoints (POST sin datos de entrada)
-async function fetchHitosPorCumplir() {
-  const resp = await fetch(`${API}/v1/graficas/6g_proyecto/hitos_por_cumplir`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: '{}' // POST sin payload
-  });
-  if (!resp.ok) throw new Error('Error al consultar hitos_por_cumplir');
-  return resp.json();
-}
-
-async function fetchProyectosIncumplimientos() {
-  const resp = await fetch(`${API}/v1/graficas/6g_proyecto/proyectos_incumplimientos`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: '{}' // POST sin payload
-  });
-  if (!resp.ok) throw new Error('Error al consultar proyectos_incumplimientos');
-  return resp.json();
-}
-
 export function HitosBarras() {
   const chartRefs = useRef([]);
   const [opt1, setOpt1] = useState(null);
   const [opt2, setOpt2] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+
+  const { data: hitos, isLoading: loadingHitos, error: errorHitos } = useHitosPorCumplir();
+  const { data: incumpl, isLoading: loadingIncumpl, error: errorIncumpl } = useProyectosIncumplimientos();
+
+  const loading = loadingHitos || loadingIncumpl;
+  const error = errorHitos || errorIncumpl;
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [hitos, incumpl] = await Promise.all([
-          fetchHitosPorCumplir(),
-          fetchProyectosIncumplimientos()
-        ]);
+    if (!hitos || !incumpl) return;
+    
+    try {
 
         // ===== Gráfica 1: Número de hitos por cumplir =====
         // Orden cronológico por "fpo_mes_año"
@@ -119,7 +63,7 @@ export function HitosBarras() {
               dataLabels: {
                 enabled: true,
                 formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
-                style: { fontWeight: 'bold', color: '#fff' },
+                style: { fontWeight: 'bold', color: tokens.colors.text.primary },
                 y: -10
               },
               pointPadding: 0.1,
@@ -130,7 +74,7 @@ export function HitosBarras() {
             {
               name: 'Hitos por cumplir',
               data: data1,
-              color: '#3B82F6'
+              color: tokens.colors.status.info
             }
           ]
         };
@@ -164,7 +108,7 @@ export function HitosBarras() {
               dataLabels: {
                 enabled: true,
                 formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
-                style: { fontWeight: 'bold', color: '#fff' },
+                style: { fontWeight: 'bold', color: tokens.colors.text.primary },
                 y: -10
               },
               pointPadding: 0.1,
@@ -180,24 +124,37 @@ export function HitosBarras() {
           ]
         };
 
-        setOpt1(options1);
-        setOpt2(options2);
-        setLoading(false);
-      } catch (e) {
-        setError(e.message || String(e));
-        setLoading(false);
-      }
-    })();
-  }, []);
+      setOpt1(options1);
+      setOpt2(options2);
+    } catch (e) {
+      console.error('Error:', e);
+    }
+  }, [hitos, incumpl]);
+
+  if (loading) {
+    return (
+      <section className="mt-8 space-y-4">
+        <ChartLoadingState message="Cargando datos..." />
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="mt-8 space-y-4">
+        <ChartErrorState error={error} />
+      </section>
+    );
+  }
 
   return (
     <section className="mt-8 space-y-4">
-      <h2 className="text-2xl text-[#D1D1D0] font-semibold">
+      <h2 className="text-2xl text-text-secondary font-semibold">
         Seguimiento de hitos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Chart 1 */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+        <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
           {/* Botón de ayuda */}
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
@@ -224,7 +181,7 @@ export function HitosBarras() {
         </div>
 
         {/* Chart 2 */}
-        <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+        <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
           {/* Botón de ayuda */}
           <button
             className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"

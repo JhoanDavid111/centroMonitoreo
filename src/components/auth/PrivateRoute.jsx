@@ -35,7 +35,7 @@ export default function PrivateRoute({
   // Muestra un spinner o mensaje de "Cargando..." mientras se verifica el estado de autenticación y el rol.
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1d1d1d]">
+      <div className="flex items-center justify-center min-h-screen bg-[color:var(--surface-overlay)]">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFC800] mb-4"></div>
           <p className="text-white">Verificando acceso...</p>

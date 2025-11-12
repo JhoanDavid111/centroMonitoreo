@@ -1,135 +1,77 @@
 // src/components/ProjectGrid.jsx
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import Boost from 'highcharts/modules/boost';
-import ExportData from 'highcharts/modules/export-data';
-import Exporting from 'highcharts/modules/exporting';
-import FullScreen from 'highcharts/modules/full-screen';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
 import { ChevronLeft, ChevronRight, Download, Filter, ChevronsUpDown } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import DataTable, { createTheme } from 'react-data-table-component';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import DataTable from 'react-data-table-component';
 import { generatePath, useNavigate } from 'react-router-dom';
 import curvaSAmarillo from '../assets/curvaSAmarillo.svg';
 import ojoAmarillo from '../assets/ojoAmarillo.svg';
-import { API } from '../config/api';
+import { useListadoProyectosCurvaS, useCurvaS } from '../services/graficasService';
 import GraficaANLA from './GraficaANLA';
+import Card from './ui/Card';
+import { darkTableStyles, registerDarkDataTableTheme } from './DataGrid/styles/darkTheme';
+import tokens from '../styles/theme.js';
 
-// ——— Tema oscuro para DataTable ———
-createTheme('customDark', {
-  background: { default: '#262626' },
-  headCells: {
-    style: {
-      fontSize: '16px',
-      fontWeight: '600',
-      color: '#ffffff',
-    }
-  },
-  cells: {
-    style: {
-      fontSize: '14px',
-      fontWeight: '400',
-      color: '#cccccc',
-    }
-  },
-  rows: {
-    style: { backgroundColor: '#262626' },
-    highlightOnHoverStyle: {
-      backgroundColor: '#3a3a3a',
-      transition: '0.2s ease-in-out'
-    }
-  },
-  divider: { default: '#1d1d1d' },
-});
+registerDarkDataTableTheme();
 
 // ——— Estilos extra (paginación) ———
 const customStyles = {
   tableWrapper: { style: { overflow: 'visible' } },
-  table:        { style: { overflow: 'visible' } },
+  table: { style: { overflow: 'visible' } },
   headCells: {
     style: {
       overflow: 'visible',
-      fontSize: '16px',
-      fontWeight: '600',
-      color: '#ffffff',
+      fontSize: tokens.font.size.lg,
+      fontWeight: tokens.font.weight.semibold,
+      color: tokens.colors.text.primary,
     }
   },
   cells: {
     style: {
       overflow: 'visible',
-      fontSize: '14px',
-      fontWeight: '400',
-      color: '#cccccc',
+      fontSize: tokens.font.size.base,
+      fontWeight: tokens.font.weight.regular,
+      color: tokens.colors.text.secondary,
     }
   },
   rows: {
-    style: { backgroundColor: '#262626' },
-    highlightOnHoverStyle: { backgroundColor: '#3a3a3a', transition: '0.2s ease-in-out' },
+    style: { backgroundColor: tokens.colors.surface.primary },
+    highlightOnHoverStyle: { backgroundColor: tokens.colors.surface.secondary, transition: '0.2s ease-in-out' },
   },
   pagination: {
     style: {
-      backgroundColor: '#262626',
-      color: '#cccccc',
-      borderTop: '1px solid #1d1d1d',
-      padding: '8px',
+      backgroundColor: tokens.colors.surface.primary,
+      color: tokens.colors.text.secondary,
+      borderTop: `1px solid ${tokens.colors.border.subtle}`,
+      padding: tokens.spacing.sm,
     },
   },
   paginationButtons: {
     style: {
-      color: '#cccccc',
-      '&:hover': { backgroundColor: '#3a3a3a' },
-      '& svg': { stroke: '#cccccc' },
-      '& svg path': { stroke: '#cccccc' },
+      color: tokens.colors.text.secondary,
+      '&:hover': { backgroundColor: tokens.colors.surface.secondary },
+      '& svg': { stroke: tokens.colors.text.secondary },
+      '& svg path': { stroke: tokens.colors.text.secondary },
     },
   },
 };
 
 // ——— Inicializar módulos de Highcharts ———
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
+// Boost module para gráficas de alto rendimiento
 Boost(Highcharts);
 
-// ——— Opciones globales de Highcharts ———
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif' },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent',
-  },
-  xAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333',
-  },
-  yAxis: {
-    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:  { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333',
-  },
-  legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle:  { color: '#fff', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHiddenStyle: { color: '#666', fontFamily: 'Nunito Sans, sans-serif' },
-  },
-  tooltip: {
-    backgroundColor: '#1f2937',
-    style: { color: '#fff', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
-  },
-});
-
-
+// ——— Opciones adicionales específicas (complementan configuración centralizada) ———
 // ——— Componente reutilizable de carga ———
 const LoadingSpinner = ({ message = "Cargando datos..." }) => (
-  <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+  <div className="bg-surface-primary p-4 rounded-md border border-[color:var(--border-default)] shadow-soft flex flex-col items-center justify-center h-64">
     <div className="flex space-x-2">
       <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }} />
       <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }} />
       <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.4s' }} />
     </div>
-    <p className="text-gray-300 mt-4">{message}</p>
+    <p className="text-text-secondary mt-4">{message}</p>
   </div>
 );
 
@@ -138,38 +80,38 @@ const baseChartOptions = {
   chart: {
     type: 'spline',
     height: 520,
-    backgroundColor: '#262626',
+    backgroundColor: tokens.colors.surface.primary,
     animation: false
   },
   title: {
     text: 'Curva S – Proyecto',
-    style: { color: '#fff' }
+    style: { color: tokens.colors.text.primary, fontFamily: tokens.font.family }
   },
   subtitle: { text: '' },
 
   xAxis: {
     type: 'datetime',
-    gridLineColor: '#333',
+    gridLineColor: tokens.colors.border.subtle,
     tickPixelInterval: 80,
     dateTimeLabelFormats: { day: '%e %b %Y', week: '%e %b %Y', month: '%b %Y', year: '%Y' },
-    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
+    labels: { style: { color: tokens.colors.text.secondary, fontSize: '10px', fontFamily: tokens.font.family } },
     crosshair: { width: 1 }
   },
   yAxis: {
-    title:  { text: 'Avance (%)', style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    labels: { style: { color: '#ccc', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor: '#333',
+    title: { text: 'Avance (%)', style: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family } },
+    labels: { style: { color: tokens.colors.text.secondary, fontSize: '10px', fontFamily: tokens.font.family } },
+    gridLineColor: tokens.colors.border.subtle,
     min: 0, max: 100,
     crosshair: { width: 1 }
   },
   legend: {
     useHTML: true,
-    itemStyle: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' },
-    itemHoverStyle: { color: '#fff' },
-    itemHiddenStyle: { color: '#666' },
+    itemStyle: { color: tokens.colors.text.secondary, fontFamily: tokens.font.family },
+    itemHoverStyle: { color: tokens.colors.text.primary },
+    itemHiddenStyle: { color: tokens.colors.text.muted },
     labelFormatter: function () {
       const isPH = this.userOptions && this.userOptions.isPlaceholder;
-      const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+      const style = `font-family:${tokens.font.family}` + (isPH ? `;color:${tokens.colors.text.danger}` : '');
       return `<span style="${style}">${this.name}</span>`;
     }
   },
@@ -184,6 +126,10 @@ const baseChartOptions = {
     hideDelay: 60,
     snap: 16,
     xDateFormat: '%Y-%m-%d',
+    backgroundColor: tokens.colors.surface.primary,
+    borderColor: tokens.colors.border.default,
+    style: { color: tokens.colors.text.primary, fontSize: tokens.font.size.base },
+    padding: parseInt(tokens.spacing.lg, 10),
     formatter: function () {
       const fecha = Highcharts.dateFormat('%Y-%m-%d', this.x);
       const valor = Highcharts.numberFormat(this.y ?? 0, 1);
@@ -228,13 +174,11 @@ export default function ProyectoDetalle() {
   const tabs = ['Seguimiento Curva S', 'Todos los proyectos', 'Licencias ANLA'];
   const [activeTab, setActiveTab]         = useState(tabs[0]);
   const [proyectos, setProyectos]         = useState([]);
-  const [loadingList, setLoadingList]     = useState(true);
-  const [errorList, setErrorList]         = useState(null);
   const [chartOptions, setChartOptions]   = useState(baseChartOptions);
-  const [loadingCurve, setLoadingCurve]   = useState(false);
-  const [errorCurve, setErrorCurve]       = useState(null);
-   const [showChart, setShowChart]         = useState(false); // Estado para controlar la visibilidad de la gráfica
+  const [showChart, setShowChart]         = useState(false); // Estado para controlar la visibilidad de la gráfica
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
+  const tableStyles = useMemo(() => ({ ...darkTableStyles, ...customStyles }), []);
 
   // **Estados de filtros por columna**
   const [columnFilters, setColumnFilters] = useState({
@@ -297,33 +241,19 @@ export default function ProyectoDetalle() {
 
 
   // ——— Carga inicial de proyectos ———
+  const { data: proyectosData = [], isLoading: loadingList, error: errorList } = useListadoProyectosCurvaS();
+  
   useEffect(() => {
-    async function fetchList() {
-      setLoadingList(true);
-      setErrorList(null);
-      try {
-        const res  = await fetch(
-          `${API}/v1/graficas/proyectos_075/listado_proyectos_curva_s`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const formatted = data.map(p => ({
-          ...p,
-          fpo: p.fpo ? p.fpo.split('T')[0] : '-',
-          porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
-          estado: (p.estado_proyecto ?? '-'), // ← toma el valor del API
-        }));
-        setProyectos(formatted);
-      } catch (err) {
-        console.error(err);
-        setErrorList('No fue posible cargar los proyectos.');
-      } finally {
-        setLoadingList(false);
-      }
+    if (proyectosData && proyectosData.length > 0) {
+      const formatted = proyectosData.map(p => ({
+        ...p,
+        fpo: p.fpo ? p.fpo.split('T')[0] : '-',
+        porcentaje_avance_display: p.porcentaje_avance != null ? `${p.porcentaje_avance}%` : '-',
+        estado: (p.estado_proyecto ?? '-'),
+      }));
+      setProyectos(formatted);
     }
-    fetchList();
-  }, []);
+  }, [proyectosData]);
 
   // ——— Reflow al redimensionar (mejora render) ———
   useEffect(() => {
@@ -332,145 +262,137 @@ export default function ProyectoDetalle() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-// ——— Al hacer clic en Curva S (usa datetime y 2 series) ———
-const handleViewCurve = async (row) => {
-  setShowChart(true); // Mostrar la gráfica
-  setLoadingCurve(true);
-  setErrorCurve(null);
-  const COLOR_REF = '#60A5FA';  // azul
-  const COLOR_SEG = '#A3E635';  // verde
-
-  // Helpers
-  const formatDMY = (iso) => {
-    if (!iso) return '';
-    // esperado: YYYY-MM-DD
-    const [y, m, d] = String(iso).split('-');
-    return (y && m && d) ? `${d}/${m}/${y}` : iso;
+  // ——— Al hacer clic en Curva S ———
+  const handleViewCurve = (row) => {
+    setShowChart(true);
+    setSelectedProjectId(row.id);
   };
 
-  const parse = (arr) =>
-    (arr ?? [])
-      .map(pt => {
-        // arr puede venir con strings (mensaje) o con objetos {fecha, avance, ...}
-        if (!pt || typeof pt === 'string') return null;
-        const iso = (pt.fecha || '').split('T')[0];
-        if (!iso) return null;
-        const t = new Date(iso).getTime();
-        const y = Number(pt.avance);
-        return Number.isFinite(t) && Number.isFinite(y)
-          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-          : null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.x - b.x);
+  // Fetch de curva S usando React Query
+  const { data: curvaData, isLoading: loadingCurve, error: errorCurve } = useCurvaS(selectedProjectId);
 
-  try {
-    const res = await fetch(
-      `${API}/v1/graficas/proyectos_075/grafica_curva_s/${row.id}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const payload = await res.json();
+  // Procesar datos de curva S cuando cambien
+  useEffect(() => {
+    if (!curvaData || !selectedProjectId) return;
 
-    const refRaw = payload?.referencia?.curva;
-    const segRaw = payload?.seguimiento?.curva;
-    const refRad = payload?.referencia?.fecha_radicado || null;
-    const segRad = payload?.seguimiento?.fecha_radicado || null;
+    const COLOR_REF = '#60A5FA';
+    const COLOR_SEG = '#A3E635';
 
-    const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
-    const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
+    const formatDMY = (iso) => {
+      if (!iso) return '';
+      const [y, m, d] = String(iso).split('-');
+      return (y && m && d) ? `${d}/${m}/${y}` : iso;
+    };
 
-    const refData = refIsMsg ? [] : parse(refRaw);
-    const segData = segIsMsg ? [] : parse(segRaw);
+    const parse = (arr) =>
+      (arr ?? [])
+        .map(pt => {
+          if (!pt || typeof pt === 'string') return null;
+          const iso = (pt.fecha || '').split('T')[0];
+          if (!iso) return null;
+          const t = new Date(iso).getTime();
+          const y = Number(pt.avance);
+          return Number.isFinite(t) && Number.isFinite(y)
+            ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+            : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.x - b.x);
 
-    const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
-    const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
+    try {
+      const payload = curvaData;
+      const refRaw = payload?.referencia?.curva;
+      const segRaw = payload?.seguimiento?.curva;
+      const refRad = payload?.referencia?.fecha_radicado || null;
+      const segRad = payload?.seguimiento?.fecha_radicado || null;
 
-    // Construimos series en el orden: Referencia -> Seguimiento
-    const newSeries = [];
+      const refIsMsg = Array.isArray(refRaw) && refRaw.length > 0 && typeof refRaw[0] === 'string';
+      const segIsMsg = Array.isArray(segRaw) && segRaw.length > 0 && typeof segRaw[0] === 'string';
 
-    if (refIsMsg) {
-      newSeries.push({
-        type: 'spline',
-        name: String(refRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
-        data: [],
-        color: COLOR_REF,          // << azul cuando falta referencia
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (refData.length) {
-      newSeries.push({
-        type: 'spline',
-        name: refName,
-        data: refData,
-        color: COLOR_REF
-      });
-    }
+      const refData = refIsMsg ? [] : parse(refRaw);
+      const segData = segIsMsg ? [] : parse(segRaw);
 
-    if (segIsMsg) {
-      newSeries.push({
-        type: 'spline',
-        name: String(segRaw[0]),   // mensaje del servicio (se verá en rojo por labelFormatter)
-        data: [],
-        color: COLOR_SEG,          // << VERDE aunque no haya datos
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (segData.length) {
-      newSeries.push({
-        type: 'spline',
-        name: segName,
-        data: segData,
-        color: COLOR_SEG
-      });
-    }
+      const refName = `Curva de referencia${refRad ? ` (${formatDMY(refRad)})` : ''}`;
+      const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
 
+      const newSeries = [];
 
-    if (newSeries.length === 0) {
-      // No hay ni datos ni mensajes (caso raro)
-      setErrorCurve(`No existe Curva S para el proyecto ${row.id}.`);
+      if (refIsMsg) {
+        newSeries.push({
+          type: 'spline',
+          name: String(refRaw[0]),
+          data: [],
+          color: COLOR_REF,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (refData.length) {
+        newSeries.push({
+          type: 'spline',
+          name: refName,
+          data: refData,
+          color: COLOR_REF
+        });
+      }
+
+      if (segIsMsg) {
+        newSeries.push({
+          type: 'spline',
+          name: String(segRaw[0]),
+          data: [],
+          color: COLOR_SEG,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (segData.length) {
+        newSeries.push({
+          type: 'spline',
+          name: segName,
+          data: segData,
+          color: COLOR_SEG
+        });
+      }
+
+      if (newSeries.length === 0) {
+        setChartOptions(opts => ({
+          ...opts,
+          title: { ...opts.title, text: `Curva S – Proyecto ${selectedProjectId}` },
+          series: []
+        }));
+        return;
+      }
+
+      const selectedRow = proyectos.find(p => p.id === selectedProjectId);
       setChartOptions(opts => ({
         ...opts,
-        title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-        series: []
+        title: { ...opts.title, text: `Curva S – Proyecto ${selectedProjectId}${selectedRow ? ` – ${selectedRow.nombre_proyecto}` : ''}` },
+        legend: {
+          ...opts.legend,
+          useHTML: true,
+          itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
+          labelFormatter: function () {
+            const isPH = this.userOptions && this.userOptions.isPlaceholder;
+            const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
+            return `<span style="${style}">${this.name}</span>`;
+          }
+        },
+        series: newSeries
       }));
-      return;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (chartContainerRef.current) {
+        const OFFSET = 80;
+        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+        window.scrollTo({ top, behavior: 'smooth' });
+        setTimeout(() => chartRef.current?.chart?.reflow(), 250);
+      }
     }
-
-    setChartOptions(opts => ({
-      ...opts,
-      title: { ...opts.title, text: `Curva S – Proyecto ${row.id} – ${row.nombre_proyecto}` },
-      // reforzamos leyenda con useHTML y labelFormatter para placeholders
-      legend: {
-        ...opts.legend,
-        useHTML: true,
-        itemStyle: { ...(opts.legend?.itemStyle||{}), fontFamily: 'Nunito Sans, sans-serif' },
-        labelFormatter: function () {
-          const isPH = this.userOptions && this.userOptions.isPlaceholder;
-          const style = "font-family:'Nunito Sans',sans-serif" + (isPH ? ';color:#ef4444' : '');
-          return `<span style="${style}">${this.name}</span>`;
-        }
-      },
-      series: newSeries
-    }));
-  } catch (err) {
-    console.error(err);
-    setErrorCurve('No fue posible cargar la Curva S.');
-  } finally {
-    setLoadingCurve(false);
-    if (chartContainerRef.current) {
-      const OFFSET = 80;
-      const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-      window.scrollTo({ top, behavior: 'smooth' });
-      setTimeout(() => chartRef.current?.chart?.reflow(), 250);
-    }
-  }
-};
+  }, [curvaData, selectedProjectId, proyectos]);
 
 
   function applyGlobal(row) {
@@ -566,13 +488,13 @@ const columnsSimple = [
           title={sortState.key!=='id'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='id' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.id}
               onChange={e => setColumnFilters({ ...columnFilters, id: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
+              className="bg-surface-primary text-white p-1 text-sm w-16"
             />
           </div>
         )}
@@ -599,13 +521,13 @@ const columnsSimple = [
           title={sortState.key!=='nombre'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='nombre' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.nombre}
               onChange={e => setColumnFilters({ ...columnFilters, nombre: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
+              className="bg-surface-primary text-white p-1 text-sm w-32"
             />
           </div>
         )}
@@ -614,7 +536,7 @@ const columnsSimple = [
     selector: row => row.nombre_proyecto,
     sortable: false,
     wrap: true,
-    minWidth: '200px',
+    width: '200px',
     cell: row => {
       const raw = row.nombre_proyecto || '';
       const formatted = titleCase(raw);
@@ -638,13 +560,13 @@ const columnsSimple = [
           title={sortState.key!=='capacidad'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='capacidad' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.capacidad}
               onChange={e => setColumnFilters({ ...columnFilters, capacidad: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
+              className="bg-surface-primary text-white p-1 text-sm w-16"
             />
           </div>
         )}
@@ -672,13 +594,13 @@ const columnsSimple = [
           title={sortState.key!=='fpo'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='fpo' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.fpo}
               onChange={e => setColumnFilters({ ...columnFilters, fpo: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
+              className="bg-surface-primary text-white p-1 text-sm w-24"
             />
           </div>
         )}
@@ -705,13 +627,13 @@ const columnsSimple = [
           title={sortState.key!=='avance'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='avance' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.avance}
               onChange={e => setColumnFilters({ ...columnFilters, avance: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
+              className="bg-surface-primary text-white p-1 text-sm w-16"
             />
           </div>
         )}
@@ -738,13 +660,13 @@ const columnsSimple = [
           title={sortState.key!=='priorizado'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter === 'priorizado' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute overflow-visible bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.priorizado}
               onChange={e => setColumnFilters({ ...columnFilters, priorizado: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-16"
+              className="bg-surface-primary text-white p-1 text-sm w-16"
             />
           </div>
         )}
@@ -771,13 +693,13 @@ const columnsSimple = [
           title={sortState.key!=='ciclo'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter === 'ciclo' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute overflow-visible bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.ciclo}
               onChange={e => setColumnFilters({ ...columnFilters, ciclo: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-24"
+              className="bg-surface-primary text-white p-1 text-sm w-24"
             />
           </div>
         )}
@@ -810,13 +732,13 @@ const columnsSimple = [
           title={sortState.key!=='promotor'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter==='promotor' && (
-          <div className="absolute bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.promotor}
               onChange={e => setColumnFilters({ ...columnFilters, promotor: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
+              className="bg-surface-primary text-white p-1 text-sm w-32"
             />
           </div>
         )}
@@ -825,7 +747,7 @@ const columnsSimple = [
     selector: row => row.promotor,
     sortable: false,
     wrap: true,
-    minWidth: '200px',
+    width: '200px',
     cell: row => {
       const raw = row.promotor || '';
       const formatted = titleCase(raw);
@@ -849,13 +771,13 @@ const columnsSimple = [
           title={sortState.key!=='departamento'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter === 'departamento' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute overflow-visible bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.departamento}
               onChange={e => setColumnFilters({ ...columnFilters, departamento: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
+              className="bg-surface-primary text-white p-1 text-sm w-32"
             />
           </div>
         )}
@@ -864,7 +786,7 @@ const columnsSimple = [
     selector: row => row.departamento,
     sortable: false,
     wrap: true,
-    minWidth: '180px',
+    width: '180px',
     cell: row => {
       const raw = row.departamento || '';
       const formatted = titleCase(raw);
@@ -888,13 +810,13 @@ const columnsSimple = [
           title={sortState.key!=='municipio'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
         />
         {openFilter === 'municipio' && (
-          <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+          <div className="absolute overflow-visible bg-surface-secondary p-2 mt-1 rounded shadow z-50">
             <input
               type="text"
               placeholder="Buscar..."
               value={columnFilters.municipio}
               onChange={e => setColumnFilters({ ...columnFilters, municipio: e.target.value })}
-              className="bg-[#262626] text-white p-1 text-sm w-32"
+              className="bg-surface-primary text-white p-1 text-sm w-32"
             />
           </div>
         )}
@@ -903,7 +825,7 @@ const columnsSimple = [
     selector: row => row.municipio,
     sortable: false,
     wrap: true,
-    minWidth: '180px',
+    width: '180px',
     cell: row => {
       const raw = row.municipio || '';
       const formatted = titleCase(raw);
@@ -935,13 +857,13 @@ const estadoColumn = {
         title={sortState.key!=='estado'||!sortState.direction ? 'Ordenar ascendente' : (sortState.direction==='asc' ? 'Cambiar a descendente' : 'Quitar orden')}
       />
       {openFilter === 'estado' && (
-        <div className="absolute overflow-visible bg-[#1f1f1f] p-2 mt-1 rounded shadow z-50">
+        <div className="absolute overflow-visible bg-surface-secondary p-2 mt-1 rounded shadow z-50">
           <input
             type="text"
             placeholder="Buscar..."
             value={columnFilters.estado}
             onChange={e => setColumnFilters({ ...columnFilters, estado: e.target.value })}
-            className="bg-[#262626] text-white p-1 text-sm w-24"
+            className="bg-surface-primary text-white p-1 text-sm w-24"
           />
         </div>
       )}
@@ -988,8 +910,6 @@ const columnsSeguimiento = [
       </div>
     ),
     ignoreRowClick: true,
-    allowOverflow: true,
-    button: true,
     width: '100px',
   },
     ...columnsSimple
@@ -1003,13 +923,13 @@ const columnsSeguimiento = [
 
   // ——— Estilos de filas alternadas ———
   const conditionalRowStyles = [
-    { when: (_r,i) => i%2===0, style: { backgroundColor: '#262626' } },
-    { when: (_r,i) => i%2===1, style: { backgroundColor: '#1d1d1d' } },
+    { when: (_r,i) => i%2===0, style: { backgroundColor: tokens.colors.surface.primary } },
+    { when: (_r,i) => i%2===1, style: { backgroundColor: tokens.colors.surface.overlay } },
   ];
 
   if (loadingList) return <LoadingSpinner message="Cargando lista de proyectos..." />;
   if (errorList)   return (
-    <div className="bg-[#262626] p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+    <div className="bg-surface-primary p-4 rounded border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
       <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -1019,10 +939,10 @@ const columnsSeguimiento = [
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Proyectos</h2>
+      <h2 className="text-2xl font-semibold text-text-primary">Proyectos</h2>
 
       {/* ——— Pestañas ——— */}
-      <div className="flex space-x-4 border-b border-gray-700 mb-4">
+      <div className="flex space-x-4 border-b border-[color:var(--border-subtle)] mb-4">
         {tabs.map(tab => (
           <button
             key={tab}
@@ -1035,8 +955,8 @@ const columnsSeguimiento = [
             }}
             className={`pb-2 font-medium ${
               activeTab===tab
-                ? 'border-b-2 border-yellow-500 text-white'
-                : 'text-gray-400'
+                ? 'border-b-2 border-[color:var(--border-highlight)] text-text-primary'
+                : 'text-text-secondary'
             }`}
           >
             {tab}
@@ -1046,17 +966,17 @@ const columnsSeguimiento = [
 
       {/* Seguimiento Curva S */}
       {activeTab==='Seguimiento Curva S' && (
-        <div className="bg-[#262626] p-4 rounded-lg shadow">
+        <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <input
               type="text"
               placeholder="Buscar..."
               value={globalFilter}
               onChange={e => setGlobalFilter(e.target.value)}
-              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+            className="bg-surface-secondary placeholder:text-text-muted text-text-primary rounded p-2 w-1/3"
             />
             <button
-              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              className="flex items-center gap-1 bg-accent-primary text-black px-3 py-1 rounded hover:bg-[color:var(--accent-warning)]"
               onClick={() => exportToCSV(sortedSeguimiento)}
             >
               <Download size={16} /> Exportar CSV
@@ -1071,50 +991,50 @@ const columnsSeguimiento = [
               highlightOnHover
               wrapperClassName="overflow-visible"
               className="overflow-visible"
-              customStyles={customStyles}
+            customStyles={tableStyles}
               pagination
-              paginationIconPrevious={<ChevronLeft size={20} stroke="#cccccc" />}
-              paginationIconNext    ={<ChevronRight size={20} stroke="#cccccc" />}
-              paginationIconFirstPage={<ChevronLeft size={16} stroke="#cccccc" style={{ transform: 'rotate(360deg)' }} />}
-              paginationIconLastPage ={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(360deg)' }} />}
+              paginationIconPrevious={<ChevronLeft size={20} stroke={tokens.colors.text.secondary} />}
+              paginationIconNext    ={<ChevronRight size={20} stroke={tokens.colors.text.secondary} />}
+              paginationIconFirstPage={<ChevronLeft size={16} stroke={tokens.colors.text.secondary} style={{ transform: 'rotate(360deg)' }} />}
+              paginationIconLastPage ={<ChevronRight size={16} stroke={tokens.colors.text.secondary} style={{ transform: 'rotate(360deg)' }} />}
             />
           </div>
 
           {/* Curva S Solo se muestra si showChart es true */}
           {showChart && (
-          <div
+          <Card
             ref={chartContainerRef}
-            className="mt-6 bg-[#262626] p-4 rounded-lg shadow min-h-[600px] scroll-mt-24"
+            className="mt-6 p-4 min-h-[600px] scroll-mt-24"
           >
             {loadingCurve
-              ? <p className="text-gray-300">Cargando curva S…</p>
+              ? <p className="text-text-secondary">Cargando curva S…</p>
               : errorCurve
-                ? <p className="text-red-500">{errorCurve}</p>
+                ? <p className="text-text-danger">{errorCurve.message || 'Error al cargar la Curva S'}</p>
                 : <HighchartsReact
                     highcharts={Highcharts}
                     options={chartOptions}
                     ref={chartRef}
                   />
             }
-          </div>
+          </Card>
           )
           }
-        </div>
+        </Card>
       )}
 
       {/* Todos los proyectos */}
       {activeTab==='Todos los proyectos' && (
-        <div className="bg-[#262626] p-4 rounded-lg shadow">
+        <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <input
               type="text"
               placeholder="Buscar..."
               value={globalFilter}
               onChange={e => setGlobalFilter(e.target.value)}
-              className="bg-[#1f1f1f] placeholder-gray-500 text-white rounded p-2 w-1/3"
+            className="bg-surface-secondary placeholder:text-text-muted text-text-primary rounded p-2 w-1/3"
             />
             <button
-              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-1 rounded hover:bg-yellow-500"
+              className="flex items-center gap-1 bg-accent-primary text-black px-3 py-1 rounded hover:bg-[color:var(--accent-warning)]"
               onClick={() => exportToCSV(sortedAll)}
             >
               <Download size={16} /> Exportar CSV
@@ -1129,22 +1049,22 @@ const columnsSeguimiento = [
               highlightOnHover
               wrapperClassName="overflow-visible"
               className="overflow-visible"
-              customStyles={customStyles}
+            customStyles={tableStyles}
               pagination
-              paginationIconPrevious={<ChevronLeft size={20} stroke="#cccccc" />}
-              paginationIconNext    ={<ChevronRight size={20} stroke="#cccccc" />}
-              paginationIconFirst   ={<ChevronLeft size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
-              paginationIconLast    ={<ChevronRight size={16} stroke="#cccccc" style={{ transform: 'rotate(180deg)' }} />}
+              paginationIconPrevious={<ChevronLeft size={20} stroke={tokens.colors.text.secondary} />}
+              paginationIconNext    ={<ChevronRight size={20} stroke={tokens.colors.text.secondary} />}
+              paginationIconFirst   ={<ChevronLeft size={16} stroke={tokens.colors.text.secondary} style={{ transform: 'rotate(180deg)' }} />}
+              paginationIconLast    ={<ChevronRight size={16} stroke={tokens.colors.text.secondary} style={{ transform: 'rotate(180deg)' }} />}
             />
           </div>
-        </div>
+        </Card>
       )}
 
       {/* ——— Licencias ANLA ——— */}
       {activeTab==='Licencias ANLA' && (
-        <div className="bg-[#262626] p-6 rounded-lg shadow text-gray-400">
+        <Card className="p-6 text-text-secondary">
           <GraficaANLA/>
-        </div>
+        </Card>
       )}
     </section>
   );
@@ -1169,4 +1089,3 @@ function exportToCSV(data) {
   link.click();
   document.body.removeChild(link);
 }
-

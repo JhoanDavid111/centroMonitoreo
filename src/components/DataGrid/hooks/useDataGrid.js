@@ -20,42 +20,22 @@ export const useDataGrid = (config) => {
     const { exportToCSV } = useExport();
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                
-                if (!config.tabs || !config.tabs[activeTab]) {
-                    throw new Error('Configuración de pestañas no válida');
+        if (data) {
+            applyFilters(data);
+        }
+    }, [data, applyFilters]);
+
+    useEffect(() => {
+        // Inicializar filtros por columna cuando cambia la pestaña
+        const initialFilters = {};
+        if (config.tabs?.[activeTab]?.columns) {
+            config.tabs[activeTab].columns.forEach(col => {
+                if (col.filter) {
+                    initialFilters[col.selector.replace('row.', '')] = '';
                 }
-
-                const currentTab = config.tabs[activeTab];
-                const response = await fetch(currentTab.apiUrl, currentTab.fetchOptions || {});
-                
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-
-                const jsonData = await response.json();
-                setData(jsonData);
-                applyFilters(jsonData);
-                // Inicializar filtros por columna
-                const initialFilters = {};
-                config.tabs[activeTab].columns.forEach(col => {
-                    if (col.filter) {
-                        initialFilters[col.selector.replace('row.', '')] = '';
-                    }
-                });
-                setColumnFilters(initialFilters);
-            } catch (err) {
-                console.error('Error fetching data:', err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+            });
+        }
+        setColumnFilters(initialFilters);
     }, [activeTab, config.tabs]);
 
     // Aplicar todos los filtros

@@ -1,31 +1,29 @@
 import { useState, useMemo } from 'react';
-import Highcharts from 'highcharts';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from "highcharts-react-official";
 import Accessibility from 'highcharts/modules/accessibility';
-import ExportData from 'highcharts/modules/export-data';
-import Exporting from 'highcharts/modules/exporting';
-import FullScreen from 'highcharts/modules/full-screen';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
 import { TOOLTIP_CONFIG } from '../constants/tooltip';
 import { useProyectosCiclos } from '../hooks/useProyectosCiclos';
+import ChartLoadingState from './charts/ChartLoadingState';
+import ChartErrorState from './charts/ChartErrorState';
+import tokens from '../styles/theme.js';
 
-// Carga de módulos de Highcharts
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
+// Carga módulo adicional de accesibilidad
 Accessibility(Highcharts);
 
 // Paleta de colores para las gráficas
-const COLOR_PALETTE = [
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22', 
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22',
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22',
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22',
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22',
-  '#39FF14', '#0B6623', '#7FFF00', '#228B22',
-  '#39FF14', '#0B6623', '#7FFF00'
-];
+const COLOR_PALETTE = Array.from(
+  { length: 24 },
+  (_, index) => tokens.colors.chart[index % tokens.colors.chart.length]
+);
+
+const BASE_CHART_SURFACE = {
+  backgroundColor: tokens.colors.surface.primary,
+  borderWidth: 1,
+  borderColor: tokens.colors.surface.primary,
+  plotBorderWidth: 1,
+  plotBorderColor: tokens.colors.surface.primary,
+};
 
 // Función para crear opciones de gráfica de proyectos por estado
 const createProyectosEstadoOptions = (cicloData, ciclo) => {
@@ -40,38 +38,38 @@ const createProyectosEstadoOptions = (cicloData, ciclo) => {
   return {
     chart: { 
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626' 
+      plotBorderColor: tokens.colors.surface.primary 
     },
     title: {
       text: `Proyectos por estado - Ciclo ${ciclo}`,
       align: 'left',
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Distribución de proyectos según su estado actual<br>Total: <b>${cicloData.distribucion_proyectos_por_estado_asignacion.total}</b>`,
       useHTML: true,
-      style: { fontSize: '14px', color: '#ccc' }
+      style: { fontSize: '14px', color: tokens.colors.text.secondary }
     },
     xAxis: {
       type: 'category',
       tickInterval: 1,
-      title: { text: '', style: { fontWeight: 'bold', color: '#ccc' } },
+      title: { text: '', style: { fontWeight: 'bold', color: tokens.colors.text.secondary } },
       labels: {
         rotation: -45,
         step: 1,
-        style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
+        style: { fontSize: '12px', fontWeight: 'bold', color: tokens.colors.text.secondary }
       },
       crosshair: true
     },
     yAxis: {
-      title: { text: 'Número de Proyectos', style: { fontWeight: 'bold', color: '#ccc' } },
+      title: { text: 'Número de Proyectos', style: { fontWeight: 'bold', color: tokens.colors.text.secondary } },
       min: 0,
       gridLineWidth: 1,
-      labels: { style: { fontSize: '12px', color: '#eee' } }
+      labels: { style: { fontSize: '12px', color: tokens.colors.text.secondary } }
     },
     legend: { enabled: false },
     plotOptions: {
@@ -81,7 +79,7 @@ const createProyectosEstadoOptions = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           format: '{point.y}',
-          style: { fontWeight: 'bold', color: '#fff' },
+          style: { fontWeight: 'bold', color: tokens.colors.text.primary },
           y: -20
         },
         pointPadding: 0.1,
@@ -107,34 +105,34 @@ const createCapacidadEstadoOptions = (cicloData, ciclo) => {
     }));
 
   return {
-    chart: { type: 'column', backgroundColor: '#262626' },
+    chart: { type: 'column', backgroundColor: tokens.colors.surface.primary },
     title: {
       text: `Distribución de capacidad - Ciclo ${ciclo}`,
       align: 'left',
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total capacidad: <b>${Highcharts.numberFormat(cicloData.distribucion_capacidad_instalada_mw_por_estado_asignacion.total, 1, ',', '.')} MW</b>`,
       useHTML: true,
-      style: { fontSize: '14px', color: '#ccc' }
+      style: { fontSize: '14px', color: tokens.colors.text.secondary }
     },
     xAxis: {
       type: 'category',
       tickInterval: 1,
-      title: { text: '', style: { fontWeight: 'bold', color: '#ccc' } },
+      title: { text: '', style: { fontWeight: 'bold', color: tokens.colors.text.secondary } },
       labels: {
         rotation: -45,
         step: 1,
-        style: { fontSize: '12px', fontWeight: 'bold', color: '#eee' }
+        style: { fontSize: '12px', fontWeight: 'bold', color: tokens.colors.text.secondary }
       },
       crosshair: true
     },
     yAxis: {
-      title: { text: 'Capacidad (MW)', style: { fontWeight: 'bold', color: '#ccc' } },
+      title: { text: 'Capacidad (MW)', style: { fontWeight: 'bold', color: tokens.colors.text.secondary } },
       min: 0,
       labels: {
         formatter() { return Highcharts.numberFormat(this.value, 0, ',', '.'); },
-        style: { fontSize: '12px', color: '#eee' }
+        style: { fontSize: '12px', color: tokens.colors.text.secondary }
       }
     },
     legend: { enabled: false },
@@ -147,7 +145,7 @@ const createCapacidadEstadoOptions = (cicloData, ciclo) => {
           formatter() {
             return Highcharts.numberFormat(this.y, 1, ',', '.');
           },
-          style: { fontWeight: 'bold', fontSize: '12px', color: '#fff' },
+          style: { fontWeight: 'bold', fontSize: '12px', color: tokens.colors.text.primary },
           y: -20
         },
         pointPadding: 0.1,
@@ -175,15 +173,15 @@ const createProyectosDeptoOptions = (cicloData, ciclo) => {
   return {
     chart: { 
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626' 
+      plotborderColor: tokens.colors.surface.primary 
     },
     title: {
       text: `Distribución de proyectos por departamento - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total proyectos: <b>${cicloData.distribucion_proyectos_departamento.total}</b>`,
@@ -218,7 +216,7 @@ const createProyectosDeptoOptions = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           formatter() { return this.y; },
-          style: { fontWeight: 'bold', fontSize: '11px', color: '#fff', textOutline: 'none' },
+          style: { fontWeight: 'bold', fontSize: '11px', color: tokens.colors.text.primary, textOutline: 'none' },
           y: -5
         },
         pointPadding: 0.1,
@@ -247,15 +245,15 @@ const createCapacidadDeptoOptions = (cicloData, ciclo) => {
   return {
     chart: { 
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626' 
+      plotborderColor: tokens.colors.surface.primary 
     },
     title: {
       text: `Capacidad por departamento - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total capacidad: <b>${Highcharts.numberFormat(cicloData.distribucion_capacidad_instalada_mw_por_departamento.total, 1, ',', '.')} MW</b>`,
@@ -292,7 +290,7 @@ const createCapacidadDeptoOptions = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           formatter() { return Highcharts.numberFormat(this.y, 1); },
-          style: { fontWeight: 'bold', fontSize: '11px', color: '#fff', textOutline: 'none' },
+          style: { fontWeight: 'bold', fontSize: '11px', color: tokens.colors.text.primary, textOutline: 'none' },
           y: -5
         },
         pointPadding: 0.1,
@@ -321,15 +319,15 @@ const createProyectosEstadoC2Options = (cicloData, ciclo) => {
   return {
     chart: {
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626'
+      plotborderColor: tokens.colors.surface.primary
     },
     title: {
       text: `Proyectos por estado - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Distribución de proyectos según su estado actual<br>Los conceptos aprobados son Autogeneración<br>Total: <b>${cicloData.distribucion_proyectos_por_estado_asignacion.total}</b>`,
@@ -365,7 +363,7 @@ const createProyectosEstadoC2Options = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           format: '{point.y}',
-          style: { fontWeight: 'bold', color: '#fff' },
+          style: { fontWeight: 'bold', color: tokens.colors.text.primary },
           y: -20
         },
         pointPadding: 0.1,
@@ -393,16 +391,16 @@ const createCapacidadEstadoC2Options = (cicloData, ciclo) => {
   return {
     chart: {
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626',
+      plotborderColor: tokens.colors.surface.primary,
       spacing: [10, 10, 30, 10]
     },
     title: {
       text: `Distribución de capacidad - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total capacidad: <b>${Highcharts.numberFormat(cicloData.distribucion_capacidad_instalada_mw_por_estado_asignacion.total, 1, ',', '.')} MW</b><br>Los conceptos aprobados son Autogeneración`,
@@ -439,7 +437,7 @@ const createCapacidadEstadoC2Options = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           formatter() { return Highcharts.numberFormat(this.y, 2, ',', '.'); },
-          style: { fontWeight: 'bold', fontSize: '12px', color: '#fff' },
+          style: { fontWeight: 'bold', fontSize: '12px', color: tokens.colors.text.primary },
           y: -20
         },
         pointPadding: 0.1,
@@ -467,16 +465,16 @@ const createProyectosDeptoC2Options = (cicloData, ciclo) => {
   return {
     chart: {
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626',
+      plotborderColor: tokens.colors.surface.primary,
       spacing: [10, 10, 30, 10]
     },
     title: {
       text: `Distribución de proyectos por departamento - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total proyectos: <b>${cicloData.distribucion_proyectos_departamento.total}</b>`,
@@ -511,7 +509,7 @@ const createProyectosDeptoC2Options = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           formatter() { return Highcharts.numberFormat(this.y, 0, ',', '.'); },
-          style: { fontWeight: 'bold', fontSize: '11px', color: '#fff', textOutline: 'none' },
+          style: { fontWeight: 'bold', fontSize: '11px', color: tokens.colors.text.primary, textOutline: 'none' },
           y: -5
         },
         pointPadding: 0.1,
@@ -540,16 +538,16 @@ const createCapacidadDeptoC2Options = (cicloData, ciclo) => {
   return {
     chart: {
       type: 'column',
-      backgroundColor: '#262626',
+      backgroundColor: tokens.colors.surface.primary,
       borderWidth: 1,
-      borderColor: '#262626',
+      borderColor: tokens.colors.surface.primary,
       plotBorderWidth: 1,
-      plotBorderColor: '#262626',
+      plotborderColor: tokens.colors.surface.primary,
       spacing: [10, 10, 30, 10]
     },
     title: {
       text: `Capacidad instalada por departamento - Ciclo ${ciclo}`,
-      style: { fontSize: '16px', fontWeight: 'bold', color: '#fff' }
+      style: { fontSize: '16px', fontWeight: 'bold', color: tokens.colors.text.primary }
     },
     subtitle: {
       text: `Total de capacidad instalada: <b>${Highcharts.numberFormat(cicloData.distribucion_capacidad_instalada_mw_por_departamento.total, 1, ',', '.')} MW</b>`,
@@ -587,7 +585,7 @@ const createCapacidadDeptoC2Options = (cicloData, ciclo) => {
         dataLabels: {
           enabled: true,
           formatter() { return Highcharts.numberFormat(this.y, 1, ',', '.'); },
-          style: { fontWeight: 'bold', fontSize: '11px', color: '#fff', textOutline: 'none' },
+          style: { fontWeight: 'bold', fontSize: '11px', color: tokens.colors.text.primary, textOutline: 'none' },
           y: -5
         },
         pointPadding: 0.1,
@@ -629,22 +627,13 @@ export function GraficaCiclo1({ data }) {
   const chartOptions = useMemo(() => generateChartOptions(data, 1), [data]);
 
   if (!data) {
-    return (
-      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.4s' }}></div>
-        </div>
-        <p className="text-gray-300 mt-4">Cargando gráficas del Ciclo 1...</p>
-      </div>
-    );
+    return <ChartLoadingState message="Cargando gráficas del Ciclo 1..." />;
   }
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
       {chartOptions.map((options, idx) => (
-        <div key={idx} className="w-full h-120 p-4 bg-[#262626] rounded-lg shadow border border-[#666666] overflow-hidden">
+        <div key={idx} className="w-full h-120 p-4 bg-surface-primary rounded-lg shadow border border-[color:var(--border-default)] overflow-hidden">
           <HighchartsReact highcharts={Highcharts} options={options} />
         </div>
       ))}
@@ -657,7 +646,7 @@ export function GraficaCiclo2({ data }) {
 
   if (!data) {
     return (
-      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-surface-primary p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500"></div>
           <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.2s' }}></div>
@@ -671,7 +660,7 @@ export function GraficaCiclo2({ data }) {
   return (
     <div className="grid md:grid-cols-2 gap-4">
       {chartOptions.map((options, idx) => (
-        <div key={idx} className="w-full h-120 p-4 bg-[#262626] rounded-lg shadow border border-[#666666] overflow-hidden">
+        <div key={idx} className="w-full h-120 p-4 bg-surface-primary rounded-lg shadow border border-[color:var(--border-default)] overflow-hidden">
           <HighchartsReact highcharts={Highcharts} options={options} />
         </div>
       ))}
@@ -686,42 +675,27 @@ export default function SeguimientoCiclos() {
 
   if (loading) {
     return (
-      <div className="p-4 font-sans rounded-lg" style={{ background: '#262626', fontFamily: 'Nunito Sans, sans-serif' }}>
-        <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-3 h-3 rounded-full animate-bounce bg-yellow-500" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-          <p className="text-gray-300 mt-4">Cargando datos de proyectos por ciclos...</p>
-        </div>
+      <div className="p-4 font-sans rounded-lg" style={{ background: tokens.colors.surface.primary, fontFamily: 'Nunito Sans, sans-serif' }}>
+        <ChartLoadingState message="Cargando datos de proyectos por ciclos..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 font-sans rounded-lg" style={{ background: '#262626', fontFamily: 'Nunito Sans, sans-serif' }}>
-        <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-red-500 text-center max-w-md mb-4">{error}</p>
-          <button onClick={refetch} className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition-colors">
-            Reintentar
-          </button>
-        </div>
+      <div className="p-4 font-sans rounded-lg" style={{ background: tokens.colors.surface.primary, fontFamily: 'Nunito Sans, sans-serif' }}>
+        <ChartErrorState error={error} onRetry={refetch} />
       </div>
     );
   }
 
   return (
-    <div className="p-4 font-sans rounded-lg" style={{ background: '#262626', fontFamily: 'Nunito Sans, sans-serif' }}>
+    <div className="p-4 font-sans rounded-lg" style={{ background: tokens.colors.surface.primary, fontFamily: 'Nunito Sans, sans-serif' }}>
       <div className="flex space-x-6 mb-4 font-sans text-sm">
         <button
           className={`pb-1 border-b-2 transition text-[18px] ${
             ciclo === 1
-              ? 'border-[#FFC800] text-[#FFC800]'
+              ? 'border-[#FFC800] text-[color:var(--accent-primary)]'
               : 'border-transparent text-gray-300'
           }`}
           onClick={() => setCiclo(1)}
@@ -731,7 +705,7 @@ export default function SeguimientoCiclos() {
         <button
           className={`pb-1 border-b-2 transition text-[18px] ${
             ciclo === 2
-              ? 'border-[#FFC800] text-[#FFC800]'
+              ? 'border-[#FFC800] text-[color:var(--accent-primary)]'
               : 'border-transparent text-gray-300'
           }`}
           onClick={() => setCiclo(2)}

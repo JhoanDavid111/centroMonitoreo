@@ -1,65 +1,23 @@
 // src/components/CombustiblesLiquidos.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
-import ExportData from 'highcharts/modules/export-data';
-import FullScreen from 'highcharts/modules/full-screen';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-
-// Cargar módulos
-Exporting(Highcharts);
-OfflineExporting(Highcharts);
-ExportData(Highcharts);
-FullScreen(Highcharts);
-
-// Tema oscuro global con Nunito Sans y fondo #262626
-Highcharts.setOptions({
-  chart: {
-    backgroundColor: '#262626',
-    style: { fontFamily: 'Nunito Sans, sans-serif', textAlign:'left' },
-    plotBorderWidth: 0,
-    plotBackgroundColor: 'transparent'
-  },
-  title:    { style: { color: '#fff', fontFamily: 'Nunito Sans, sans-serif', align: 'left' } },
-  subtitle: { style: { color: '#aaa', fontFamily: 'Nunito Sans, sans-serif', textAlign: 'left' } },
-  xAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor:  '#333'
-  },
-  yAxis: {
-    labels:         { style: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-    title:          { style: { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif' } },
-    gridLineColor:  '#333'
-  },
-  legend: {
-    itemStyle:       { color: '#ccc', fontFamily: 'Nunito Sans, sans-serif', fontSize:'12px' },
-    itemHoverStyle:  { color: '#fff' },
-    itemHiddenStyle: { color: '#666' }
-  },
-  tooltip: {
-    backgroundColor: '#262626',
-    style:           { color: '#fff', fontSize: '10px', fontFamily: 'Nunito Sans, sans-serif' }
-  }
-});
+import Card from './ui/Card';
+import tokens from '../styles/theme.js';
 
 export function CombustiblesLiquidos() {
   const [charts, setCharts] = useState([]);
   const [selected, setSelected] = useState('all');
   const chartRefs = useRef([]);
 
-  const colores = [
-    '#FFC800', '#FF6F00', '#4CAF50', '#2196F3',
-    '#9C27B0', '#00BFA6', '#FF9800', '#FF4081'
-  ];
+  const colores = tokens.colors.chart;
 
   useEffect(() => {
     const baseOptions = [
       // 1) Evolución del Volumen Útil por Región
       {
         chart:    { type: 'area', zoomType: '', height: 350 },
-        title:    { text: 'Evolución del volumen útil por región',align: 'left',},
+        title:    { text: 'Evolución del volumen útil por región', align: 'left' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         colors:   colores,
         yAxis:    { title: { text: 'Volumen útil (Millones de m³)' } },
@@ -71,12 +29,12 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: tokens.colors.text.secondary, fontSize: '11px', fontFamily: tokens.font.family },
             rotation:      -45,
             step:           1,
             autoRotation:   false
           },
-          gridLineColor: '#333'
+          gridLineColor: tokens.colors.border.subtle
         },
         plotOptions: { area: { stacking: 'normal' } },
         series: [
@@ -88,13 +46,13 @@ export function CombustiblesLiquidos() {
           { name: 'Caldas',    data: [600,620,640,660,680,700,720,740,760] },
         ],
         legend: {
-          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+          itemStyle: { fontSize: tokens.font.size.sm, fontFamily: tokens.font.family }
         },
       },
       // 2) Capacidad Instalada Despachada Centralmente por Tecnología
       {
         chart:    { type: 'column', zoomType: '', height: 350 },
-        title:    { text: 'Capacidad instalada despachada centralmente por tecnología', align: 'left', },
+        title:    { text: 'Capacidad instalada despachada centralmente por tecnología', align: 'left' },
         subtitle: { text: 'Fuente: XM. 2020-2024' },
         colors:   colores,
         yAxis:    { title: { text: 'Capacidad Instalada (GW)' } },
@@ -106,12 +64,12 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: tokens.colors.text.secondary, fontSize: '11px', fontFamily: tokens.font.family },
             rotation:      -45,
             step:           1,
             autoRotation:   false
           },
-          gridLineColor: '#333'
+          gridLineColor: tokens.colors.border.subtle
         },
         series: [
           { name: 'ACPM',        data: [5,5.5,5.8,6,6.2,6.5,6.8,7,7.3,7.6,8] },
@@ -124,13 +82,13 @@ export function CombustiblesLiquidos() {
           { name: 'RAD SOLAR',   data: [0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2] }
         ],
         legend: {
-          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+          itemStyle: { fontSize: tokens.font.size.sm, fontFamily: tokens.font.family }
         },
       },
       // 3) Comparativo Volumen vs. Capacidad
       {
         chart:    { type: 'area', zoomType: '', height: 350 },
-        title:    { text: 'Comparativo volumen vs. capacidad', align: 'left', },
+        title:    { text: 'Comparativo volumen vs. capacidad', align: 'left' },
         subtitle: { text: '' },
         colors:   colores,
         yAxis:    { title: { text: 'Índice Relativo' } },
@@ -139,19 +97,19 @@ export function CombustiblesLiquidos() {
           title:         { text: null },
           tickInterval:  1,
           labels: {
-            style:         { color: '#ccc', fontSize: '11px', fontFamily: 'Nunito Sans, sans-serif' },
+            style:         { color: tokens.colors.text.secondary, fontSize: '11px', fontFamily: tokens.font.family },
             rotation:      -45,
             step:           1,
             autoRotation:   false
           },
-          gridLineColor: '#333'
+          gridLineColor: tokens.colors.border.subtle
         },
         series: [
           { name: 'Volumen útil',       data: [2.5,2.7,2.6,2.8] },
           { name: 'Capacidad instalada', data: [14,14.3,14.5,15] }
         ],
         legend: {
-          itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+          itemStyle: { fontSize: tokens.font.size.sm, fontFamily: tokens.font.family }
         },
       }
     ];
@@ -161,7 +119,7 @@ export function CombustiblesLiquidos() {
       ...opt,
       chart: {
         ...opt.chart,
-        backgroundColor: '#262626'
+        backgroundColor: tokens.colors.surface.primary
       },
       /* exporting: {
         enabled: true,
@@ -187,14 +145,14 @@ export function CombustiblesLiquidos() {
 
   return (
     <section className="mt-8 font-sans">
-      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4 ">
+      <h2 className="text-2xl text-text-primary font-semibold mb-4 ">
         Combustibles líquidos
       </h2>
 
       {/* Dropdown de selección */}
       <div className="mb-4">
         <select
-          className="bg-[#262626] text-gray-200 p-2 rounded border border-[#666666] font-sans"
+          className="bg-surface-primary text-text-secondary p-2 rounded border border-[color:var(--border-default)] font-sans"
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >
@@ -218,13 +176,13 @@ export function CombustiblesLiquidos() {
             }
           };
           return (
-            <div
+            <Card
               key={idx}
-              className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
+              className="p-4 relative"
             >
              {/* Botón de ayuda */}
               <button
-                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
+                className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-surface-secondary rounded-lg shadow-soft hover:bg-[color:var(--surface-overlay)] transition-colors"
                 style={{ width: 30, height: 30 }}
                 title="Ayuda"
                 onClick={() => alert('Ok Aquí puedes mostrar ayuda contextual o abrir un modal.')}
@@ -236,15 +194,15 @@ export function CombustiblesLiquidos() {
                   viewBox="0 0 24 24"
                   className="rounded-full"
                 >
-                  <circle cx="12" cy="12" r="10" fill="#444" stroke="#fff" strokeWidth="2.5" />
+                  <circle cx="12" cy="12" r="10" fill="var(--surface-secondary)" stroke="var(--text-primary)" strokeWidth="2.5" />
                   <text
                     x="12"
                     y="18"
                     textAnchor="middle"
                     fontSize="16"
-                    fill="#fff"
+                    fill="var(--text-primary)"
                     fontWeight="bold"
-                    fontFamily="Nunito Sans, sans-serif"
+                    fontFamily={tokens.font.family}
                     pointerEvents="none"
                   >?</text>
                 </svg>
@@ -254,7 +212,7 @@ export function CombustiblesLiquidos() {
                 options={dynOpt}
                 ref={el => (chartRefs.current[idx] = el)}
               />
-            </div>
+            </Card>
           );
         })}
       </div>

@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/pages/ProyectoDetalle.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -6,10 +8,7 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import Highcharts from 'highcharts';
-import Exporting from 'highcharts/modules/exporting';
-import ExportData from 'highcharts/modules/export-data';
-import OfflineExporting from 'highcharts/modules/offline-exporting';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import proyectoDetalleImg from '../assets/proyectoDetalle.png';
 import EnergiaElectricaOn from '../assets/svg-icons/EnergiaElectrica-On.svg';
@@ -17,22 +16,7 @@ import TerritorioOn from '../assets/svg-icons/Territorio-On.svg';
 import LocationOn from '../assets/svg-icons/location-On.svg';
 import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CalendarDarkmodeAmarillo from '../assets/svg-icons/calendarDarkmodeAmarillo.svg';
-import { API } from '../config/api';
-
-// ===== Inicialización Highcharts =====
-Exporting(Highcharts);
-ExportData(Highcharts);
-OfflineExporting(Highcharts);
-
-Highcharts.setOptions({
-  chart: { backgroundColor: '#262626', style: { fontFamily: 'Nunito Sans, sans-serif' } },
-  title: { style: { color: '#fff', fontSize: '16px', fontWeight: 600 } },
-  subtitle: { style: { color: '#aaa', fontSize: '12px' } },
-  xAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, gridLineColor: '#333' },
-  yAxis: { labels: { style: { color: '#ccc', fontSize: '10px' } }, title: { style: { color: '#ccc' } }, gridLineColor: '#333' },
-  legend: { itemStyle: { color: '#ccc' }, itemHoverStyle: { color: '#fff' }, itemHiddenStyle: { color: '#666' } },
-  tooltip: { backgroundColor: '#1f2937', style: { color: '#fff', fontSize: '12px' } }
-});
+import { useInformacionProyecto, useCurvaS } from '../services/graficasService';
 
 // ===== Estilos locales =====
 const YELLOW = '#FFC800';
@@ -46,13 +30,13 @@ const IconPill = ({ children }) => (
 );
 
 const Chip = ({ children, className = '' }) => (
-  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[#3a3a3a] text-gray-200 ${className}`}>
+  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[color:var(--border-subtle)] text-gray-200 ${className}`}>
     {children}
   </span>
 );
 
 const StatCard = ({ icon, title, value }) => (
-  <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
+  <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 mb-1">
       {/* Ícono sin pill/fondo */}
       <span className="inline-flex items-center justify-center w-5 h-5">
@@ -65,7 +49,7 @@ const StatCard = ({ icon, title, value }) => (
 );
 
 const InfoTag = ({ icon, labelText, value }) => (
-  <div className="bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
+  <div className="bg-surface-primary border rounded-xl p-3" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 text-sm" style={{ color: LABEL }}>
       <span className="inline-flex items-center justify-center w-5 h-5">
         {icon}
@@ -97,7 +81,7 @@ const ProgressBar = ({ value }) => {
   const barColor = getColor(v);
 
   return (
-    <div className="bg-[#262626] border rounded-xl p-4" style={{ borderColor: BORDER }}>
+    <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
       <div className="text-sm mb-2" style={{ color: LABEL }}>Avances del proyectos</div>
 
       <div
@@ -139,10 +123,10 @@ const baseCurveOptions = {
   chart: {
     type: 'spline',
     height: 520,
-    backgroundColor: '#262626',
+    backgroundColor: tokens.colors.surface.primary,
     animation: false
   },
-  title: { text: 'Curva S – Proyecto', style: { color: '#fff' } },
+  title: { text: 'Curva S – Proyecto', style: { color: tokens.colors.text.primary } },
   subtitle: { text: '' },
 
   xAxis: {
@@ -171,7 +155,7 @@ const baseCurveOptions = {
   legend: {
     useHTML: true,
     itemStyle: { color: '#ccc' },
-    itemHoverStyle: { color: '#fff' },
+    itemHoverStyle: { color: tokens.colors.text.primary },
     itemHiddenStyle: { color: '#666' },
     // si la "serie" es un placeholder (mensaje), pintamos el texto en rojo
     labelFormatter: function () {
@@ -239,76 +223,52 @@ export default function ProyectoDetalle() {
   const chartContainerRef = useRef(null);
 
   // Datos del proyecto (encabezado)
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
   const [data, setData] = useState(null);
-
+  
   // Curva S
-  const [curveLoading, setCurveLoading] = useState(true);
-  const [curveError, setCurveError] = useState('');
   const [curveOptions, setCurveOptions] = useState(baseCurveOptions);
 
   // Fetch info de proyecto
+  const { data: proyectoData, isLoading: loading, error: err } = useInformacionProyecto(id);
+  
   useEffect(() => {
-
-    let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        setErr('');
-        const res = await fetch(
-          `${API}/v1/graficas/proyectos_075/informacion_proyecto/${encodeURIComponent(id)}`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (!Array.isArray(json) || json.length === 0) throw new Error('Sin datos del proyecto');
-        if (alive) setData(json[0]);
-      } catch (e) {
-        if (alive) setErr(e.message || 'Error cargando el proyecto');
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => { alive = false; };
-  }, [id]);
+    if (proyectoData && Array.isArray(proyectoData) && proyectoData.length > 0) {
+      setData(proyectoData[0]);
+    }
+  }, [proyectoData]);
 
 // Fetch Curva S — construye series (referencia/seguimiento) o mensajes en leyenda
-useEffect(() => {
-  let alive = true;
+  const { data: curvaData, isLoading: curveLoading, error: curveError } = useCurvaS(id);
 
-  const formatDMY = (iso) => {
-    if (!iso) return '';
-    const [y, m, d] = String(iso).split('-');
-    return (y && m && d) ? `${d}/${m}/${y}` : iso;
-  };
+  useEffect(() => {
+    if (!curvaData) return;
 
-  const parse = (arr) =>
-    (arr ?? [])
-      .map(pt => {
-        if (!pt || typeof pt === 'string') return null; // ignora mensajes
-        const iso = (pt.fecha || '').split('T')[0];
-        if (!iso) return null;
-        const t = new Date(iso).getTime();
-        const y = Number(pt.avance);
-        return Number.isFinite(t) && Number.isFinite(y)
-          ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
-          : null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.x - b.x);
+    const formatDMY = (iso) => {
+      if (!iso) return '';
+      const [y, m, d] = String(iso).split('-');
+      return (y && m && d) ? `${d}/${m}/${y}` : iso;
+    };
 
-  (async () => {
+    const parse = (arr) =>
+      (arr ?? [])
+        .map(pt => {
+          if (!pt || typeof pt === 'string') return null;
+          const iso = (pt.fecha || '').split('T')[0];
+          if (!iso) return null;
+          const t = new Date(iso).getTime();
+          const y = Number(pt.avance);
+          return Number.isFinite(t) && Number.isFinite(y)
+            ? { x: t, y, hito_nombre: pt.hito_nombre ?? '' }
+            : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.x - b.x);
+
     try {
-      setCurveLoading(true);
+      setCurveLoading(false);
       setCurveError('');
 
-      const res = await fetch(
-        `${API}/v1/graficas/proyectos_075/grafica_curva_s/${encodeURIComponent(id)}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const payload = await res.json();
+      const payload = curvaData;
 
       const refRaw = payload?.referencia?.curva;
       const segRaw = payload?.seguimiento?.curva;
@@ -372,8 +332,6 @@ useEffect(() => {
     }
 
 
-      if (!alive) return;
-
       if (series.length === 0) {
         setCurveError('Sin datos de Curva S para este proyecto.');
         setCurveOptions(o => ({ ...o, series: [] }));
@@ -382,27 +340,21 @@ useEffect(() => {
 
       setCurveOptions(o => ({
         ...o,
-        title: { ...o.title, text: (state?.nombre || `Proyecto ${id}`).toString() },
+        title: { ...o.title, text: (data?.nombre || `Proyecto ${id}`).toString() },
         legend: { ...o.legend, useHTML: true }, // asegura el rojo en placeholders
         series
       }));
     } catch (e) {
-      if (alive) setCurveError(e.message || 'Error cargando Curva S.');
+      console.error('Error procesando curva S:', e);
     } finally {
-      if (alive) {
-        setCurveLoading(false);
-        if (chartContainerRef.current) {
-          const OFFSET = 80;
-          const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
-          window.scrollTo({ top, behavior: 'smooth' });
-          setTimeout(() => chartRef.current?.chart?.reflow(), 250);
-        }
+      if (chartContainerRef.current) {
+        const OFFSET = 80;
+        const top = chartContainerRef.current.getBoundingClientRect().top + window.scrollY - OFFSET;
+        window.scrollTo({ top, behavior: 'smooth' });
+        setTimeout(() => chartRef.current?.chart?.reflow(), 250);
       }
     }
-  })();
-
-  return () => { alive = false; };
-}, [id, state?.nombre]);
+  }, [curvaData, id, data]);
 
 
   // Reflow en resize
@@ -474,11 +426,11 @@ useEffect(() => {
 
       {/* Resumen */}
       <div className="w-full max-w-none px-4 sm:px-6 lg:px-8">
-        <div className="text-[18px] font-semibold mb-2" style={{ color: '#D1D1D0' }}>Resumen</div>
+        <div className="text-[18px] font-semibold mb-2" style={{ color: tokens.colors.text.secondary }}>Resumen</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen resumen */}
-          <div className="lg:col-span-2 bg-[#262626] border rounded-xl p-3" style={{ borderColor: BORDER }}>
+          <div className="lg:col-span-2 bg-surface-primary border rounded-xl p-3" style={{ borderColor: BORDER }}>
             <div className="rounded-lg overflow-hidden">
               <img
                 src={proyectoDetalleImg}
@@ -519,12 +471,12 @@ useEffect(() => {
         </div>
 
         {/* Curva S */}
-        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>
+        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>
           Seguimiento Curva S
         </div>
         <div
           ref={chartContainerRef}
-          className="bg-[#262626] border rounded-xl p-3 scroll-mt-24"
+          className="bg-surface-primary border rounded-xl p-3 scroll-mt-24"
           style={{ borderColor: BORDER }}
         >
           {curveLoading && <p className="text-gray-300 px-2 py-4">Cargando Curva S…</p>}
@@ -536,7 +488,7 @@ useEffect(() => {
         </div>
 
         {/* Ubicación y detalles */}
-        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: '#D1D1D0' }}>Ubicación y detalles</div>
+        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>Ubicación y detalles</div>
 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
   <InfoTag
     icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}

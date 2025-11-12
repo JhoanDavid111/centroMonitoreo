@@ -1,13 +1,14 @@
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer } from "react-leaflet";
-import { API } from '../config/api';
+import { useHidrologiaConsolidado } from '../services/indicadoresService';
+import tokens from '../styles/theme.js';
+
 
 import { Dialog, DialogContent, DialogTrigger } from "./ui/Dialog";
 
 import REGIONES_URL from "../assets/geojson/RegionesHidro.geojson?url";
 
-const DATA_DAM_API = `${API}/v1/indicadores/hidrologia/indicadores_expander_embalses_consolidado`;
 
 const regionBackground = {
   antioquia: "#9168EA",
@@ -30,11 +31,11 @@ const TrendChip = ({ dir = '+', children }) => {
       "
       style={{
         backgroundColor: bg,
-        color: '#fff',
+        color: tokens.colors.text.primary,
         border: '1px solid rgba(0,0,0,.15)',
       }}
     >
-      <span className="leading-none" style={{ color: '#fff' }}>{children}</span>
+      <span className="leading-none" style={{ color: tokens.colors.text.primary }}>{children}</span>
     </span>
   );
 }
@@ -171,7 +172,7 @@ const RegionDialog = ({ coords, damProperties }) => {
               <div className="flex-1 h-3 rounded-sm overflow-hidden bg-[#575756] mx-3">
                 <div
                   className="h-3"
-                  style={{ width: `${embalse_nivel}%`, background: "#22C55E" }}
+                  style={{ width: `${embalse_nivel}%`, background: tokens.colors.status.positive }}
                 />
               </div>
             </div>
@@ -179,7 +180,7 @@ const RegionDialog = ({ coords, damProperties }) => {
               <span className="block text-sm text-white">
                 Aportes hídricos:
               </span>
-              <span className="font-bold text-sm">{embalse_aportes_hidricos}</span>
+              <span className="font-bold text-sm">{embalse_aportes_string} GWh-día | {embalse_aportes_hidricos}</span>
             </div>
           </div>
           <div className="w-full">
@@ -225,38 +226,35 @@ const RegionDialog = ({ coords, damProperties }) => {
 const DamMap = () => {
   const [regiones, setRegiones] = useState(null);
   const [dataApi, setDataApi] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingGeoJSON, setLoadingGeoJSON] = useState(true);
 
   useEffect(() => {
     Promise.all([fetch(REGIONES_URL)])
       .then(async ([r1]) => {
         const regionesJson = await r1.json();
         setRegiones(regionesJson);
+        setLoadingGeoJSON(false);
       })
-      .catch((err) => console.error("Error cargando GeoJSON:", err));
+      .catch((err) => {
+        console.error("Error cargando GeoJSON:", err);
+        setLoadingGeoJSON(false);
+      });
   }, []);
 
+  const { data: consolidadoData, isLoading: loadingData } = useHidrologiaConsolidado();
+  
   useEffect(() => {
-    const fetchDataApiTooltip = async () => {
-      try {
-        const response = await fetch(DATA_DAM_API, {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (!response.ok) {
-          throw new Error("Error fetching data tooltips")
-        }
-        const dataApiTooltip = await response.json()
-        const flattened = flattenData(dataApiTooltip.regiones);
-        setDataApi(flattened)
-      } catch(error){
-        console.log(`Error: ${error}`)
-      } finally {
-        setLoading(false)
-      }
+    if (!consolidadoData) return;
+    
+    try {
+      const flattened = flattenData(consolidadoData.regiones || []);
+      setDataApi(flattened);
+    } catch (error) {
+      console.error('Error procesando datos consolidado:', error);
     }
-    fetchDataApiTooltip();
-  }, [])
+  }, [consolidadoData]);
+  
+  const loading = loadingData || loadingGeoJSON;
 
   if (loading) return <div>Cargando datos...</div>;
 

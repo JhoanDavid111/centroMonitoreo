@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --surface-primary: #262626;
+  --surface-secondary: #1f1f1f;
+  --surface-overlay: #111111;
+  --border-subtle: #1d1d1d;
+  --border-default: #666666;
+  --border-highlight: #ffc800;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #aaaaaa;
+  --text-warning: #ffc800;
+  --text-danger: #ff7043;
+  --text-inverse: #111827;
+  --accent-primary: #ffc800;
+  --accent-secondary: #42a5f5;
+  --accent-success: #26c6da;
+  --accent-warning: #ec407a;
+  --accent-info: #66bb6a;
+  --status-positive: #22c55e;
+  --status-negative: #ef4444;
+  --status-warning: #f59e0b;
+  --status-info: #3b82f6;
+  --status-neutral: #6b7280;
+  --font-family-base: 'Nunito Sans', 'Segoe UI', system-ui, sans-serif;
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
 .rdt_TableWrapper,
 .rdt_Table,
 .rdt_TableHead,
@@ -13,14 +43,14 @@
 @layer utilities {
   .rdt_Pagination .rdt_PaginationButton,
   .rdt_Pagination .rdt_PaginationControl {
-    @apply text-gray-300 !important;
+    color: var(--text-secondary) !important;
   }
   .rdt_Pagination .rdt_PaginationButton svg,
   .rdt_Pagination .rdt_PaginationControl svg,
   .rdt_Pagination .rdt_PaginationButton svg path,
   .rdt_Pagination .rdt_PaginationControl svg path {
-    stroke: theme('colors.gray.300') !important;
-    fill:   theme('colors.gray.300') !important;
+    stroke: var(--text-secondary) !important;
+    fill:   var(--text-secondary) !important;
   }
 }
 
@@ -28,11 +58,11 @@
 .leaflet-popup-content-wrapper {
   border-radius: 12px !important;
   box-shadow: 0 0 8px rgba(39, 38, 38, 0.3) !important;
-  background-color: #1f1f1f !important;
-  border: 1px solid #3a3a3a;
+  background-color: var(--surface-secondary) !important;
+  border: 1px solid var(--border-default);
 
   * {
-    color: #fafafa !important;
+    color: var(--text-primary) !important;
   }
 }
 

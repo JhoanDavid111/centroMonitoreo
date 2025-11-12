@@ -1,4 +1,4 @@
-import bannerTransmision from '../../src/assets/bannerCentroMonitoreoTransmision.png';
+import bannerTransmision from '../assets/bannerCentroMonitoreoTransmision.png';
 import {
   Banner,
   BannerBackground,

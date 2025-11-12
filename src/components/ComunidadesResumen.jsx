@@ -95,7 +95,7 @@ export default function ComunidadesResumen() {
               alt="Icono Comunidades Energéticas"
               className="w-6 h-6"
             />
-            <h3 className="text-[20px] font-semibold text-[#B0B0B0]">
+            <h3 className="text-[20px] font-semibold text-text-muted">
               Comunidades Energéticas
             </h3>
           </div>
@@ -105,11 +105,11 @@ export default function ComunidadesResumen() {
             {cards.map(({ key, icon, label, value }) => (
               <div
                 key={key}
-                className="bg-[#262626] p-5 rounded-lg border border-[#666666] shadow"
+                className="bg-surface-primary p-5 rounded-lg border border-[color:var(--border-default)] shadow"
               >
                 <div className="flex items-center mb-2">
                   <img src={icon} alt={label} className="w-6 h-6 flex-shrink-0" />
-                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-[#B0B0B0]">
+                  <span className="ml-2 text-[18px] font-normal leading-[26px] text-text-muted">
                     {label}
                   </span>
                 </div>
@@ -122,7 +122,7 @@ export default function ComunidadesResumen() {
                   />
                 </div>
 
-                <div className="text-xs text-[#B0B0B0] mt-1">
+                <div className="text-xs text-text-muted mt-1">
                   Actualizado el: {updated}
                 </div>
               </div>

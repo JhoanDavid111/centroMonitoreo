@@ -1,11 +1,11 @@
 //src/components/DataGrid/hooks/useFilters.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useFilters = (initialData) => {
   const [filters, setFilters] = useState({});
   const [filteredData, setFilteredData] = useState(initialData || []);
 
-  const applyFilters = (data) => {
+  const applyFilters = useCallback((data) => {
     if (!data || !data.length) {
       setFilteredData([]);
       return;
@@ -21,11 +21,13 @@ export const useFilters = (initialData) => {
     });
 
     setFilteredData(result);
-  };
+  }, [filters]);
 
   useEffect(() => {
-    applyFilters(initialData);
-  }, [filters, initialData]);
+    if (initialData) {
+      applyFilters(initialData);
+    }
+  }, [filters, initialData, applyFilters]);
 
   return { 
     filteredData, 

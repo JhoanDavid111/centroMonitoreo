@@ -1,11 +1,16 @@
-import Highcharts from 'highcharts';
+import { useState } from 'react';
+import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
+import tokens from '../styles/theme.js';
+import { useTooltips } from '../services/tooltipsService.js';
+import TooltipModal from './ui/TooltipModal.jsx';
+
 
 // Configuración de gráficas ANLA
 const resumenANLAOptions = {
     chart: {
         type: 'column',
-        backgroundColor: '#262626',
+        backgroundColor: tokens.colors.surface.primary,
         spacing: [10, 10, 30, 10]
       },
     title: {
@@ -13,7 +18,7 @@ const resumenANLAOptions = {
       style: {
         fontSize: '20px',
         fontWeight: 'bold',
-        color: '#fff'
+        color: tokens.colors.text.primary
       }
     },
     xAxis: {
@@ -51,7 +56,7 @@ const resumenANLAOptions = {
         enabled: true,
         style: {
           fontWeight: 'bold',
-          color: '#fff',
+          color: tokens.colors.text.primary,
           textOutline: 'none'
         }
       },
@@ -63,7 +68,7 @@ const resumenANLAOptions = {
       x: -30,
       y: 25,
       floating: true,
-      backgroundColor: '#1f1f1f',
+      backgroundColor: tokens.colors.surface.secondary,
       borderColor: '#555',
       borderWidth: 1,
       itemStyle: {
@@ -72,9 +77,10 @@ const resumenANLAOptions = {
       }
     },
     tooltip: {
-      backgroundColor: '#262626',
-      borderColor: '#333',
-      style: { color: '#fff', fontSize: '14px' },
+      backgroundColor: tokens.colors.surface.primary,
+      borderColor: '#666',
+      style: { color: tokens.colors.text.primary, fontSize: '13px' },
+      padding: 10,
       headerFormat: '<b>{category}</b><br/>',
       pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
       useHTML: true
@@ -86,7 +92,7 @@ const resumenANLAOptions = {
         dataLabels: {
           enabled: true,
           style: {
-            color: '#fff',
+            color: tokens.colors.text.primary,
             fontWeight: 'bold',
             textOutline: 'none'
           }
@@ -102,12 +108,12 @@ const resumenANLAOptions = {
       {
         name: 'Fotovoltaico',
         data: [4, 3, 4, 5],
-        color: '#FFC800'
+        color: tokens.colors.accent.primary
       },
       {
         name: 'LT',
         data: [2, 6, 4, 3],
-        color: '#228B22'
+        color: tokens.colors.status.positive
       }
     ],
     credits: { enabled: false }
@@ -120,7 +126,7 @@ const seriesData = [
       { name: '2018', y: 240.0, color: '#0B6623' },
       { name: '2019', y: 346.5, color: '#32CD32' },
       { name: '2020', y: 200.0, color: '#39FF14' },
-      { name: '2021', y: 571.2, color: '#228B22' },
+      { name: '2021', y: 571.2, color: tokens.colors.status.positive },
       { name: '2022', y: 571.2, color: '#3CB371' },
       { name: '2023', y: 100.0, color: '#2E8B57' }
     ]
@@ -131,7 +137,7 @@ const seriesData = [
       { name: '2019', y: 100.5, color: '#0B6623' },
       { name: '2022', y: 200.0, color: '#32CD32' },
       { name: '2023', y: 360.0, color: '#39FF14' },
-      { name: '2024', y: 200.0, color: '#228B22' }
+      { name: '2024', y: 200.0, color: tokens.colors.status.positive }
     ]
   },
   {
@@ -147,7 +153,7 @@ const seriesData = [
       { name: '2019', y: 250.4, color: '#0B6623' },
       { name: '2021', y: 101.0, color: '#32CD32' },
       { name: '2023', y: 240.0, color: '#39FF14' },
-      { name: '2025', y: 200.0, color: '#228B22' }
+      { name: '2025', y: 200.0, color: tokens.colors.status.positive }
     ]
   },
   {
@@ -176,25 +182,25 @@ const seriesData = [
       { name: '2021', y: 121.3, color: '#0B6623' },
       { name: '2022', y: 360.0, color: '#32CD32' },
       { name: '2024', y: 250.0, color: '#39FF14' },
-      { name: '2025', y: 400.0, color: '#228B22' }
+      { name: '2025', y: 400.0, color: tokens.colors.status.positive }
     ]
   }
 ];
 
 const getChartOptions = (serie, index) => ({
   chart: { type: 'column',
-    backgroundColor: '#262626',
+    backgroundColor: tokens.colors.surface.primary,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: tokens.colors.surface.primary,
     plotBorderWidth: 1,
-    plotBorderColor: '#262626'
+    plotborderColor: tokens.colors.surface.primary
   },
   title: {
     text: serie.name,
     style: {
       fontSize: '14px',
       fontWeight: 'bold',
-      color: '#fff'
+      color: tokens.colors.text.primary
     }
   },
   xAxis: {
@@ -222,7 +228,7 @@ const getChartOptions = (serie, index) => ({
       dataLabels: {
         enabled: true,
         format: '{point.y}',
-        style: { fontWeight: 'bold', color: '#fff' },
+        style: { fontWeight: 'bold', color: tokens.colors.text.primary },
         y: -20
       },
       pointPadding: 0.1,
@@ -254,7 +260,7 @@ const viridisPalette = [
 const tiempoPromedioANLAOptions = {
   chart: {
     type: 'bar',
-    backgroundColor: '#262626',
+    backgroundColor: tokens.colors.surface.primary,
     style: {
       ffontFamily: 'Nunito Sans, Segoe UI, sans-serif'
     },
@@ -265,7 +271,7 @@ const tiempoPromedioANLAOptions = {
     style: {
       fontSize: '20px',
       fontWeight: 'bold',
-      color: '#fff'
+      color: tokens.colors.text.primary
     }
   },
   subtitle: {
@@ -303,9 +309,10 @@ const tiempoPromedioANLAOptions = {
     gridLineColor: '#388'
   },
   tooltip: {
-    backgroundColor: '#262626',
-    borderColor: '#338',
-    style: { color: '#fff', fontSize: '14px' },
+    backgroundColor: tokens.colors.surface.primary,
+    borderColor: '#666',
+    style: { color: tokens.colors.text.primary, fontSize: '13px' },
+    padding: 10,
     valueSuffix: 'dias',
     pointFormat: 'Promedio de aprobación: <b>{point.y}</b>',
     useHTML: true
@@ -316,7 +323,7 @@ const tiempoPromedioANLAOptions = {
       dataLabels: {
         enabled: true,
         format: '{point.y} dias',
-        color: '#fff',
+        color: tokens.colors.text.primary,
         inside: true,
         align: 'right',
         style: {
@@ -347,15 +354,38 @@ const tiempoPromedioANLAOptions = {
 };
 
 export default function GraficaANLA() {
+  const { data: tooltips } = useTooltips();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
+
+  const handleHelpClick = (identifier, title) => {
+    if (tooltips && tooltips[identifier]) {
+      setModalTitle(title);
+      setModalContent(tooltips[identifier]);
+      setIsModalOpen(true);
+    } else {
+      setModalTitle(title);
+      setModalContent('No hay información disponible.');
+      setIsModalOpen(true);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
+
   return (
     <div className="space-y-6 rounded-lg">
       {/* Gráfico Resumen ANLA */}
-      <div className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative">
+      <div className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative">
         <button
           className="absolute top-[25px] right-[60px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Esta gráfica muestra las licencias FNCIER otorgadas por año y tecnología.')}
+          onClick={() => handleHelpClick('proy_grafica_fncer_otorgada', 'Licencias FNCER otorgadas desde 07/08/2022 hasta la fecha')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" className="rounded-full">
@@ -382,7 +412,7 @@ export default function GraficaANLA() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {seriesData.map((serie, index) => (
-          <div key={index} className="bg-[#262626] rounded-lg border border-[#666666] h-[420px] p-1  relative h-[420px]">
+          <div key={index} className="bg-surface-primary rounded-lg border border-[color:var(--border-default)] h-[420px] p-1  relative h-[420px]">
             <button
           className="absolute top-[13px] right-[48px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
@@ -410,12 +440,12 @@ export default function GraficaANLA() {
       </div>*/}
 
       {/* Gráfico de tiempos promedio */}
-      <div className="bg-[#262626] rounded-lg border border-[#666666] relative p-2">
+      <div className="bg-surface-primary rounded-lg border border-[color:var(--border-default)] relative p-2">
         <button
           className="absolute top-[4%] right-[52px] z-10 flex items-center justify-center bg-[#444] rounded-lg shadow hover:bg-[#666] transition-colors"
           style={{ width: 30, height: 30 }}
           title="Ayuda"
-          onClick={() => alert('Muestra el tiempo promedio en días que tarda la aprobación de licencias por departamento.')}
+          onClick={() => handleHelpClick('proy_grafica_tiempo_promedio_aprobacion_licencia_dpto', 'Tiempo promedio de aprobación de licencias por departamento')}
           type="button"
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
@@ -434,6 +464,14 @@ export default function GraficaANLA() {
         </button>
         <HighchartsReact highcharts={Highcharts} options={tiempoPromedioANLAOptions} />
       </div>
+      {isModalOpen && (
+        <TooltipModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalTitle}
+          content={modalContent}
+        />
+      )}
     </div>
   );
 }

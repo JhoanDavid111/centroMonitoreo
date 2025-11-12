@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import bannerProyectos from '../../src/assets/bannerProyectosEstrategia6GW.png';
+import bannerProyectos from '../assets/bannerProyectosEstrategia6GW.png';
 import {
   Banner,
   BannerBackground,
@@ -67,7 +67,7 @@ export default function Proyectos075() {
 
       {!showCiclos ? (
         <div id="proyectos-tab">
-          <div className="rounded-lg bg-[#262626] p-6">
+          <div className="rounded-lg bg-surface-primary p-6">
             <IndicadoresProyectos075 />
           </div>
           <br />
