@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaCapacidadInstaladaTecnologia.jsx
 import React, { useMemo } from 'react';
 import { useGraficaCapacidadInstaladaTecnologia } from '../services/graficasService';
@@ -26,7 +28,7 @@ export function GraficaCapacidadInstaladaTecnologia({ fechaInicio = '2025-05-01'
       xAxis: { categories, title: { text: 'Fuente' } },
       yAxis: { title: { text: 'Capacidad (GW)' } },
       series: [
-        { name: 'Capacidad inst.', data: valores, color: '#FFC800' }
+        { name: 'Capacidad inst.', data: valores, color: tokens.colors.accent.primary }
       ],
     };
   }, [data, fechaInicio, fechaFin]);

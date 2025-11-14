@@ -18,7 +18,7 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-24 bg-[#262626] border-b border-[#575756] flex items-center justify-between px-6 z-50">
+    <header className="fixed top-0 left-0 right-0 h-24 bg-surface-primary border-b border-[#575756] flex items-center justify-between px-6 z-50">
       {/* Logos + título */}
       <div className="flex items-center w-1/2">
         <img
@@ -84,7 +84,7 @@ export function Header() {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-[#1d1d1d] rounded-md shadow-lg border border-[#575756] z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-[color:var(--surface-overlay)] rounded-md shadow-soft border border-[#575756] z-50">
                 <div className="px-4 py-3 border-b border-[#575756]">
                   <p className="text-sm text-white font-medium">
                     {currentUser.displayName || "Usuario"}

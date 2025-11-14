@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaCapacidadPorcentajeAvanceCurvaS.jsx
 import React, { useMemo, useRef } from 'react';
 import Highcharts from '../lib/highcharts-config';
@@ -22,11 +24,11 @@ export function GraficaCapacidadPorcentajeAvanceCurvaS() {
       subtitle: { text: 'Fuente: XM. 2020-2024', align: 'left' },
       xAxis: { categories, title: { text: 'Porcentaje de avance' } },
       yAxis: [
-        { title: { text: 'Capacidad instalada (MW)' }, labels: { style: { color: '#FFC800' } }, gridLineColor: '#333333' },
+        { title: { text: 'Capacidad instalada (MW)' }, labels: { style: { color: tokens.colors.accent.primary } }, gridLineColor: '#333333' },
         { title: { text: 'Número de proyectos' }, opposite: true, labels: { style: { color: '#4CAF50' } }, gridLineColor: '#333333' }
       ],
       series: [
-        { name: 'Capacidad instalada', data: dataCapacidad, type: 'column', yAxis: 0, color: '#FFC800' },
+        { name: 'Capacidad instalada', data: dataCapacidad, type: 'column', yAxis: 0, color: tokens.colors.accent.primary },
         { name: 'Número de proyectos', data: dataProyectos, type: 'line', yAxis: 1, color: '#4CAF50' }
       ],
     };

@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaEstatuto.jsx
 import React, { useMemo } from 'react';
 import { useGraficaEstatuto } from '../services/graficasService';
@@ -35,12 +37,12 @@ export function GraficaEstatuto({ fechaInicio = '2025-05-01', fechaFin = '2025-0
       yAxis: [
         {
           title: { text: 'Volumen útil (GWh)' },
-          labels: { style: { color: '#3B82F6' } }
+          labels: { style: { color: tokens.colors.status.info } }
         },
         {
           title: { text: 'Precio (COP)' },
           opposite: true,
-          labels: { style: { color: '#FFC800' } }
+          labels: { style: { color: tokens.colors.accent.primary } }
         }
       ],
       series: [
@@ -48,14 +50,14 @@ export function GraficaEstatuto({ fechaInicio = '2025-05-01', fechaFin = '2025-0
           name: 'Volumen útil',
           data: dataVolumen,
           type: 'column',
-          color: '#3B82F6',
+          color: tokens.colors.status.info,
           yAxis: 0
         },
         {
           name: 'Precio Punta',
           data: dataPrecioPunta,
           type: 'line',
-          color: '#FFC800',
+          color: tokens.colors.accent.primary,
           yAxis: 1
         }
       ],

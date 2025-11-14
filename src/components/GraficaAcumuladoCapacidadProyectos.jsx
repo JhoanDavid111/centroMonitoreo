@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaAcumuladoCapacidadProyectos.jsx
 import React, { useMemo, useRef } from 'react';
 import Highcharts from '../lib/highcharts-config';
@@ -35,8 +37,8 @@ export function GraficaAcumuladoCapacidadProyectos() {
         { title: { text: 'Número de Proyectos' }, opposite: true, min: 0 }
       ],
       series: [
-        { name: 'Capacidad Acumulada', data: acumulados, type: 'column', color: '#FFC800', yAxis: 0 },
-        { name: 'Número de Proyectos', data: cantidades, type: 'line', color: '#3B82F6', yAxis: 1 }
+        { name: 'Capacidad Acumulada', data: acumulados, type: 'column', color: tokens.colors.accent.primary, yAxis: 0 },
+        { name: 'Número de Proyectos', data: cantidades, type: 'line', color: tokens.colors.status.info, yAxis: 1 }
       ],
     };
   }, [data]);

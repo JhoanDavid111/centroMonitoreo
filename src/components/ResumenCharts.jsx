@@ -1,6 +1,8 @@
 import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 import { useRef, useState, useMemo } from 'react';
+import tokens from '../styles/theme.js';
+
 
 import TooltipModal from './ui/TooltipModal';
 import { useResumenCharts } from '../services/graficasService';
@@ -129,7 +131,7 @@ export function ResumenCharts() {
 
         // 1) Pie tecnología (tooltip SOLO 1 slice) – altura uniforme
         opts.push(withHeight({
-          chart: { type: 'pie', backgroundColor: '#262626' },
+          chart: { type: 'pie', backgroundColor: tokens.colors.surface.primary },
           title: { text: 'Distribución actual por tecnología', align: 'left' },
           subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -138,7 +140,7 @@ export function ResumenCharts() {
               dataLabels: {
                 enabled: true,
                 format: '<b>{point.name}</b>: {point.y:.2f} MW ({point.percentage:.2f}%)',
-                style: { fontSize: '12px', textOutline: 'none', color: '#fff' }
+                style: { fontSize: '12px', textOutline: 'none', color: tokens.colors.text.primary }
               },
               showInLegend: true
             }
@@ -154,7 +156,7 @@ export function ResumenCharts() {
           }],
           tooltip: {
             useHTML: true,
-            backgroundColor: '#262626',
+            backgroundColor: tokens.colors.surface.primary,
             borderColor: '#666',
             formatter: singlePieTooltipFormatter
           },
@@ -163,7 +165,7 @@ export function ResumenCharts() {
 
         // 2) Pie categoría (tooltip SOLO 1 slice) – altura uniforme
         opts.push(withHeight({
-          chart: { type: 'pie', backgroundColor: '#262626' },
+          chart: { type: 'pie', backgroundColor: tokens.colors.surface.primary },
           title: { text: 'Distribución de capacidad instalada por tipo de proyecto', align: 'left' },
           subtitle: { text: '' },
           plotOptions: {
@@ -171,7 +173,7 @@ export function ResumenCharts() {
               dataLabels: {
                 enabled: true,
                 format: '<b>{point.name}</b>: {point.y:.2f} MW ({point.percentage:.2f}%)',
-                style: { fontSize: '12px', textOutline: 'none', color: '#fff' }
+                style: { fontSize: '12px', textOutline: 'none', color: tokens.colors.text.primary }
               },
               showInLegend: true
             }
@@ -188,8 +190,10 @@ export function ResumenCharts() {
           }],
           tooltip: {
             useHTML: true,
-            backgroundColor: '#262626',
-            style: { color: '#fff', fontSize: '13px' },
+            backgroundColor: tokens.colors.surface.primary,
+            borderColor: '#666',
+            style: { color: tokens.colors.text.primary, fontSize: '13px' },
+            padding: 10,
             formatter: singlePieTooltipFormatter,
           },
           exporting: { enabled: true }
@@ -211,7 +215,7 @@ export function ResumenCharts() {
             dataLabels: {
               enabled: true,
               format: '{y:.2f}',
-              style: { color: '#fff', textOutline: 'none', fontWeight: 'bold' },
+              style: { color: tokens.colors.text.primary, textOutline: 'none', fontWeight: 'bold' },
               verticalAlign: 'bottom'
             },
             color: 'transparent'
@@ -219,7 +223,7 @@ export function ResumenCharts() {
         });
 
         opts.push(withHeight({
-          chart: { type: 'column', backgroundColor: '#262626' },
+          chart: { type: 'column', backgroundColor: tokens.colors.surface.primary },
           title: { text: 'Capacidad entrante por mes', align: 'left' },
           subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -244,6 +248,9 @@ export function ResumenCharts() {
           tooltip: {
             shared: true,
             useHTML: true,
+            backgroundColor: tokens.colors.surface.primary,
+            borderColor: '#666',
+            padding: 10,
             formatter: stackedColumnTooltipFormatter({ unit: 'MW' })
           },
           exporting: { enabled: true }
@@ -252,7 +259,7 @@ export function ResumenCharts() {
         // 4) Columnas apiladas histórico anual – altura uniforme
         const years = Object.keys(matJson[0]).filter(k => k !== 'fuente');
         opts.push({
-          chart: { type: 'column', height: 350, backgroundColor: '#262626' },
+          chart: { type: 'column', height: 350, backgroundColor: tokens.colors.surface.primary },
           title: { text: 'Evolución anual matriz energética despachada centralmente', align: 'left' },
           subtitle: { text: '' },
           legend: { itemStyle: { fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
@@ -278,6 +285,9 @@ export function ResumenCharts() {
           tooltip: {
             shared: true,
             useHTML: true,
+            backgroundColor: tokens.colors.surface.primary,
+            borderColor: '#666',
+            padding: 10,
             formatter: stackedColumnTooltipFormatter({ unit: 'MW' })
           },
           exporting: { enabled: true }
@@ -301,7 +311,7 @@ export function ResumenCharts() {
 
   if (loading || loadingTooltips) {
     return (
-      <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-surface-primary p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-[500px]">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0s' }}></div>
           <div className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: 'rgba(255,200,0,1)', animationDelay: '0.2s' }}></div>
@@ -314,7 +324,7 @@ export function ResumenCharts() {
 
   if (error || errorTooltips) {
     return (
-      <div className="bg-[#262626] p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
+      <div className="bg-surface-primary p-4 rounded-lg border shadow flex flex-col items-center justify-center h-[500px]">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -337,7 +347,7 @@ export function ResumenCharts() {
         {displayed.map(({ opt, idx }) => (
           <div
             key={idx}
-            className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
+            className="bg-surface-primary p-4 rounded-lg border border-[color:var(--border-default)] shadow relative"
             style={{ minHeight: CHART_HEIGHT + 32 }} // asegura tarjetas iguales
           >
             <button

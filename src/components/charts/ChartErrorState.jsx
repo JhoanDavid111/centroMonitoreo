@@ -5,7 +5,7 @@ export default function ChartErrorState({ error, onRetry = null }) {
   const errorMessage = error?.message || error || 'Error al cargar la gráfica.';
   
   return (
-    <div className="bg-[#262626] p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-64">
+    <div className="bg-surface-primary p-4 rounded-lg border border-gray-700 shadow flex flex-col items-center justify-center h-64">
       <div className="text-red-400 mb-2">
         <svg 
           xmlns="http://www.w3.org/2000/svg" 

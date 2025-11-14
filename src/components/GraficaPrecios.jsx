@@ -1,3 +1,5 @@
+import tokens from '../styles/theme.js';
+
 // src/components/GraficaPrecios.jsx
 import React, { useMemo } from 'react';
 import { useGraficaPrecios } from '../services/graficasService';
@@ -49,7 +51,7 @@ export function GraficaPrecios({ fechaInicio = '2025-05-01', fechaFin = '2025-05
         {
           name: 'Promedio',
           data: dataAvg,
-          color: '#FFC800'
+          color: tokens.colors.accent.primary
         },
         {
           name: 'Máximo',

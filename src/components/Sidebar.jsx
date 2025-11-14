@@ -140,7 +140,7 @@ export const Sidebar = ({ userRole }) => {
       />
       <aside
         data-state={open ? "open" : "closed"}
-        className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-[#262626] data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-50 border-l border-gray-600"
+        className="fixed top-24 right-0 w-[70vw] h-[calc(100vh-6rem)] bg-surface-primary data-[state=closed]:translate-x-full overflow-y-auto transition-all duration-300 z-50 border-l border-gray-600"
       >
         <nav className="flex-1 flex-col py-6 h-full">
           <ul className="flex flex-col gap-y-6 mb-auto">
@@ -190,7 +190,7 @@ export const Sidebar = ({ userRole }) => {
     </>
   ) : (
     <aside
-      className="bg-[#262626] font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-100"
+      className="bg-surface-primary font-sans py-2 sticky top-24 text-gray-300 h-[calc(100vh-6rem)] overflow-y-auto flex flex-col transition-all duration-100"
       style={{
         width: open ? WIDTHS.open : WIDTHS.closed,
       }}
@@ -285,7 +285,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
         <>
           <span
             data-state={open ? "show" : "hidden"}
-            className="text-sm font-semibold text-[#D1D1D0] mb-2 uppercase data-[state=hidden]:hidden"
+            className="text-sm font-semibold text-text-secondary mb-2 uppercase data-[state=hidden]:hidden"
           >
             {section.title}
           </span>
@@ -307,7 +307,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition  ${
-                          isActive ? "bg-[#333333]" : ""
+                          isActive ? "bg-[color:var(--surface-overlay)]" : ""
                         }`}
                       >
                         <img
@@ -318,7 +318,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
                         <span
                           data-state={open ? "show" : "hidden"}
                           data-active={isActive}
-                          className="ml-3 text-base whitespace-nowrap text-gray-300 data-[active=true]:text-[#FFC800] data-[state=hidden]:hidden"
+                          className="ml-3 text-base whitespace-nowrap text-gray-300 data-[active=true]:text-[color:var(--accent-primary)] data-[state=hidden]:hidden"
                         >
                           {item.title}
                         </span>
@@ -330,7 +330,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
                           if (isMobile) setOpen(false);
                         }}
                         className={`flex items-center px-2 py-3 rounded hover:bg-gray-700 transition ${
-                          isActive ? "bg-[#333333]" : ""
+                          isActive ? "bg-[color:var(--surface-overlay)]" : ""
                         }`}
                       >
                         <img
@@ -341,7 +341,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
                         {open && (
                           <span
                             className={`ml-3 text-base whitespace-nowrap ${
-                              isActive ? "text-[#FFC800]" : "text-gray-300"
+                              isActive ? "text-[color:var(--accent-primary)]" : "text-gray-300"
                             }`}
                           >
                             {item.title}
@@ -359,7 +359,7 @@ const SidebarItem = ({ section, hasPermission, isInAllowedRoles, open }) => {
         <Link
           to={section.path}
           className={`flex items-center px-2 py-1 rounded font-semibold hover:bg-gray-700 transition ${
-            pathname === section.path ? "text-[#FFC800]" : "text-gray-300"
+            pathname === section.path ? "text-[color:var(--accent-primary)]" : "text-gray-300"
           }`}
         >
           <img

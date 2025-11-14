@@ -5,6 +5,7 @@ import { useAcumuladoCapacidadProyectos } from '../services/graficasService';
 import ChartWrapper from './charts/ChartWrapper';
 import { getColorForTechnology } from '../lib/chart-colors';
 import { stackedAreaTooltipFormatter } from '../lib/chart-tooltips';
+import tokens from '../styles/theme.js';
 
 // ────────────────────────────────────────────────
 // Mapeo Canónico para Tooltip
@@ -69,36 +70,35 @@ export function CapacidadInstalada() {
     return {
       chart: {
         type: 'area',
-        backgroundColor: '#262626',
         height: 550,
         marginBottom: 100,
       },
       title: {
         text: 'Evolución capacidad instalada por tecnología',
         align: 'left',
-        style: { fontFamily: 'Nunito Sans, sans-serif', fontSize: '16px' }
+        style: { fontFamily: tokens.font.family, fontSize: tokens.font.size.lg }
       },
       subtitle: {
         text: '',
-        style: { color: '#AAA', fontSize: '12px' }
+        style: { color: tokens.colors.text.muted, fontSize: tokens.font.size.sm }
       },
       xAxis: {
         type: 'datetime',
         dateTimeLabelFormats: { day: '%e %b %Y', month: "%b '%y", year: '%Y' },
-        labels: { rotation: -45, y: 18, style: { color: '#CCC', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' } },
-        title: { text: 'Fecha de entrada en operación', style: { color: '#FFF' } },
-        lineColor: '#555', tickColor: '#888', tickLength: 5
+        labels: { rotation: -45, y: 18, style: { color: tokens.colors.text.secondary, fontSize: tokens.font.size.sm, fontFamily: tokens.font.family } },
+        title: { text: 'Fecha de entrada en operación', style: { color: tokens.colors.text.primary } },
+        lineColor: tokens.colors.border.default, tickColor: tokens.colors.text.secondary, tickLength: 5
       },
       yAxis: {
         min: 0,
         tickAmount: 6,
         gridLineDashStyle: 'Dash',
-        gridLineColor: '#444',
+        gridLineColor: tokens.colors.border.subtle,
         reversedStacks: false,
-        title: { text: 'Capacidad acumulada (MW)', style: { color: '#FFF' } },
+        title: { text: 'Capacidad acumulada (MW)', style: { color: tokens.colors.text.primary } },
         labels: {
           formatter() { return this.value.toLocaleString() + ' MW'; },
-          style: { color: '#CCC', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' }
+          style: { color: tokens.colors.text.secondary, fontSize: tokens.font.size.sm, fontFamily: tokens.font.family }
         }
       },
       tooltip: {
@@ -114,8 +114,8 @@ export function CapacidadInstalada() {
         layout: 'horizontal',
         verticalAlign: 'bottom',
         y: 25,
-        itemStyle: { color: '#ccc', fontSize: '12px', fontFamily: 'Nunito Sans, sans-serif' },
-        itemHoverStyle: { color: '#fff' }
+        itemStyle: { color: tokens.colors.text.secondary, fontSize: tokens.font.size.sm, fontFamily: tokens.font.family },
+        itemHoverStyle: { color: tokens.colors.text.primary }
       }
     };
   }, [data]);

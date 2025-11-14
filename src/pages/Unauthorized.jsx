@@ -18,8 +18,8 @@ export default function Unauthorized() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1d1d1d] flex items-center justify-center p-4">
-            <div className="bg-[#1d1d1d] bg-opacity-70 border border-[#666666] rounded-lg p-8 shadow-md w-full max-w-sm text-white">
+        <div className="min-h-screen bg-[color:var(--surface-overlay)] flex items-center justify-center p-4">
+            <div className="bg-[color:var(--surface-overlay)] bg-opacity-70 border border-[color:var(--border-default)] rounded-lg p-8 shadow-md w-full max-w-sm text-white">
                 <div className="flex flex-col items-center space-y-4">
                     {/* Icono de seguridad personalizado */}
                     <div className="bg-[#FFC800] bg-opacity-20 p-3 rounded-full">
@@ -31,7 +31,7 @@ export default function Unauthorized() {
                     </div>
 
                     {/* Título con color amarillo */}
-                    <h1 className="text-2xl font-bold text-[#FFC800]">¡Sesión expirada!</h1>
+                    <h1 className="text-2xl font-bold text-[color:var(--accent-primary)]">¡Sesión expirada!</h1>
                     
                     {/* Mensaje descriptivo */}
                     <p className="text-center text-gray-300 mb-6">
