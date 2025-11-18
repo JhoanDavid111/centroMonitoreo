@@ -14,6 +14,7 @@ import Login from '../src/assets/Login.png';
 import AuthButton from './components/auth/AuthButton';
 // comentario prueba
 // Importación de páginas
+import SeguimientoAmbiental from './pages/SeguimientoAmbiental';
 import Resumen from './pages/resumen';
 import Proyectos from './pages/Proyectos075';
 import ComunidadesEnergeticas from './pages/EnergiaElectricaPage';
@@ -223,6 +224,15 @@ function AppContent() {
                                 element={
                                     <PrivateRoute requiredPermission="dashboard">
                                         <Hidrologia />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/seguimiento_ambiental"
+                                element={
+                                    <PrivateRoute requiredPermission="dashboard">
+                                        <SeguimientoAmbiental />
                                     </PrivateRoute>
                                 }
                             />
