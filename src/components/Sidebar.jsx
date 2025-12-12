@@ -76,10 +76,10 @@ const sections = [
             },
             {
                 title: "Seguimiento Ambiental",
-                path: "seguimiento_ambiental",
+                path: "/seguimiento_ambiental",
                 icon: GWOff,
                 activeIcon: GWOn,
-                permission: "dashboard",
+                // permission: "dashboard",
             },
     ],
   },
