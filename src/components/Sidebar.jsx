@@ -74,6 +74,13 @@ const sections = [
                 roles: [ROLES.ADMIN],
                 external: true,
             },
+            {
+                title: "Seguimiento Ambiental",
+                path: "/seguimiento_ambiental",
+                icon: GWOff,
+                activeIcon: GWOn,
+                // permission: "dashboard",
+            },
     ],
   },
   {
