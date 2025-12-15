@@ -1,10 +1,9 @@
+// src/pages/ProyectoDetalle.jsx
 import tokens from '../styles/theme.js';
 
-// src/pages/ProyectoDetalle.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ChevronLeft, BadgeCheck, MapPin, CheckCircle2, Sun, Layers,
-  Gauge, CalendarDays, CircleAlert
+  ChevronLeft, BadgeCheck, MapPin, CheckCircle2
 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -18,17 +17,27 @@ import AutogeneracionOn from '../assets/svg-icons/Autogeneracion-On.svg';
 import CalendarDarkmodeAmarillo from '../assets/svg-icons/calendarDarkmodeAmarillo.svg';
 import { useInformacionProyecto, useCurvaS } from '../services/graficasService';
 
-// ===== Estilos locales =====
+// ===== Constantes de estilo =====
 const YELLOW = '#FFC800';
 const LABEL = '#B0B0B0';
 const BORDER = '#3a3a3a';
 
-const IconPill = ({ children }) => (
-  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-black" style={{ background: YELLOW }}>
-    {children}
-  </span>
-);
+// ===== Utils =====
+const errorText = (e) => {
+  if (!e) return '';
+  if (typeof e === 'string') return e;
+  return e?.response?.data?.message || e?.message || String(e);
+};
 
+const fmtFPO = (iso) => {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '-';
+  const mes = d.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
+  return `${String(d.getDate()).padStart(2, '0')}/${mes}/${d.getFullYear()}`;
+};
+
+// ===== UI pequeñas =====
 const Chip = ({ children, className = '' }) => (
   <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-[#2b2b2b] border border-[color:var(--border-subtle)] text-gray-200 ${className}`}>
     {children}
@@ -38,7 +47,6 @@ const Chip = ({ children, className = '' }) => (
 const StatCard = ({ icon, title, value }) => (
   <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
     <div className="flex items-center gap-2 mb-1">
-      {/* Ícono sin pill/fondo */}
       <span className="inline-flex items-center justify-center w-5 h-5">
         {icon}
       </span>
@@ -62,28 +70,20 @@ const InfoTag = ({ icon, labelText, value }) => (
   </div>
 );
 
-// Reemplaza la definición anterior de ProgressBar por esta:
+// Barra de progreso con colores por tramos
 const ProgressBar = ({ value }) => {
   const v = Math.max(0, Math.min(100, Number(value || 0)));
-
-  // Colores por tramo
-  // 0 - 25%   => rojo    #EF4444
-  // 25 - 50%  => naranja #F97316
-  // 50 - 75%  => amarillo#FFC800
-  // 75 - 100% => verde   #22C55E
   const getColor = (pct) => {
     if (pct <= 25) return '#EF4444';
     if (pct <= 50) return '#F97316';
     if (pct <= 75) return '#FFC800';
     return '#22C55E';
   };
-
   const barColor = getColor(v);
 
   return (
     <div className="bg-surface-primary border rounded-xl p-4" style={{ borderColor: BORDER }}>
       <div className="text-sm mb-2" style={{ color: LABEL }}>Avances del proyectos</div>
-
       <div
         className="h-3 w-full rounded-full overflow-hidden"
         style={{ background: '#3b3b3b' }}
@@ -95,30 +95,15 @@ const ProgressBar = ({ value }) => {
       >
         <div
           className="h-full"
-          style={{
-            width: `${v}%`,
-            background: barColor,
-            transition: 'width 400ms ease',
-          }}
+          style={{ width: `${v}%`, background: barColor, transition: 'width 400ms ease' }}
         />
       </div>
-
       <div className="text-right text-sm mt-1" style={{ color: LABEL }}>{v}%</div>
     </div>
   );
 };
 
-// util
-const fmtFPO = (iso) => {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  const mes = d.toLocaleDateString('es-CO', { month: 'short' }).replace('.', '');
-  return `${String(d.getDate()).padStart(2, '0')}/${mes}/${d.getFullYear()}`;
-};
-
-// ===== Opciones BASE de Curva S (igual que ProjectGrid) =====
-// ===== Opciones BASE de Curva S (placeholders en leyenda, fechas en nombre) =====
+// ===== Opciones base de Curva S =====
 const baseCurveOptions = {
   chart: {
     type: 'spline',
@@ -128,21 +113,14 @@ const baseCurveOptions = {
   },
   title: { text: 'Curva S – Proyecto', style: { color: tokens.colors.text.primary } },
   subtitle: { text: '' },
-
   xAxis: {
     type: 'datetime',
     gridLineColor: '#333',
     tickPixelInterval: 80,
-    dateTimeLabelFormats: {
-      day:   '%e %b %Y',
-      week:  '%e %b %Y',
-      month: '%b %Y',
-      year:  '%Y'
-    },
+    dateTimeLabelFormats: { day: '%e %b %Y', week: '%e %b %Y', month: '%b %Y', year: '%Y' },
     labels: { style: { color: '#ccc', fontSize: '10px' } },
     crosshair: { width: 1 }
   },
-
   yAxis: {
     title: { text: 'Avance (%)', style: { color: '#ccc' } },
     labels: { style: { color: '#ccc', fontSize: '10px' } },
@@ -151,13 +129,11 @@ const baseCurveOptions = {
     max: 100,
     crosshair: { width: 1 }
   },
-
   legend: {
     useHTML: true,
     itemStyle: { color: '#ccc' },
     itemHoverStyle: { color: tokens.colors.text.primary },
     itemHiddenStyle: { color: '#666' },
-    // si la "serie" es un placeholder (mensaje), pintamos el texto en rojo
     labelFormatter: function () {
       if (this.userOptions && this.userOptions.isPlaceholder) {
         return `<span style="color:#ef4444">${this.name}</span>`;
@@ -165,9 +141,7 @@ const baseCurveOptions = {
       return this.name;
     }
   },
-
   credits: { enabled: false },
-
   tooltip: {
     shared: false,
     useHTML: false,
@@ -183,7 +157,6 @@ const baseCurveOptions = {
       return `${fecha}\n${this.series.name}: ${valor} %${hito}`;
     }
   },
-
   plotOptions: {
     series: {
       turboThreshold: 0,
@@ -197,21 +170,13 @@ const baseCurveOptions = {
       connectNulls: false
     }
   },
-
-  // Se arma dinámicamente al cargar la curva
   series: [],
-
   exporting: {
     enabled: true,
-    buttons: {
-      contextButton: { menuItems: ['downloadPNG','downloadJPEG','downloadPDF','downloadSVG'] },
-    }
+    buttons: { contextButton: { menuItems: ['downloadPNG', 'downloadJPEG', 'downloadPDF', 'downloadSVG'] } }
   },
-  responsive: {
-    rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }]
-  }
+  responsive: { rules: [{ condition: { maxWidth: 640 }, chartOptions: { chart: { height: 420 } } }] }
 };
-
 
 export default function ProyectoDetalle() {
   const { id } = useParams();
@@ -224,22 +189,20 @@ export default function ProyectoDetalle() {
 
   // Datos del proyecto (encabezado)
   const [data, setData] = useState(null);
-  
+
   // Curva S
   const [curveOptions, setCurveOptions] = useState(baseCurveOptions);
 
-  // Fetch info de proyecto
+  // Info de proyecto
   const { data: proyectoData, isLoading: loading, error: err } = useInformacionProyecto(id);
-  
   useEffect(() => {
     if (proyectoData && Array.isArray(proyectoData) && proyectoData.length > 0) {
       setData(proyectoData[0]);
     }
   }, [proyectoData]);
 
-// Fetch Curva S — construye series (referencia/seguimiento) o mensajes en leyenda
+  // Curva S
   const { data: curvaData, isLoading: curveLoading, error: curveError } = useCurvaS(id);
-
   useEffect(() => {
     if (!curvaData) return;
 
@@ -265,9 +228,6 @@ export default function ProyectoDetalle() {
         .sort((a, b) => a.x - b.x);
 
     try {
-      setCurveLoading(false);
-      setCurveError('');
-
       const payload = curvaData;
 
       const refRaw = payload?.referencia?.curva;
@@ -285,63 +245,48 @@ export default function ProyectoDetalle() {
       const segName = `Curva de seguimiento${segRad ? ` (${formatDMY(segRad)})` : ''}`;
 
       const series = [];
+      const COLOR_REF = '#60A5FA';
+      const COLOR_SEG = '#A3E635';
 
-      const COLOR_REF = '#60A5FA';  // azul referencia
-      const COLOR_SEG = '#A3E635';  // verde seguimiento
+      if (refIsMsg) {
+        series.push({
+          type: 'spline',
+          name: String(refRaw[0]),
+          data: [],
+          color: COLOR_REF,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (refData.length) {
+        series.push({ type: 'spline', name: refName, data: refData, color: COLOR_REF });
+      }
 
-    // Referencia
-    if (refIsMsg) {
-      series.push({
-        type: 'spline',
-        name: String(refRaw[0]),   // mensaje del servicio
-        data: [],
-        color: COLOR_REF,          // << azul aunque no haya datos
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (refData.length) {
-      series.push({
-        type: 'spline',
-        name: refName,
-        data: refData,
-        color: COLOR_REF
-      });
-    }
-
-    // Seguimiento
-    if (segIsMsg) {
-      series.push({
-        type: 'spline',
-        name: String(segRaw[0]),   // mensaje del servicio
-        data: [],
-        color: COLOR_SEG,          // << VERDE aunque no haya datos
-        showInLegend: true,
-        enableMouseTracking: false,
-        isPlaceholder: true,
-        marker: { enabled: true, symbol: 'circle' }
-      });
-    } else if (segData.length) {
-      series.push({
-        type: 'spline',
-        name: segName,
-        data: segData,
-        color: COLOR_SEG
-      });
-    }
-
+      if (segIsMsg) {
+        series.push({
+          type: 'spline',
+          name: String(segRaw[0]),
+          data: [],
+          color: COLOR_SEG,
+          showInLegend: true,
+          enableMouseTracking: false,
+          isPlaceholder: true,
+          marker: { enabled: true, symbol: 'circle' }
+        });
+      } else if (segData.length) {
+        series.push({ type: 'spline', name: segName, data: segData, color: COLOR_SEG });
+      }
 
       if (series.length === 0) {
-        setCurveError('Sin datos de Curva S para este proyecto.');
         setCurveOptions(o => ({ ...o, series: [] }));
         return;
       }
 
       setCurveOptions(o => ({
         ...o,
-        title: { ...o.title, text: (data?.nombre || `Proyecto ${id}`).toString() },
-        legend: { ...o.legend, useHTML: true }, // asegura el rojo en placeholders
+        title: { ...o.title, text: (data?.nombre_proyecto || `Proyecto ${id}`).toString() },
+        legend: { ...o.legend, useHTML: true },
         series
       }));
     } catch (e) {
@@ -356,7 +301,6 @@ export default function ProyectoDetalle() {
     }
   }, [curvaData, id, data]);
 
-
   // Reflow en resize
   useEffect(() => {
     const onResize = () => chartRef.current?.chart?.reflow();
@@ -367,6 +311,7 @@ export default function ProyectoDetalle() {
   const title = useMemo(() => {
     const nombre = state?.nombre?.trim();
     if (nombre) return `${nombre} (ID ${id})`;
+    if (data?.nombre_proyecto) return `${data.nombre_proyecto} (ID ${id})`;
     if (data?.municipio || data?.tecnologia) {
       const tech = (data?.tecnologia ?? 'Proyecto').toString().toUpperCase();
       const loc = [data?.municipio, data?.departamento].filter(Boolean).join(', ');
@@ -375,6 +320,7 @@ export default function ProyectoDetalle() {
     return `Proyecto (ID ${id})`;
   }, [state?.nombre, data, id]);
 
+  // Loading
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] text-white flex items-center justify-center">
@@ -386,10 +332,11 @@ export default function ProyectoDetalle() {
     );
   }
 
+  // Error principal
   if (err) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] text-white flex flex-col items-center justify-center p-4">
-        <p className="text-red-400 mb-4">Error: {err}</p>
+        <p className="text-red-400 mb-4">Error: {errorText(err)}</p>
         <button onClick={() => navigate(-1)} className="px-3 py-2 rounded-md text-black" style={{ background: YELLOW }}>
           <ChevronLeft size={18} /> Volver
         </button>
@@ -440,29 +387,29 @@ export default function ProyectoDetalle() {
             </div>
           </div>
 
-        {/* 4 stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <StatCard
-            icon={<img src={AutogeneracionOn} alt="Autogeneración" className="w-4 h-4" draggable="false" />}
-            title="Tecnología"
-            value={data?.tecnologia ?? '-'}
-          />
-          <StatCard
-            icon={<img src={EnergiaElectricaOn} alt="Ciclo" className="w-4 h-4" draggable="false" />}
-            title="Ciclo de asignación"
-            value={data?.ciclo_asignacion ?? '-'}
-          />
-          <StatCard
-            icon={<img src={EnergiaElectricaOn} alt="Capacidad" className="w-4 h-4" draggable="false" />}
-            title="Capacidad asignada"
-            value={`${data?.capacidad_instalada_mw ?? 0} MW`}
-          />
-          <StatCard
-            icon={<img src={CalendarDarkmodeAmarillo} alt="Calendario" className="w-4 h-4" draggable="false" />}
-            title="FPO vigente"
-            value={fpo}
-          />
-        </div>
+          {/* 4 stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              icon={<img src={AutogeneracionOn} alt="Autogeneración" className="w-4 h-4" draggable="false" />}
+              title="Tecnología"
+              value={data?.tecnologia ?? '-'}
+            />
+            <StatCard
+              icon={<img src={EnergiaElectricaOn} alt="Ciclo" className="w-4 h-4" draggable="false" />}
+              title="Ciclo de asignación"
+              value={data?.ciclo_asignacion ?? '-'}
+            />
+            <StatCard
+              icon={<img src={EnergiaElectricaOn} alt="Capacidad" className="w-4 h-4" draggable="false" />}
+              title="Capacidad asignada"
+              value={`${data?.capacidad_instalada_mw ?? 0} MW`}
+            />
+            <StatCard
+              icon={<img src={CalendarDarkmodeAmarillo} alt="Calendario" className="w-4 h-4" draggable="false" />}
+              title="FPO vigente"
+              value={fpo}
+            />
+          </div>
         </div>
 
         {/* Avance */}
@@ -480,51 +427,48 @@ export default function ProyectoDetalle() {
           style={{ borderColor: BORDER }}
         >
           {curveLoading && <p className="text-gray-300 px-2 py-4">Cargando Curva S…</p>}
-          {!curveLoading && curveError && <p className="text-red-400 px-2 py-4">Error: {curveError}</p>}
+          {!curveLoading && curveError && (
+            <p className="text-red-400 px-2 py-4">Error: {errorText(curveError)}</p>
+          )}
           {!curveLoading && !curveError && (
             <HighchartsReact highcharts={Highcharts} options={curveOptions} ref={chartRef} />
           )}
-          {/* NOTA: Se eliminó la leyenda manual para evitar duplicados */}
         </div>
 
         {/* Ubicación y detalles */}
-        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>Ubicación y detalles</div>
-<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-  <InfoTag
-    icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
-    labelText="Departamento"
-    value={data?.departamento ?? '-'}
-  />
-  <InfoTag
-    icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
-    labelText="Municipio"
-    value={data?.municipio ?? '-'}
-  />
-  <InfoTag
-    icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
-    labelText="Área operativa"
-    value={data?.area_operativa ?? '-'}
-  />
-  <InfoTag
-    icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
-    labelText="Subárea"
-    value={data?.subarea ?? '-'}
-  />
-  <InfoTag
-    icon={<img src={EnergiaElectricaOn} alt="Energía eléctrica" className="w-4 h-4" draggable="false" />}
-    labelText="Punto de conexión"
-    value={data?.punto_conexion_seleccionado ?? '-'}
-  />
-</div>
+        <div className="text-[18px] font-semibold mt-6 mb-2" style={{ color: tokens.colors.text.secondary }}>
+          Ubicación y detalles
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <InfoTag
+            icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
+            labelText="Departamento"
+            value={data?.departamento ?? '-'}
+          />
+          <InfoTag
+            icon={<img src={TerritorioOn} alt="Territorio" className="w-4 h-4" draggable="false" />}
+            labelText="Municipio"
+            value={data?.municipio ?? '-'}
+          />
+          <InfoTag
+            icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
+            labelText="Área operativa"
+            value={data?.area_operativa ?? '-'}
+          />
+          <InfoTag
+            icon={<img src={LocationOn} alt="Ubicación" className="w-4 h-4" draggable="false" />}
+            labelText="Subárea"
+            value={data?.subarea ?? '-'}
+          />
+          <InfoTag
+            icon={<img src={EnergiaElectricaOn} alt="Energía eléctrica" className="w-4 h-4" draggable="false" />}
+            labelText="Punto de conexión"
+            value={data?.punto_conexion_seleccionado ?? '-'}
+          />
+        </div>
 
         <div className="h-8" />
       </div>
     </div>
   );
 }
-
-
-
-
-
-
