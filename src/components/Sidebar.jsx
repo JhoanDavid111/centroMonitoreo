@@ -84,6 +84,7 @@ const sections = [
                 icon: SeguiOff,
                 activeIcon: SeguiOn,
                 permission: "dashboard",
+
             },
     ],
   },
