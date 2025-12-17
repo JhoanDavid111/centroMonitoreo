@@ -241,13 +241,14 @@ export default function Indicadores6GW() {
               </span>
             </div>
           </div>
-          <button
-            onClick={() => navigate('/proyectos_generacion')}
-            className="inline-flex items-center gap-2 rounded-md px-3 py-1 bg-[color:var(--accent-primary)] text-black hover:bg-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-primary)] transition"
-          >
-            <Bolt size={16} />
-            Ver seguimiento de proyectos
-          </button>
+        <button
+          onClick={() => navigate('/proyectos_generacion')}
+          className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+          aria-label="Ver seguimiento de proyectos"
+        >
+          <Bolt size={16} />
+          Ver seguimiento de proyectos
+        </button>
         </Card>
       </div>
 

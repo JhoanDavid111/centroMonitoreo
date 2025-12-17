@@ -1,20 +1,20 @@
 // src/components/IndicadoresSeguimientoAmbiental.jsx
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 import TooltipModal from './ui/TooltipModal';
 
-// Iconos (ajusta paths si cambian)
+// Iconos
 import TramiteIcon from '../assets/svg-icons/TramitesServicos-Blanco.svg';
 import ProyectoIcon from '../assets/svg-icons/ProyectoGeneracion-Amarillo.svg';
-
 import TotalSolicitudesIcon from '../assets/svg-icons/tramites.svg';
 import GeneracionIcon from '../assets/svg-icons/Autogeneracion-On.svg';
 import TransmisionIcon from '../assets/svg-icons/Transmision-On.svg';
 import DistribucionIcon from '../assets/svg-icons/Demanda-On.svg';
 
-const API_URL = 'http://192.168.8.138:8002/v1/indicadores/oass/indicadores_oass';
+// ⬅️ Hook con React Query + apiClient (mismo patrón que Indicadores6GW)
+import { useIndicadoresOASS } from '../services/indicadoresAmbientalesService';
 
-// Utilidad para formatear "2025-11" → "11/2025"
+/** Utilidad para formatear "2025-11" → "11/2025" */
 const formatYYYYMMtoMMYYYY = (str) => {
   if (!str) return '';
   const [y, m] = String(str).split('-');
@@ -22,55 +22,31 @@ const formatYYYYMMtoMMYYYY = (str) => {
 };
 
 export default function IndicadoresSeguimientoAmbiental() {
+  // ⬅️ Trae data como en Indicadores6GW: useQuery manejando cache/estados
+  const { data, isLoading: loading, error } = useIndicadoresOASS();
+
+  // Modal de ayuda
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState('');
+  const openTooltip = (title, content) => {
+    setModalTitle(title || 'Detalle');
+    setModalContent(content || 'No hay información adicional disponible para este indicador.');
+    setIsModalOpen(true);
+  };
+  const closeTooltip = () => {
+    setIsModalOpen(false);
+    setModalTitle('');
+    setModalContent('');
+  };
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // === FETCH (POST) ===
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}), // si el backend no requiere payload, lo dejamos vacío
-        });
-
-        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-        const json = await res.json();
-        if (!cancelled) setData(json);
-      } catch (err) {
-        if (!cancelled) {
-          console.error('[IndicadoresSeguimientoAmbiental] fetch error:', err);
-          setError(err.message || 'Error al cargar indicadores');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // === Derivar datos de API ===
+  // Derivar datos de API
   const { top, cards } = useMemo(() => {
     if (!data) {
       return {
         top: {
           proyectos: { valor: 0, label: 'proyectos', mes: '' },
-          tramites: { valor: 0, label: 'trámites', mes: '' },
+          tramites:  { valor: 0, label: 'trámites',  mes: '' },
         },
         cards: [],
       };
@@ -79,19 +55,17 @@ export default function IndicadoresSeguimientoAmbiental() {
     const resumen = data.resumen || {};
     const periodo = resumen.periodo || '';
     const proyectosTotal = Number(resumen.proyectos?.total ?? 0);
-    const tramitesTotal = Number(resumen.tramites?.total ?? 0);
+    const tramitesTotal  = Number(resumen.tramites?.total  ?? 0);
 
-    // Mapa de categorías → cantidad (detalle_por_clasificacion)
-    const detalle = data.detalle_por_clasificacion || {};
-    const totalDetalle = Number(detalle.total ?? 0);
-    const fechaDetalle = formatYYYYMMtoMMYYYY(detalle.ultimaActualizacion);
+    // Detalle por clasificación
+    const detalle       = data.detalle_por_clasificacion || {};
+    const totalDetalle  = Number(detalle.total ?? 0);
+    const fechaDetalle  = formatYYYYMMtoMMYYYY(detalle.ultimaActualizacion);
     const porCat = Object.fromEntries(
       (detalle.detalle || []).map((d) => [d.categoria, Number(d.cantidad ?? 0)])
     );
-
     const safe = (k) => Number(porCat[k] ?? 0);
 
-    // Construcción de tarjetas (orden y textos iguales a tu diseño actual)
     const cards = [
       {
         id: 'total',
@@ -159,34 +133,16 @@ export default function IndicadoresSeguimientoAmbiental() {
       },
     ];
 
+    const mesFmt = periodo ? periodo.charAt(0).toUpperCase() + periodo.slice(1) : '';
+
     return {
       top: {
-        proyectos: {
-          valor: proyectosTotal,
-          label: 'proyectos',
-          mes: periodo ? periodo.charAt(0).toUpperCase() + periodo.slice(1) : '',
-        },
-        tramites: {
-          valor: tramitesTotal,
-          label: 'trámites',
-          mes: periodo ? periodo.charAt(0).toUpperCase() + periodo.slice(1) : '',
-        },
+        proyectos: { valor: proyectosTotal, label: 'proyectos', mes: mesFmt },
+        tramites:  { valor: tramitesTotal,  label: 'trámites',  mes: mesFmt },
       },
       cards,
     };
   }, [data]);
-
-  const openTooltip = (title, content) => {
-    setModalTitle(title || 'Detalle');
-    setModalContent(content || 'No hay información adicional disponible para este indicador.');
-    setIsModalOpen(true);
-  };
-
-  const closeTooltip = () => {
-    setIsModalOpen(false);
-    setModalTitle('');
-    setModalContent('');
-  };
 
   // === UI ===
   if (loading) {
@@ -204,10 +160,11 @@ export default function IndicadoresSeguimientoAmbiental() {
   }
 
   if (error) {
+    const msg = typeof error === 'string' ? error : (error?.message || 'Error al cargar indicadores');
     return (
       <div className="px-4 pt-8">
         <div className="max-w-5xl mx-auto bg-[#262626] border border-red-500 text-red-400 rounded-xl p-4">
-          Error al cargar indicadores: {error}
+          Error al cargar indicadores: {msg}
         </div>
       </div>
     );
@@ -302,4 +259,3 @@ export default function IndicadoresSeguimientoAmbiental() {
     </>
   );
 }
-
