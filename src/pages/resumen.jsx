@@ -73,11 +73,11 @@ export default function Resumen() {
         </div>
       </Suspense>
 
-      <Suspense fallback={<LoadingFallback message="Cargando comunidades energéticas..." />}>
+{/*       <Suspense fallback={<LoadingFallback message="Cargando comunidades energéticas..." />}>
         <div className="px-2">
           <ComunidadesResumen />
         </div>
-      </Suspense>
+      </Suspense> */}
 
       <ResumenCharts />
 

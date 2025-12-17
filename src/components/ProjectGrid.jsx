@@ -975,7 +975,8 @@ export default function ProjectGrid() {
               className="bg-surface-secondary placeholder:text-text-muted text-text-primary rounded p-2 w-1/3"
             />
             <button
-              className="inline-flex items-center gap-2 rounded-md px-3 py-1 bg-[color:var(--accent-primary)] text-black hover:bg-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-primary)] transition"
+              aria-label="Exportar a CSV"
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center"
               onClick={() => exportToCSV(sortedSeguimiento)}
             >
               <Download size={16} /> Exportar CSV
@@ -1025,7 +1026,8 @@ export default function ProjectGrid() {
               className="bg-surface-secondary placeholder:text-text-muted text-text-primary rounded p-2 w-1/3"
             />
             <button
-              className="inline-flex items-center gap-2 rounded-md px-3 py-1 bg-[color:var(--accent-primary)] text-black hover:bg-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-primary)] transition"
+              aria-label="Exportar a CSV"
+              className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center"
               onClick={() => exportToCSV(sortedAll)}
             >
               <Download size={16} /> Exportar CSV
