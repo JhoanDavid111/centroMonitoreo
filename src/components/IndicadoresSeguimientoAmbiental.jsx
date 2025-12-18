@@ -102,7 +102,7 @@ export default function IndicadoresSeguimientoAmbiental() {
       {
         id: 'acogen',
         icon: TotalSolicitudesIcon,
-        titulo: 'Solicitudes Acogen',
+        titulo: 'Solicitudes Acolgen',
         valor: safe('ACOLGEN'),
         fecha: fechaDetalle,
         tooltip: 'Solicitudes bajo el esquema Acolgen.',
