@@ -68,7 +68,7 @@ export default function Proyectos075() {
 
       {!showCiclos ? (
         <div id="proyectos-tab">
-          <div className="rounded-lg bg-surface-primary p-6">
+          <div>
             <IndicadoresProyectos075 />
           </div>
           <br />
