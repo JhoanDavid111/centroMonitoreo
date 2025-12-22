@@ -150,7 +150,7 @@ function buildTipoTramitesOptions(tipos_tramite) {
     ...basePieOptions,
     title: {
       ...basePieOptions.title,
-      text: tipos_tramite?.titulo || 'Tipo de trámites solicitados',
+      text: tipos_tramite?.titulo || 'Tipo de trámites reportados',
     },
     subtitle: { ...basePieOptions.subtitle, text: subtitle },
     series: [
@@ -198,7 +198,7 @@ function buildTipologiaManeOptions(tipologias) {
     ...basePieOptions,
     title: {
       ...basePieOptions.title,
-      text: tipologias?.titulo || 'Tipología de trámites MANE I 2025',
+      text: tipologias?.titulo || 'Tipología de trámites I 2025',
     },
     subtitle: { ...basePieOptions.subtitle, text: subtitle },
     plotOptions: {
