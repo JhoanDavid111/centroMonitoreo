@@ -53,11 +53,11 @@ export default function Resumen() {
           </BannerTitle>
           <BannerAction>
             <a
-              href="https://app.upme.gov.co/Reportes_CentroMonitoreo/Reportes/Reporte_Resumen_CentroMonitoreo.pdf"
+              href="http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_6g/download?formato=excel"
               target="_blank"
               rel="noreferrer noopener"
             >
-              Descargar Resumen
+              Información de proyectos
             </a>
           </BannerAction>
         </BannerHeader>
