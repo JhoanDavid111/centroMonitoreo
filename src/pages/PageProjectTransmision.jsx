@@ -233,7 +233,7 @@ const PageProjectTransmision = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Imagen + botón - Ahora con carrusel */}
           <div className="lg:col-span-2 bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-3">
-            <Carousel images={mainCarouselImgs} height="h-72 md:h-96" interval={5000} />
+            <Carousel images={mainCarouselImgs} height="h-72 md:h-96" />
             <div className="mt-3">
               <button
                 onClick={() => window.open(projectData.documents, '_blank')}
@@ -281,7 +281,7 @@ const PageProjectTransmision = () => {
 
           {/* Carrusel adicional - Manteniendo el mismo tamaño */}
           <div className="md:col-span-2 bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-3">
-           <Carousel images={secondaryCarouselImgs} height="h-56" interval={5000} />
+           <Carousel images={secondaryCarouselImgs} height="h-56" />
           </div>
         </div>
 
