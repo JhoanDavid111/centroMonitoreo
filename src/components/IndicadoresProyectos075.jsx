@@ -1,6 +1,6 @@
 // src/components/IndicadoresProyectos075.jsx
 import { useEffect, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Download } from 'lucide-react';
 
 import TooltipModal from './ui/TooltipModal';
 import { useTooltipsCache } from '../hooks/useTooltipsCache';
@@ -15,6 +15,10 @@ import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
 import Proyecto075On       from '../assets/svg-icons/Proyecto075-On.svg';
 import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
 import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
+
+// URL descarga
+const DOWNLOAD_URL =
+  'http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_6g/download?formato=excel';
 
 // Mapeo tarjeta → tooltip
 const CARD_TO_TOOLTIP_MAP = {
@@ -99,6 +103,11 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
     setIsModalOpen(true);
   };
 
+  // Descarga Excel
+  const handleDownloadProyectos = () => {
+    window.open(DOWNLOAD_URL, '_blank', 'noopener,noreferrer');
+  };
+
   // Datos API
   const { data, isLoading: loading, error: queryError } = useIndicadoresProyectos075();
 
@@ -127,7 +136,7 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
   const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
   const heroValue    = labels.total_proyectos_bd075.value;
 
-  // ===== Loading / Error (con fondo #111111 y sin bordes) =====
+  // ===== Loading / Error =====
   if (loading || loadingTooltips) {
     return (
       <section
@@ -156,7 +165,9 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
         className={`bg-[#111111] px-4 py-6 !border-0 !shadow-none ${wrapperClassName}`}
         style={{ border: 0, boxShadow: 'none', outline: 'none' }}
       >
-        <div className="text-red-400 p-6">Error: {queryError?.message || errorTooltips || 'Error al cargar los indicadores'}</div>
+        <div className="text-red-400 p-6">
+          Error: {queryError?.message || errorTooltips || 'Error al cargar los indicadores'}
+        </div>
       </section>
     );
   }
@@ -173,26 +184,39 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
       className={`bg-[#111111] px-4 py-6 !border-0 !shadow-none ${wrapperClassName}`}
       style={{ border: 0, boxShadow: 'none', outline: 'none' }}
     >
-      {/* ───────── HERO sin borde y con fondo #111111 ───────── */}
-      <div className="pt-2 text-center">
+      {/* ───────── HERO: total_proyectos_bd075 + BOTÓN DESCARGA ───────── */}
+      <div className="pt-2">
         <Card
-          className="inline-flex flex-col items-center gap-4 px-8 py-6 md:flex-row md:justify-center border-0 shadow-none"
+          className="flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-5 border-0 shadow-none"
           style={{ backgroundColor: '#111111' }}
         >
-          <span
-            className="inline-flex items-center justify-center rounded-full"
-            style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
-          >
-            <img src={EnergiaAmarillo} alt="Energía" className="w-12 h-12 md:w-14 md:h-14" />
-          </span>
-          <div className="text-left md:text-center">
-            <p className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold leading-tight">
-              {heroValue}
-            </p>
-            <p className="mt-2 text-text-secondary text-base lg:text-lg">
-              {heroSubtitle}
-            </p>
+          <div className="flex items-center gap-4 w-full">
+            <span
+              className="inline-flex items-center justify-center rounded-full flex-shrink-0"
+              style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
+            >
+              <img src={EnergiaAmarillo} alt="Energía" className="w-12 h-12 md:w-14 md:h-14" />
+            </span>
+
+            <div className="flex flex-col leading-tight text-left">
+              <p className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold leading-tight">
+                {heroValue}
+              </p>
+              <p className="mt-2 text-text-secondary text-base lg:text-lg">
+                {heroSubtitle}
+              </p>
+            </div>
           </div>
+
+          <button
+            onClick={handleDownloadProyectos}
+            className="flex items-center gap-2 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+            aria-label="Descargar información de proyectos"
+            title="Descargar información de proyectos"
+          >
+            <Download size={16} />
+            Información de proyectos
+          </button>
         </Card>
       </div>
 
@@ -207,6 +231,7 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
                   {label}
                 </span>
               </div>
+
               <div className="flex items-center text-text-primary text-2xl font-bold">
                 {value}
                 <HelpCircle
@@ -215,6 +240,7 @@ export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
                   onClick={() => handleHelpClick(key)}
                 />
               </div>
+
               <div className="text-xs text-text-muted mt-1">Actualizado el: {updated}</div>
             </Card>
           ))}

@@ -344,7 +344,7 @@ export default function GestionProyectosPriorizados() {
 
   return (
     <section className="mt-10 space-y-8">
-      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Gestión de proyectos priorizados 6GW+</h2>
+      <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Gestión de proyectos priorizados por el plan 6GW+</h2>
 
       {/* Fila 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-2">
