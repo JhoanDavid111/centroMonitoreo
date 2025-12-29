@@ -1,64 +1,26 @@
 // src/components/TramitesSolicitados.jsx
-
 import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-const API_URL = 'http://192.168.8.138:8002/v1/graficas/oass/tramites_solicitados';
+// ⬅️ Hook con React Query + apiClient (igual que Indicadores6GW)
+import { useTramitesSolicitadosOASS } from '../services/indicadoresAmbientalesService';
 
 function TramitesSolicitados() {
-  const [apiData, setApiData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch directo (POST) dentro del componente
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
-
-        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-
-        const json = await res.json();
-        if (!cancelled) setApiData(json);
-      } catch (err) {
-        if (!cancelled) {
-          console.error('[TramitesSolicitados] Error:', err);
-          setError(err.message || 'Error al cargar los datos.');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: apiData, isLoading: loading, error } = useTramitesSolicitadosOASS();
 
   const options = useMemo(() => {
     const serieTemporal = apiData?.serie_temporal;
 
-    const categorias =
-      serieTemporal?.serie?.map((p) => p.periodo) || [];
-    const valores =
-      serieTemporal?.serie?.map((p) => Number(p.valor ?? 0)) || [];
+    const categorias = serieTemporal?.serie?.map((p) => p.periodo) || [];
+    const valores     = serieTemporal?.serie?.map((p) => Number(p.valor ?? 0)) || [];
 
-    const fuente = serieTemporal?.fuente || 'Minenergía – OAAS';
-    const ultima = serieTemporal?.ultimaActualizacion || '';
-    const subtitleText = `Fuente: ${fuente}${
-      ultima ? ` / Actualizado el: ${ultima}` : ''
-    }`;
+    const fuente  = serieTemporal?.fuente || 'Minenergía – OAAS';
+    const ultima  = serieTemporal?.ultimaActualizacion || '';
+    const titulo  = serieTemporal?.titulo || 'Trámites solicitados entre 2022 y 2025';
+    const unidad  = serieTemporal?.unidad || 'N.º de trámites solicitados';
+
+    const subtitleText = `Fuente: ${fuente}${ultima ? ` / Actualizado el: ${ultima}` : ''}`;
 
     return {
       chart: {
@@ -70,16 +32,13 @@ function TramitesSolicitados() {
         spacingBottom: 40,
       },
       title: {
-        text:
-          serieTemporal?.titulo ||
-          'Trámites solicitados entre 2022 y 2025',
+        text: titulo,
         align: 'left',
         style: {
           color: '#FFFFFF',
           fontSize: '18px',
           fontWeight: '600',
-          fontFamily:
-            'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
         },
         margin: 20,
       },
@@ -89,30 +48,23 @@ function TramitesSolicitados() {
         style: {
           color: '#9CA3AF',
           fontSize: '12px',
-          fontFamily:
-            'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
         },
-        y: 34, // separa subtítulo de la línea de la gráfica
+        y: 34,
       },
       xAxis: {
         categories: categorias,
         lineColor: '#374151',
         tickColor: '#374151',
-        labels: {
-          style: { color: '#9CA3AF', fontSize: '11px' },
-        },
+        labels: { style: { color: '#9CA3AF', fontSize: '11px' } },
       },
       yAxis: {
         title: {
-          text:
-            serieTemporal?.unidad ||
-            'N.º de trámites solicitados',
+          text: unidad,
           style: { color: '#9CA3AF', fontSize: '12px' },
         },
         gridLineColor: '#111827',
-        labels: {
-          style: { color: '#9CA3AF', fontSize: '11px' },
-        },
+        labels: { style: { color: '#9CA3AF', fontSize: '11px' } },
       },
       legend: { enabled: false },
       tooltip: {
@@ -125,14 +77,8 @@ function TramitesSolicitados() {
         series: {
           dataLabels: {
             enabled: true,
-            formatter: function () {
-              return this.y;
-            },
-            style: {
-              color: '#F9FAFB',
-              textOutline: 'none',
-              fontSize: '11px',
-            },
+            formatter: function () { return this.y; },
+            style: { color: '#F9FAFB', textOutline: 'none', fontSize: '11px' },
           },
         },
         line: {
@@ -165,10 +111,11 @@ function TramitesSolicitados() {
   }
 
   if (error) {
+    const msg = typeof error === 'string' ? error : (error?.message || 'Error al cargar los datos.');
     return (
       <div className="px-2 mt-6">
         <div className="bg-[#262626] border border-red-500 text-red-400 rounded-xl p-4 shadow">
-          Error al cargar los datos de trámites: {error}
+          Error al cargar los datos de trámites: {msg}
         </div>
       </div>
     );

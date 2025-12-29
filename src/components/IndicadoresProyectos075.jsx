@@ -1,6 +1,6 @@
 // src/components/IndicadoresProyectos075.jsx
 import { useEffect, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Download } from 'lucide-react';
 
 import TooltipModal from './ui/TooltipModal';
 import { useTooltipsCache } from '../hooks/useTooltipsCache';
@@ -8,7 +8,7 @@ import { useIndicadoresProyectos075 } from '../services/indicadoresService';
 import Card from './ui/Card';
 import tokens from '../styles/theme.js';
 
-// Ícono de las tarjetas y del hero
+// Íconos
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
 import EnergiaAmarillo     from '../assets/svg-icons/Energia-Amarillo.svg';
 import EnergiaElectricaOn  from '../assets/svg-icons/EnergiaElectrica-On.svg';
@@ -16,50 +16,50 @@ import Proyecto075On       from '../assets/svg-icons/Proyecto075-On.svg';
 import OfertaDemandaOn     from '../assets/svg-icons/OfertaDemanda-On.svg';
 import MinusDarkOn         from '../assets/svg-icons/minusDark-On.svg';
 
+// URL descarga
+const DOWNLOAD_URL =
+  'http://192.168.8.138:8002/v1/graficas/6g_proyecto/listado_proyectos_6g/download?formato=excel';
 
-
-//Mapeo canónico  de tarjetas a tooltips Basado en la nueva API , canonicalizado)
+// Mapeo tarjeta → tooltip
 const CARD_TO_TOOLTIP_MAP = {
-  'total_proyectos_aprobados_bd075': 'proy_card_solicitudes_totales',
-  'total_capacidad_instalada_bd075': 'proy_card_en_operacion',
-  'total_capacidad_instalada_aprobados_bd075': 'proy_card_en_operacion_fncer',
-  'total_proyectos_curva_s': 'proy_card_solicitudes_aprobadas_entrar',
-  'proyectos_aprobados_no_curva_s': 'proy_card_fncer_con_fpo',
+  total_proyectos_aprobados_bd075: 'proy_card_solicitudes_totales',
+  total_capacidad_instalada_bd075: 'proy_card_en_operacion',
+  total_capacidad_instalada_aprobados_bd075: 'proy_card_en_operacion_fncer',
+  total_proyectos_curva_s: 'proy_card_solicitudes_aprobadas_entrar',
+  proyectos_aprobados_no_curva_s: 'proy_card_fncer_con_fpo',
+};
 
-}
-
-
-// Textos (quemados por ahora)
+// Textos base
 const LABEL_MAP = {
   total_proyectos_bd075: {
     label: 'Proyectos aprobados por entrar con FPO a 7 de agosto de 2026 =',
     icon: EnergiaAmarillo,
-    value: '', // se completa con API: "<n> proyectos (<mw> MW)"
+    value: '',
   },
   total_proyectos_aprobados_bd075: {
     label: 'Solicitudes totales',
     icon: Proyecto075On,
-    value: '', // API: total_solicitudes
+    value: '',
   },
   total_capacidad_instalada_bd075: {
     label: 'Proyectos en operación',
     icon: EnergiaElectricaOn,
-    value: '', // API: "total_proyectos_operacion  (capacidad_proyectos_operacion_mw MW)"
+    value: '',
   },
   total_capacidad_instalada_aprobados_bd075: {
     label: 'Proyectos en operación FNCER',
     icon: EnergiaElectricaOn,
-    value: '', // API: "total_proyectos_operacion_fncer  (capacidad_proyectos_operacion_fncer_mw MW)"
+    value: '',
   },
   total_proyectos_curva_s: {
     label: 'Solicitudes aprobadas FNCER por entrar',
     icon: OfertaDemandaOn,
-    value: '', // API: "total_solicitudes_aprobadas (capacidad_solicitudes_aprobadas_mw MW)"
+    value: '',
   },
   proyectos_aprobados_no_curva_s: {
     label: 'Proyectos FNCER con FPO vencida',
     icon: MinusDarkOn,
-    value: '', // API: "total_fncer_vencidos  (capacidad_fncer_vencidos_mw MW)"
+    value: '',
   },
 };
 
@@ -80,113 +80,96 @@ const nf0 = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
 const nf2 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const fmtMW = (mw) => nf2.format(mw ?? 0);
 
-export default function IndicadoresProyectos075() {
+export default function IndicadoresProyectos075({ wrapperClassName = '' }) {
   const [labels, setLabels] = useState(LABEL_MAP);
   const [updated, setUpdated] = useState(new Date().toLocaleDateString('es-CO'));
 
-  //**Estados y hooks para la modal tooltips */
-  const [isModalOpen, setIsModalOpen]= useState(false);
-  const [modalTitle,setModalTitle]= useState('');
-  const [modalContent,setModalContent]= useState('');
+  // Tooltips (cache)
+  const { tooltips, loading: loadingTooltips, error: errorTooltips } = useTooltipsCache();
 
-  // 2. Integrar el hook de cache de tooltips
-  const{
-    tooltips,
-    loading: loadingTooltips,
-    error: errorTooltips
-  }=useTooltipsCache();
+  // Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle]   = useState('');
+  const [modalContent, setModalContent] = useState('');
+  const closeModal = () => { setIsModalOpen(false); setModalTitle(''); setModalContent(''); };
 
-  //Funcion para cerrar la modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalTitle('');
-    setModalContent('');
+  const handleHelpClick = (cardkey) => {
+    const tooltipId = CARD_TO_TOOLTIP_MAP[cardkey];
+    const title = labels[cardkey]?.label || 'Indicador';
+    const content = tooltips[tooltipId];
+
+    setModalTitle(cleanSubtitle(title));
+    setModalContent(content || 'No hay información disponible en este momento.');
+    setIsModalOpen(true);
   };
 
-  //Funcion para manejar el click en el boton de ayuda
-  const handleHelpClick =(cardkey)=>{
-    
-      const tooltipId=CARD_TO_TOOLTIP_MAP[cardkey];
-      const title=labels[cardkey]?.label || 'Indicador';
-      const content= tooltips[tooltipId];
+  // Descarga Excel
+  const handleDownloadProyectos = () => {
+    window.open(DOWNLOAD_URL, '_blank', 'noopener,noreferrer');
+  };
 
-      if(tooltipId && content){
-        setModalTitle(cleanSubtitle(title));
-        setModalContent(content);
-        setIsModalOpen(true);
-      }else{
-        setModalTitle(cleanSubtitle(title));
-        setModalContent('No hay información disponible en este momento.');
-        setIsModalOpen(true);
-      }
-
-    
-
-  }
-
-// const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
-//   const heroValue = LABEL_MAP.total_proyectos_bd075.value;
-
+  // Datos API
   const { data, isLoading: loading, error: queryError } = useIndicadoresProyectos075();
 
   useEffect(() => {
     if (!data) return;
-    
     try {
-        // Mapear respuesta a los valores de la UI (sin cambiar estilos ni textos)
-        const next = { ...LABEL_MAP };
+      const next = { ...LABEL_MAP };
 
-        // Hero: "n proyectos (mw MW)"
-        const nAprobEntrar = data.total_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
-        const mwAprobEntrar = data.capacidad_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
-        next.total_proyectos_bd075.value = `${nf0.format(nAprobEntrar)} proyectos (${fmtMW(mwAprobEntrar)} MW)`;
+      const nAprobEntrar = data.total_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
+      const mwAprobEntrar = data.capacidad_proyectos_aprobados_a_entrar_agosto_2026 ?? 0;
+      next.total_proyectos_bd075.value = `${nf0.format(nAprobEntrar)} proyectos (${fmtMW(mwAprobEntrar)} MW)`;
 
-        // Solicitudes totales
-        next.total_proyectos_aprobados_bd075.value = `${nf0.format(data.total_solicitudes ?? 0)}`;
+      next.total_proyectos_aprobados_bd075.value = `${nf0.format(data.total_solicitudes ?? 0)}`;
+      next.total_capacidad_instalada_bd075.value = `${nf0.format(data.total_proyectos_operacion ?? 0)}  (${fmtMW(data.capacidad_proyectos_operacion_mw ?? 0)} MW)`;
+      next.total_capacidad_instalada_aprobados_bd075.value = `${nf0.format(data.total_proyectos_operacion_fncer ?? 0)} (${fmtMW(data.capacidad_proyectos_operacion_fncer_mw ?? 0)} MW)`;
+      next.total_proyectos_curva_s.value = `${nf0.format(data.total_solicitudes_aprobadas ?? 0)} (${fmtMW(data.capacidad_solicitudes_aprobadas_mw ?? 0)} MW)`;
+      next.proyectos_aprobados_no_curva_s.value = `${nf0.format(data.total_fncer_vencidos ?? 0)}  (${fmtMW(data.capacidad_fncer_vencidos_mw ?? 0)} MW)`;
 
-        // Proyectos en operación
-        next.total_capacidad_instalada_bd075.value = `${nf0.format(data.total_proyectos_operacion ?? 0)}  (${fmtMW(data.capacidad_proyectos_operacion_mw ?? 0)} MW)`;
-
-        // Proyectos en operación FNCER
-        next.total_capacidad_instalada_aprobados_bd075.value = `${nf0.format(data.total_proyectos_operacion_fncer ?? 0)} (${fmtMW(data.capacidad_proyectos_operacion_fncer_mw ?? 0)} MW)`;
-
-        // Solicitudes aprobadas FNCER por entrar
-        next.total_proyectos_curva_s.value = `${nf0.format(data.total_solicitudes_aprobadas ?? 0)} (${fmtMW(data.capacidad_solicitudes_aprobadas_mw ?? 0)} MW)`;
-
-        // Proyectos FNCER con FPO vencida
-        next.proyectos_aprobados_no_curva_s.value = `${nf0.format(data.total_fncer_vencidos ?? 0)}  (${fmtMW(data.capacidad_fncer_vencidos_mw ?? 0)} MW)`;
-
-        setLabels(next);
-        setUpdated(new Date().toLocaleDateString('es-CO'));
+      setLabels(next);
+      setUpdated(new Date().toLocaleDateString('es-CO'));
     } catch (e) {
-        console.error('Error procesando indicadores:', e);
+      console.error('Error procesando indicadores:', e);
     }
   }, [data]);
 
   const heroSubtitle = cleanSubtitle(labels.total_proyectos_bd075.label);
   const heroValue    = labels.total_proyectos_bd075.value;
 
+  // ===== Loading / Error =====
   if (loading || loadingTooltips) {
     return (
-      <div className="px-4 py-6 text-text-primary">
+      <section
+        className={`bg-[#111111] px-4 py-6 !border-0 !shadow-none ${wrapperClassName}`}
+        style={{ border: 0, boxShadow: 'none', outline: 'none' }}
+      >
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-surface-secondary rounded w-1/2 mx-auto" />
+          <div className="h-8 bg-[#1a1a1a] rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {ORDER.map((_, i) => (
               <Card key={i} className="p-5">
-                <div className="h-6 bg-surface-secondary rounded mb-4" />
-                <div className="h-8 bg-[color:var(--surface-overlay)] rounded mb-2" />
-                <div className="h-3 bg-surface-secondary rounded w-1/2" />
+                <div className="h-6 bg-[#1a1a1a] rounded mb-4" />
+                <div className="h-8 bg-[#222] rounded mb-2" />
+                <div className="h-3 bg-[#1a1a1a] rounded w-1/2" />
               </Card>
             ))}
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (queryError || errorTooltips) {
-    return <div className="text-red-400 p-6">Error: {queryError?.message || errorTooltips || 'Error al cargar los indicadores'}</div>;
+    return (
+      <section
+        className={`bg-[#111111] px-4 py-6 !border-0 !shadow-none ${wrapperClassName}`}
+        style={{ border: 0, boxShadow: 'none', outline: 'none' }}
+      >
+        <div className="text-red-400 p-6">
+          Error: {queryError?.message || errorTooltips || 'Error al cargar los indicadores'}
+        </div>
+      </section>
+    );
   }
 
   const cards = ORDER.map((key) => ({
@@ -197,33 +180,48 @@ export default function IndicadoresProyectos075() {
   }));
 
   return (
-    <>
-      {/* ───────── Indicador general (hero) ───────── */}
-      <div className="px-4 pt-6 text-center">
-        <Card className="inline-flex flex-col items-center gap-4 px-8 py-6 md:flex-row md:justify-center">
-          <span
-            className="inline-flex items-center justify-center rounded-full"
-            style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
-          >
-            <img
-              src={EnergiaAmarillo}
-              alt="Energía"
-              className="w-12 h-12 md:w-14 md:h-14"
-            />
-          </span>
-          <div className="text-left md:text-center">
-            <p className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold leading-tight">
-              {heroValue}
-            </p>
-            <p className="mt-2 text-text-secondary text-base lg:text-lg">
-              {heroSubtitle}
-            </p>
+    <section
+      className={`bg-[#111111] px-4 py-6 !border-0 !shadow-none ${wrapperClassName}`}
+      style={{ border: 0, boxShadow: 'none', outline: 'none' }}
+    >
+      {/* ───────── HERO: total_proyectos_bd075 + BOTÓN DESCARGA ───────── */}
+      <div className="pt-2">
+        <Card
+          className="flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-5 border-0 shadow-none"
+          style={{ backgroundColor: '#111111' }}
+        >
+          <div className="flex items-center gap-4 w-full">
+            <span
+              className="inline-flex items-center justify-center rounded-full flex-shrink-0"
+              style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
+            >
+              <img src={EnergiaAmarillo} alt="Energía" className="w-12 h-12 md:w-14 md:h-14" />
+            </span>
+
+            <div className="flex flex-col leading-tight text-left">
+              <p className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold leading-tight">
+                {heroValue}
+              </p>
+              <p className="mt-2 text-text-secondary text-base lg:text-lg">
+                {heroSubtitle}
+              </p>
+            </div>
           </div>
+
+          <button
+            onClick={handleDownloadProyectos}
+            className="flex items-center gap-2 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+            aria-label="Descargar información de proyectos"
+            title="Descargar información de proyectos"
+          >
+            <Download size={16} />
+            Información de proyectos
+          </button>
         </Card>
       </div>
 
-      {/* ───────── Tarjetas: 3 por fila ───────── */}
-      <div className="px-2 mt-6">
+      {/* ───────── Tarjetas (mantienen #262626) ───────── */}
+      <div className="px-0 mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {cards.map(({ key, icon, label, value }) => (
             <Card key={key} className="p-5 space-y-3">
@@ -233,6 +231,7 @@ export default function IndicadoresProyectos075() {
                   {label}
                 </span>
               </div>
+
               <div className="flex items-center text-text-primary text-2xl font-bold">
                 {value}
                 <HelpCircle
@@ -241,22 +240,20 @@ export default function IndicadoresProyectos075() {
                   onClick={() => handleHelpClick(key)}
                 />
               </div>
+
               <div className="text-xs text-text-muted mt-1">Actualizado el: {updated}</div>
             </Card>
           ))}
         </div>
       </div>
 
-          {/** Componente Modal */}
-          <TooltipModal
-            isOpen={isModalOpen}
-            onClose={closeModal}
-            title={modalTitle}
-            content={modalContent} 
-            />
-    </>
+      {/* Modal */}
+      <TooltipModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalTitle}
+        content={modalContent}
+      />
+    </section>
   );
 }
-
-
-

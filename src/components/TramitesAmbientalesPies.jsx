@@ -1,13 +1,14 @@
 // src/components/TramitesAmbientalesPies.jsx
-
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import Highcharts from '../lib/highcharts-config';
 import HighchartsReact from 'highcharts-react-official';
 
 import TooltipModal from './ui/TooltipModal';
 import { useTooltips } from '../services/tooltipsService';
 
-const API_URL = 'http://192.168.8.138:8002/v1/graficas/oass/tramites_solicitados';
+// ⬅️ Usa el mismo hook que el componente TramitesSolicitados (mismo endpoint)
+import { useTramitesSolicitadosOASS } from '../services/indicadoresAmbientalesService';
+
 const CHART_HEIGHT = 520;
 
 const CHART_TOOLTIP_IDS = {
@@ -101,8 +102,7 @@ const basePieOptions = {
   },
   plotOptions: {
     pie: {
-      // 👇 clave para que NO use paletas globales
-      colorByPoint: false,
+      colorByPoint: false, // 👈 evita paletas globales
       allowPointSelect: true,
       cursor: 'pointer',
       borderWidth: 0,
@@ -126,11 +126,11 @@ const basePieOptions = {
 };
 
 // ---------- builders dinámicos ----------
-
-// Tipos de trámites: Nuevos (#B8F600) y En gestión (#0A8C00)
 function buildTipoTramitesOptions(tipos_tramite) {
-  const subtitle = tipos_tramite
-    ? `Fuente: ${tipos_tramite.fuente} / Actualizado el: ${tipos_tramite.ultimaActualizacion}`
+  const fuente = tipos_tramite?.fuente || '';
+  const ultima = tipos_tramite?.ultimaActualizacion || '';
+  const subtitle = (fuente || ultima)
+    ? `Fuente: ${fuente}${ultima ? ` / Actualizado el: ${ultima}` : ''}`
     : '';
 
   const colorTipo = (nombre = '') => {
@@ -150,7 +150,7 @@ function buildTipoTramitesOptions(tipos_tramite) {
     ...basePieOptions,
     title: {
       ...basePieOptions.title,
-      text: tipos_tramite?.titulo || 'Tipo de trámites solicitados',
+      text: tipos_tramite?.titulo || 'Tipo de trámites reportados',
     },
     subtitle: { ...basePieOptions.subtitle, text: subtitle },
     series: [
@@ -159,7 +159,6 @@ function buildTipoTramitesOptions(tipos_tramite) {
         name: 'Trámites',
         innerSize: '0%',
         size: '70%',
-        // 👇 asegura que no entra paleta global
         colorByPoint: false,
         colors: undefined,
         data,
@@ -169,24 +168,25 @@ function buildTipoTramitesOptions(tipos_tramite) {
 }
 
 function buildTipologiaManeOptions(tipologias) {
-  const subtitle = tipologias
-    ? `Fuente: ${tipologias.fuente} / Actualizado el: ${tipologias.ultimaActualizacion}`
+  const fuente = tipologias?.fuente || '';
+  const ultima = tipologias?.ultimaActualizacion || '';
+  const subtitle = (fuente || ultima)
+    ? `Fuente: ${fuente}${ultima ? ` / Actualizado el: ${ultima}` : ''}`
     : '';
 
-const colorByTipologia = (nombre = '') => {
-  const n = nombre.toLowerCase();
+  const colorByTipologia = (nombre = '') => {
+    const n = nombre.toLowerCase();
 
-  if (n.includes('admin')) return COLORS.conexion;   // #0A8C00
+    if (n.includes('admin')) return COLORS.conexion;
 
-  if (n.startsWith('ambient')) return COLORS.ambiental;     // #B8FF65
-  if (n.startsWith('conex'))   return COLORS.conexion;      // #0A8C00
-  if (n.startsWith('super'))   return COLORS.superposicion; // #FFC800
-  if (n.startsWith('otros'))   return COLORS.otros;         // #B8F600
-  if (n.startsWith('consulta'))return COLORS.consulta;      // #F97316
-  if (n.startsWith('prosp'))   return COLORS.prospeccion;   // #183E34
-  return COLORS.gris;
-};
-
+    if (n.startsWith('ambient')) return COLORS.ambiental;
+    if (n.startsWith('conex'))   return COLORS.conexion;
+    if (n.startsWith('super'))   return COLORS.superposicion;
+    if (n.startsWith('otros'))   return COLORS.otros;
+    if (n.startsWith('consulta'))return COLORS.consulta;
+    if (n.startsWith('prosp'))   return COLORS.prospeccion;
+    return COLORS.gris;
+  };
 
   const data = (tipologias?.tipologias || []).map((t) => ({
     name: t.nombre,
@@ -198,7 +198,7 @@ const colorByTipologia = (nombre = '') => {
     ...basePieOptions,
     title: {
       ...basePieOptions.title,
-      text: tipologias?.titulo || 'Tipología de trámites MANE I 2025',
+      text: tipologias?.titulo || 'Tipología de trámites I 2025',
     },
     subtitle: { ...basePieOptions.subtitle, text: subtitle },
     plotOptions: {
@@ -214,7 +214,6 @@ const colorByTipologia = (nombre = '') => {
       {
         type: 'pie',
         name: 'Tipología',
-        // 👇 asegura que no entra paleta global
         colorByPoint: false,
         colors: undefined,
         data,
@@ -224,7 +223,6 @@ const colorByTipologia = (nombre = '') => {
 }
 
 // ---------- componente principal ----------
-
 export default function TramitesAmbientalesPies() {
   const chartRefs = useRef([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -232,49 +230,12 @@ export default function TramitesAmbientalesPies() {
   const [modalContent, setModalContent] = useState('');
   const { data: tooltips = {} } = useTooltips();
 
-  const [apiData, setApiData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch POST local al componente
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
-
-        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-
-        const json = await res.json();
-        if (!cancelled) setApiData(json);
-      } catch (err) {
-        if (!cancelled) {
-          console.error('[TramitesAmbientalesPies] Error:', err);
-          setError(err.message || 'Error al cargar los datos.');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // ⬅️ Reemplaza fetch manual por React Query + apiClient
+  const { data: apiData, isLoading: loading, error } = useTramitesSolicitadosOASS();
 
   const charts = useMemo(() => {
     const tipos = apiData?.tipos_tramite;
     const tipologias = apiData?.tipologias;
-
     return [
       { key: 'tipo', options: buildTipoTramitesOptions(tipos) },
       { key: 'tipologia', options: buildTipologiaManeOptions(tipologias) },
@@ -319,10 +280,11 @@ export default function TramitesAmbientalesPies() {
   }
 
   if (error) {
+    const msg = typeof error === 'string' ? error : (error?.message || 'Error al cargar los datos.');
     return (
       <section className="mt-8">
         <div className="bg-[#262626] p-4 rounded-lg border border-red-500 text-red-400 shadow">
-          Error al cargar datos de trámites: {error}
+          Error al cargar datos de trámites: {msg}
         </div>
       </section>
     );
@@ -353,12 +315,7 @@ export default function TramitesAmbientalesPies() {
               highcharts={Highcharts}
               options={chart.options}
               ref={(el) => (chartRefs.current[idx] = el)}
-              containerProps={{
-                style: {
-                  height: CHART_HEIGHT - 8,
-                  width: '100%',
-                },
-              }}
+              containerProps={{ style: { height: CHART_HEIGHT - 8, width: '100%' } }}
             />
           </div>
         ))}
