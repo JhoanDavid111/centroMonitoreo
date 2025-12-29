@@ -22,12 +22,50 @@ function stackedMax(series, len) {
   return max;
 }
 
+// ✅ Menú de exportación con estilo oscuro (botón + dropdown) — igual a los otros componentes
+const COMMON_EXPORTING = {
+  enabled: true,
+  buttons: {
+    contextButton: {
+      align: 'right',
+      verticalAlign: 'top',
+      symbol: 'menu',
+      symbolStroke: '#FFFFFF',
+      symbolStrokeWidth: 2,
+      symbolSize: 14,
+      theme: {
+        fill: '#444444', // botón gris
+        stroke: 'none',
+        r: 8,
+        style: { color: '#FFFFFF', cursor: 'pointer', fontFamily: 'Nunito Sans, sans-serif' },
+        states: { hover: { fill: '#666666' }, select: { fill: '#666666' } },
+      },
+    },
+  },
+  menuStyle: {
+    background: '#444444',
+    border: '1px solid #666666',
+    borderRadius: '10px',
+    padding: '6px',
+  },
+  menuItemStyle: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito Sans, sans-serif',
+    fontSize: '12px',
+    padding: '8px 10px',
+  },
+  menuItemHoverStyle: {
+    background: '#666666',
+    color: '#FFFFFF',
+  },
+};
+
 export function GeneracionHoraria() {
   // Prepara payloads
   const payload1 = { fecha_inicio: '2022-01-01', fecha_fin: '2022-06-30', meses: 6 };
   const hoy = new Date();
-  const fecha_fin2 = hoy.toISOString().slice(0,10);
-  const inicio = new Date(hoy.getFullYear(), hoy.getMonth()-5,1).toISOString().slice(0,10);
+  const fecha_fin2 = hoy.toISOString().slice(0, 10);
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth() - 5, 1).toISOString().slice(0, 10);
   const payload2 = { fecha_inicio: inicio, fecha_fin: fecha_fin2, meses: 6 };
 
   // Fetch paralelo con React Query
@@ -42,57 +80,79 @@ export function GeneracionHoraria() {
   const { opts1, opts2 } = useMemo(() => {
     if (!data1 || !data2) return { opts1: null, opts2: null };
 
-    const horas1 = data1.map(d => d.hora);
-    const horas2 = data2.map(d => d.hora);
-    const toMW = arr => arr.map(v => v * SCALE);
+    const horas1 = data1.map((d) => d.hora);
+    const horas2 = data2.map((d) => d.hora);
+    const toMW = (arr) => arr.map((v) => v * SCALE);
 
     const series1 = [
-      { name:'TÉRMICA',     data: toMW(data1.map(d=>d.TERMICA)),     color: getColorForTechnology('TERMICA') },
-      { name:'COGENERADOR', data: toMW(data1.map(d=>d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
-      { name:'HIDRÁULICA',  data: toMW(data1.map(d=>d.HIDRAULICA)),  color: getColorForTechnology('HIDRAULICA') },
-      { name:'SOLAR',       data: toMW(data1.map(d=>d.SOLAR)),       color: getColorForTechnology('SOLAR') }
+      { name: 'TÉRMICA', data: toMW(data1.map((d) => d.TERMICA)), color: getColorForTechnology('TERMICA') },
+      { name: 'COGENERADOR', data: toMW(data1.map((d) => d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
+      { name: 'HIDRÁULICA', data: toMW(data1.map((d) => d.HIDRAULICA)), color: getColorForTechnology('HIDRAULICA') },
+      { name: 'SOLAR', data: toMW(data1.map((d) => d.SOLAR)), color: getColorForTechnology('SOLAR') },
     ];
-    const max1 = Math.ceil(stackedMax(series1, horas1.length)*1.1);
+    const max1 = Math.ceil(stackedMax(series1, horas1.length) * 1.1);
 
     const baseOptions = {
       chart: { type: 'area', height: 500 },
-      title: { text:'Curva de generación primer semestre 2022' },
+      title: { text: 'Curva de generación primer semestre 2022' },
       xAxis: {
-        categories: horas1, tickInterval:1,
+        categories: horas1,
+        tickInterval: 1,
         title: { text: 'Hora del día', style: { color: tokens.colors.text.secondary } },
         labels: { style: { color: tokens.colors.text.secondary } },
-        gridLineColor: tokens.colors.border.subtle
+        gridLineColor: tokens.colors.border.subtle,
       },
       yAxis: {
-        min:0, max:max1, tickInterval:Math.ceil(max1/5),
+        min: 0,
+        max: max1,
+        tickInterval: Math.ceil(max1 / 5),
         title: { text: 'Generación (MW/h)', style: { color: tokens.colors.text.secondary } },
         labels: {
           style: { color: tokens.colors.text.secondary },
-          formatter() { return fmt(this.value, 0); }
+          formatter() {
+            return fmt(this.value, 0);
+          },
         },
-        gridLineColor: tokens.colors.border.subtle
+        gridLineColor: tokens.colors.border.subtle,
       },
-      tooltip: { shared: true, useHTML: true, formatter: areaTooltipFormatter({ unit: 'MW/h', headerFormat: 'Hora: {x}' }) },
-      plotOptions:{ area:{ stacking:'normal', lineWidth:1, marker:{enabled:false} } },
+      tooltip: {
+        shared: true,
+        useHTML: true,
+        formatter: areaTooltipFormatter({ unit: 'MW/h', headerFormat: 'Hora: {x}' }),
+      },
+      plotOptions: { area: { stacking: 'normal', lineWidth: 1, marker: { enabled: false } } },
       series: series1,
-      responsive:{ rules:[{ condition:{maxWidth:600}, chartOptions:{ legend:{layout:'horizontal',align:'center',verticalAlign:'bottom'} } }] }
+      responsive: {
+        rules: [
+          {
+            condition: { maxWidth: 600 },
+            chartOptions: { legend: { layout: 'horizontal', align: 'center', verticalAlign: 'bottom' } },
+          },
+        ],
+      },
+
+      credits: { enabled: false },
+      // ✅ mismo estilo del menú (botón gris + menú gris)
+      exporting: { ...COMMON_EXPORTING },
     };
 
     const series2 = [
-      { name:'TÉRMICA',     data: toMW(data2.map(d=>d.TERMICA)),     color: getColorForTechnology('TERMICA') },
-      { name:'COGENERADOR', data: toMW(data2.map(d=>d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
-      { name:'HIDRÁULICA',  data: toMW(data2.map(d=>d.HIDRAULICA)),  color: getColorForTechnology('HIDRAULICA') },
-      { name:'EÓLICA',      data: toMW(data2.map(d=>d.EOLICA)),      color: getColorForTechnology('EOLICA') },
-      { name:'SOLAR',       data: toMW(data2.map(d=>d.SOLAR)),       color: getColorForTechnology('SOLAR') }
+      { name: 'TÉRMICA', data: toMW(data2.map((d) => d.TERMICA)), color: getColorForTechnology('TERMICA') },
+      { name: 'COGENERADOR', data: toMW(data2.map((d) => d.COGENERADOR)), color: getColorForTechnology('COGENERADOR') },
+      { name: 'HIDRÁULICA', data: toMW(data2.map((d) => d.HIDRAULICA)), color: getColorForTechnology('HIDRAULICA') },
+      { name: 'EÓLICA', data: toMW(data2.map((d) => d.EOLICA)), color: getColorForTechnology('EOLICA') },
+      { name: 'SOLAR', data: toMW(data2.map((d) => d.SOLAR)), color: getColorForTechnology('SOLAR') },
     ];
-    const max2 = Math.ceil(stackedMax(series2, horas2.length)*1.1);
+    const max2 = Math.ceil(stackedMax(series2, horas2.length) * 1.1);
 
     const variantOptions = {
       ...baseOptions,
-      title: { text:'Curva de generación últimos 6 meses' },
+      title: { text: 'Curva de generación últimos 6 meses' },
       xAxis: { ...baseOptions.xAxis, categories: horas2 },
-      yAxis: { ...baseOptions.yAxis, max: max2, tickInterval: Math.ceil(max2/5) },
-      series: series2
+      yAxis: { ...baseOptions.yAxis, max: max2, tickInterval: Math.ceil(max2 / 5) },
+      series: series2,
+      credits: { enabled: false },
+      exporting: { ...COMMON_EXPORTING },
     };
 
     return { opts1: baseOptions, opts2: variantOptions };
@@ -101,7 +161,7 @@ export function GeneracionHoraria() {
   if (loading) {
     return <ChartLoadingState message="Cargando gráfica..." />;
   }
-  
+
   if (error) {
     return <ChartErrorState error={error} />;
   }
@@ -110,9 +170,7 @@ export function GeneracionHoraria() {
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl text-text-primary font-semibold mb-4">
-        Curva de generación horaria promedio
-      </h2>
+      <h2 className="text-2xl text-text-primary font-semibold mb-4">Curva de generación horaria promedio</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-4">
           <HighchartsReact highcharts={Highcharts} options={opts1} />
