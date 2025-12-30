@@ -6,6 +6,45 @@ import { useMemo } from 'react';
 // ⬅️ Hook con React Query + apiClient (igual que Indicadores6GW)
 import { useTramitesSolicitadosOASS } from '../services/indicadoresAmbientalesService';
 
+// Menú de exportación con estilo oscuro (botón + dropdown) — igual a GestionProyectosPriorizados/EstadoTramites
+const COMMON_EXPORTING = {
+  enabled: true,
+  buttons: {
+    contextButton: {
+      align: 'right',
+      verticalAlign: 'top',
+      symbol: 'menu',
+      symbolStroke: '#FFFFFF',
+      symbolStrokeWidth: 2,
+      symbolSize: 14,
+      theme: {
+        fill: '#444444', // botón gris
+        stroke: 'none',
+        r: 8,
+        style: { color: '#FFFFFF', cursor: 'pointer', fontFamily: 'Nunito Sans, sans-serif' },
+        states: { hover: { fill: '#666666' }, select: { fill: '#666666' } },
+      },
+    },
+  },
+  // Estilos del menú desplegable (la lista de opciones)
+  menuStyle: {
+    background: '#444444',
+    border: '1px solid #666666',
+    borderRadius: '10px',
+    padding: '6px',
+  },
+  menuItemStyle: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito Sans, sans-serif',
+    fontSize: '12px',
+    padding: '8px 10px',
+  },
+  menuItemHoverStyle: {
+    background: '#666666',
+    color: '#FFFFFF',
+  },
+};
+
 function TramitesSolicitados() {
   const { data: apiData, isLoading: loading, error } = useTramitesSolicitadosOASS();
 
@@ -13,12 +52,12 @@ function TramitesSolicitados() {
     const serieTemporal = apiData?.serie_temporal;
 
     const categorias = serieTemporal?.serie?.map((p) => p.periodo) || [];
-    const valores     = serieTemporal?.serie?.map((p) => Number(p.valor ?? 0)) || [];
+    const valores = serieTemporal?.serie?.map((p) => Number(p.valor ?? 0)) || [];
 
-    const fuente  = serieTemporal?.fuente || 'Minenergía – OAAS';
-    const ultima  = serieTemporal?.ultimaActualizacion || '';
-    const titulo  = serieTemporal?.titulo || 'Trámites solicitados entre 2022 y 2025';
-    const unidad  = serieTemporal?.unidad || 'N.º de trámites solicitados';
+    const fuente = serieTemporal?.fuente || 'Minenergía – OAAS';
+    const ultima = serieTemporal?.ultimaActualizacion || '';
+    const titulo = serieTemporal?.titulo || 'Trámites solicitados entre 2022 y 2025';
+    const unidad = serieTemporal?.unidad || 'N.º de trámites solicitados';
 
     const subtitleText = `Fuente: ${fuente}${ultima ? ` / Actualizado el: ${ultima}` : ''}`;
 
@@ -77,7 +116,9 @@ function TramitesSolicitados() {
         series: {
           dataLabels: {
             enabled: true,
-            formatter: function () { return this.y; },
+            formatter: function () {
+              return this.y;
+            },
             style: { color: '#F9FAFB', textOutline: 'none', fontSize: '11px' },
           },
         },
@@ -98,7 +139,8 @@ function TramitesSolicitados() {
         },
       ],
       credits: { enabled: false },
-      exporting: { enabled: true },
+      // ✅ mismo estilo del menú (botón gris + menú gris)
+      exporting: { ...COMMON_EXPORTING },
     };
   }, [apiData]);
 
@@ -111,7 +153,7 @@ function TramitesSolicitados() {
   }
 
   if (error) {
-    const msg = typeof error === 'string' ? error : (error?.message || 'Error al cargar los datos.');
+    const msg = typeof error === 'string' ? error : error?.message || 'Error al cargar los datos.';
     return (
       <div className="px-2 mt-6">
         <div className="bg-[#262626] border border-red-500 text-red-400 rounded-xl p-4 shadow">

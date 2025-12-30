@@ -38,6 +38,45 @@ const COLORS = {
   gris: '#C4C4C4',
 };
 
+// Menú de exportación con estilo oscuro (botón + dropdown) — igual al otro componente
+const COMMON_EXPORTING = {
+  enabled: true,
+  buttons: {
+    contextButton: {
+      align: 'right',
+      verticalAlign: 'top',
+      symbol: 'menu',
+      symbolStroke: '#FFFFFF',
+      symbolStrokeWidth: 2,
+      symbolSize: 14,
+      theme: {
+        fill: '#444444', // botón gris
+        stroke: 'none',
+        r: 8,
+        style: { color: '#FFFFFF', cursor: 'pointer', fontFamily: 'Nunito Sans, sans-serif' },
+        states: { hover: { fill: '#666666' }, select: { fill: '#666666' } },
+      },
+    },
+  },
+  // Estilos del menú desplegable (la lista de opciones)
+  menuStyle: {
+    background: '#444444',
+    border: '1px solid #666666',
+    borderRadius: '10px',
+    padding: '6px',
+  },
+  menuItemStyle: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito Sans, sans-serif',
+    fontSize: '12px',
+    padding: '8px 10px',
+  },
+  menuItemHoverStyle: {
+    background: '#666666',
+    color: '#FFFFFF',
+  },
+};
+
 const basePieOptions = {
   chart: {
     type: 'pie',
@@ -122,7 +161,8 @@ const basePieOptions = {
       showInLegend: true,
     },
   },
-  exporting: { enabled: true },
+  // ✅ Aplicar estilo del menú como en GestionProyectosPriorizados (botón gris + menú gris)
+  exporting: { ...COMMON_EXPORTING },
 };
 
 // ---------- builders dinámicos ----------
@@ -164,6 +204,8 @@ function buildTipoTramitesOptions(tipos_tramite) {
         data,
       },
     ],
+    // (opcional) permitir override por si luego quieres cambiar items en este chart
+    exporting: { ...COMMON_EXPORTING },
   };
 }
 
@@ -219,6 +261,7 @@ function buildTipologiaManeOptions(tipologias) {
         data,
       },
     ],
+    exporting: { ...COMMON_EXPORTING },
   };
 }
 
@@ -299,17 +342,6 @@ export default function TramitesAmbientalesPies() {
             className="bg-[#262626] p-4 rounded-lg border border-[#666666] shadow relative"
             style={{ minHeight: CHART_HEIGHT + 16 }}
           >
-            {/* Botón de ayuda */}
-            <div className="absolute top-3 right-3">
-              <button
-                type="button"
-                onClick={() => handleHelpClick(chart.key, chart.options)}
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#333333] hover:bg-[#4B5563] transition-colors"
-                title="Ayuda"
-              >
-                <span className="text-white text-sm font-semibold">?</span>
-              </button>
-            </div>
 
             <HighchartsReact
               highcharts={Highcharts}

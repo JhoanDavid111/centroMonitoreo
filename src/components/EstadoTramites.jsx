@@ -21,9 +21,48 @@ const COLORS = {
   transmision: '#F950B5',
 };
 
+// Menú de exportación con estilo oscuro (botón + dropdown)
+const COMMON_EXPORTING = {
+  enabled: true,
+  buttons: {
+    contextButton: {
+      align: 'right',
+      verticalAlign: 'top',
+      symbol: 'menu',
+      symbolStroke: '#FFFFFF',
+      symbolStrokeWidth: 2,
+      symbolSize: 14,
+      theme: {
+        fill: '#444444', // botón gris
+        stroke: 'none',
+        r: 8,
+        style: { color: '#FFFFFF', cursor: 'pointer', fontFamily: 'Nunito Sans, sans-serif' },
+        states: { hover: { fill: '#666666' }, select: { fill: '#666666' } },
+      },
+    },
+  },
+  // Estilos del menú desplegable
+  menuStyle: {
+    background: '#444444',
+    border: '1px solid #666666',
+    borderRadius: '10px',
+    padding: '6px',
+  },
+  menuItemStyle: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito Sans, sans-serif',
+    fontSize: '12px',
+    padding: '8px 10px',
+  },
+  menuItemHoverStyle: {
+    background: '#666666',
+    color: '#FFFFFF',
+  },
+};
+
 export default function EstadoTramites() {
   const chartRefs = useRef([]);
-  const { data, isLoading, error } = useEstadoTramites(); // <- isLoading
+  const { data, isLoading, error } = useEstadoTramites();
 
   const { opcionesSegunRespuesta, opcionesPorTipoProyecto } = useMemo(() => {
     if (!data?.indicadores) return { opcionesSegunRespuesta: null, opcionesPorTipoProyecto: null };
@@ -50,17 +89,31 @@ export default function EstadoTramites() {
     });
     const maxSR = Math.max(...valoresSR, 0);
 
-    const opcionesSegunRespuesta = {
-      chart: { type: 'column', backgroundColor: COLORS.bgCard, height: 420, spacing: [20, 16, 24, 16] },
+    const opcionesSegunRespuestaLocal = {
+      chart: {
+        type: 'column',
+        backgroundColor: COLORS.bgCard,
+        height: 420,
+        spacing: [20, 16, 24, 16],
+      },
       title: {
         text: `${sr.titulo || 'Según respuestas de las entidades'} (N=${totalTramitesSR || ''})`,
         align: 'left',
-        style: { color: COLORS.title, fontSize: '20px', fontWeight: 600, fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: COLORS.title,
+          fontSize: '20px',
+          fontWeight: 600,
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
       },
       subtitle: {
         text: `Fuente: ${sourceLabel}` + (lastUpdate ? ` / Actualizado el: ${lastUpdate}` : ''),
         align: 'left',
-        style: { color: COLORS.subtitle, fontSize: '12px', fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: COLORS.subtitle,
+          fontSize: '12px',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
         margin: 16,
       },
       xAxis: {
@@ -81,7 +134,11 @@ export default function EstadoTramites() {
         useHTML: true,
         backgroundColor: COLORS.tooltipBg,
         borderColor: COLORS.tooltipBorder,
-        style: { color: '#F9FAFB', fontSize: '12px', fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: '#F9FAFB',
+          fontSize: '12px',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
         formatter: function () {
           return `
             <div style="padding:8px 10px;">
@@ -110,7 +167,7 @@ export default function EstadoTramites() {
         },
       ],
       credits: { enabled: false },
-      exporting: { enabled: true },
+      exporting: { ...COMMON_EXPORTING },
     };
 
     // 2) Por tipo de proyecto (apiladas)
@@ -120,7 +177,12 @@ export default function EstadoTramites() {
 
     const estadosOrden = respuestasOrdenadas;
     const tecnologias = ['Solar', 'Hídrica', 'Eólica', 'Transmisión'];
-    const colorTec = { Solar: COLORS.solar, Hídrica: COLORS.hidrica, Eólica: COLORS.eolica, Transmisión: COLORS.transmision };
+    const colorTec = {
+      Solar: COLORS.solar,
+      Hídrica: COLORS.hidrica,
+      Eólica: COLORS.eolica,
+      Transmisión: COLORS.transmision,
+    };
     const categoriasPTP = estadosOrden.map((e) => e.label);
 
     const seriesPTP = tecnologias.map((tec) => ({
@@ -132,17 +194,31 @@ export default function EstadoTramites() {
       }),
     }));
 
-    const opcionesPorTipoProyecto = {
-      chart: { type: 'column', backgroundColor: COLORS.bgCard, height: 420, spacing: [20, 16, 24, 16] },
+    const opcionesPorTipoProyectoLocal = {
+      chart: {
+        type: 'column',
+        backgroundColor: COLORS.bgCard,
+        height: 420,
+        spacing: [20, 16, 24, 16],
+      },
       title: {
         text: ptp.titulo || 'Por tipo de proyecto',
         align: 'left',
-        style: { color: COLORS.title, fontSize: '20px', fontWeight: 600, fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: COLORS.title,
+          fontSize: '20px',
+          fontWeight: 600,
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
       },
       subtitle: {
         text: `Fuente: ${sourceLabel}` + (lastUpdate ? ` / Actualizado el: ${lastUpdate}` : ''),
         align: 'left',
-        style: { color: COLORS.subtitle, fontSize: '12px', fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: COLORS.subtitle,
+          fontSize: '12px',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
         margin: 16,
       },
       xAxis: {
@@ -160,14 +236,22 @@ export default function EstadoTramites() {
       legend: {
         align: 'center',
         verticalAlign: 'bottom',
-        itemStyle: { color: COLORS.title, fontSize: '12px', fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        itemStyle: {
+          color: COLORS.title,
+          fontSize: '12px',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
       },
       tooltip: {
         shared: true,
         useHTML: true,
         backgroundColor: COLORS.tooltipBg,
         borderColor: COLORS.tooltipBorder,
-        style: { color: '#F9FAFB', fontSize: '12px', fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont' },
+        style: {
+          color: '#F9FAFB',
+          fontSize: '12px',
+          fontFamily: 'Nunito Sans, system-ui, -apple-system, BlinkMacSystemFont',
+        },
         formatter: function () {
           const total = (this.points || []).reduce((acc, p) => acc + (p.y || 0), 0);
           const filas = (this.points || [])
@@ -190,23 +274,36 @@ export default function EstadoTramites() {
           `;
         },
       },
-      plotOptions: { column: { stacking: 'normal', borderWidth: 0, pointPadding: 0.1, groupPadding: 0.08, dataLabels: { enabled: false } } },
+      plotOptions: {
+        column: {
+          stacking: 'normal',
+          borderWidth: 0,
+          pointPadding: 0.1,
+          groupPadding: 0.08,
+          dataLabels: { enabled: false },
+        },
+      },
       series: seriesPTP,
       credits: { enabled: false },
-      exporting: { enabled: true },
+      exporting: { ...COMMON_EXPORTING },
     };
 
-    return { opcionesSegunRespuesta, opcionesPorTipoProyecto };
+    return {
+      opcionesSegunRespuesta: opcionesSegunRespuestaLocal,
+      opcionesPorTipoProyecto: opcionesPorTipoProyectoLocal,
+    };
   }, [data]);
 
-  // ⬇️ Aquí estaba el error: usar isLoading
   if (isLoading) {
     return (
       <section className="mt-10 px-2">
         <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Estado de los trámites</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[0, 1].map((i) => (
-            <div key={i} className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 h-[420px] flex items-center justify-center">
+            <div
+              key={i}
+              className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 h-[420px] flex items-center justify-center"
+            >
               <div className="flex space-x-2">
                 <div className="w-3 h-3 rounded-full bg-[#FFC800] animate-bounce" />
                 <div className="w-3 h-3 rounded-full bg-[#FFC800] animate-bounce delay-150" />
@@ -235,10 +332,18 @@ export default function EstadoTramites() {
       <h2 className="text-2xl text-[#D1D1D0] font-semibold mb-4">Estado de los trámites</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 shadow">
-          <HighchartsReact highcharts={Highcharts} options={opcionesSegunRespuesta} />
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={opcionesSegunRespuesta}
+            ref={(el) => (chartRefs.current[0] = el)}
+          />
         </div>
         <div className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 shadow">
-          <HighchartsReact highcharts={Highcharts} options={opcionesPorTipoProyecto} />
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={opcionesPorTipoProyecto}
+            ref={(el) => (chartRefs.current[1] = el)}
+          />
         </div>
       </div>
     </section>
