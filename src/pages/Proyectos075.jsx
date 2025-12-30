@@ -42,32 +42,33 @@ export default function Proyectos075() {
 
       <div className="mb-4 flex flex-wrap items-center justify-between space-y-2">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowCiclos(false)}
-            className={`flex items-center space-x-1 rounded px-3 py-1 font-sans transition ${
-              !showCiclos
-                ? "bg-[#FFC800] text-black hover:bg-[#e6b000]"
-                : "bg-[#3a3a3a] text-white"
-            }`}
-          >
-            Seguimiento de proyectos 075
-          </button>
-          <button
-            onClick={() => setShowCiclos(true)}
-            className={`flex items-center space-x-1 rounded px-3 py-1 font-sans transition ${
-              showCiclos
-                ? "bg-[#FFC800] text-black hover:bg-[#e6b000]"
-                : "bg-[#3a3a3a] text-white"
-            }`}
-          >
-            Seguimiento de ciclos de asignación
-          </button>
+        <button
+          onClick={() => setShowCiclos(false)}
+          className={`flex items-center gap-1 px-3 py-2 rounded justify-center transition-colors w-full sm:w-auto
+            ${!showCiclos
+              ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500'
+              : 'bg-[#3a3a3a] text-white hover:bg-[#4a4a4a]'}
+          `}
+        >
+          Seguimiento de proyectos 075
+        </button>
+
+        <button
+          onClick={() => setShowCiclos(true)}
+          className={`flex items-center gap-1 px-3 py-2 rounded justify-center transition-colors w-full sm:w-auto
+            ${showCiclos
+              ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500'
+              : 'bg-[#3a3a3a] text-white hover:bg-[#4a4a4a]'}
+          `}
+        >
+          Seguimiento de ciclos de asignación
+        </button>
         </div>
       </div>
 
       {!showCiclos ? (
         <div id="proyectos-tab">
-          <div className="rounded-lg bg-surface-primary p-6">
+          <div>
             <IndicadoresProyectos075 />
           </div>
           <br />

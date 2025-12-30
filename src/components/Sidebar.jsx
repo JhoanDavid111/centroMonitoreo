@@ -21,6 +21,10 @@ import EnergiaFirmeOff from "../assets/svg-icons/EnergiaElectrica-Off.svg";
 import EnergiaFirmeOn from "../assets/svg-icons/EnergiaElectrica-On.svg";
 import HidroOff from "../assets/svg-icons/Hidrologia-Off.svg";
 import HidroOn from "../assets/svg-icons/Hidrologia-On.svg";
+import SeguiOff from "../assets/svg-icons/ambientalDarkmodeGris.svg";
+import SeguiOn from "../assets/svg-icons/ambientalDarkmodeAmarillo.svg";
+
+
 
 const WIDTHS = {
   open: "18rem",
@@ -75,11 +79,12 @@ const sections = [
                 external: true,
             },
             {
-                title: "Seguimiento Ambiental",
+                title: "Socioambiental",
                 path: "/seguimiento_ambiental",
-                icon: GWOff,
-                activeIcon: GWOn,
-                // permission: "dashboard",
+                icon: SeguiOff,
+                activeIcon: SeguiOn,
+                permission: "dashboard",
+
             },
     ],
   },

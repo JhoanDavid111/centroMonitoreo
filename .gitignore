@@ -79,3 +79,5 @@ pnpm-debug.log*
 # ======================
 /src/firebase/config.js
 !src/firebase/config.example.js
+.vercel
+.env*.local

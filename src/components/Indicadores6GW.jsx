@@ -1,5 +1,6 @@
+// src/components/Indicadores6GW.jsx
 import { useEffect, useMemo, useState } from 'react';
-import { HelpCircle, Map as MapIcon, Bolt } from 'lucide-react';
+import { HelpCircle, Bolt } from 'lucide-react';
 
 import GWOff from '../assets/svg-icons/6gw+NewIcon.svg';
 import DemandaOn from '../assets/svg-icons/Demanda-On.svg';
@@ -49,8 +50,15 @@ function canonicalKey(raw = '') {
   return clean; // fallback
 }
 
+// ⛔️ Claves a ocultar (según lo que llega del API después de canonicalizar)
+const EXCLUDE_KEYS = new Set([
+  'AUTOGENERADOR',
+  'GEN. DISTRIBUIDA',
+  'NORMAL',
+]);
+
 // MAPEO DE CLAVE CANONICA A IDENTIFICADOR DE TOOLTIP
-const TOOLTIP_IDENTIFIERS_MAP={
+const TOOLTIP_IDENTIFIERS_MAP = {
   'EN OPERACIÓN': 'res_card_capacidad_inst_operacion',
   'PRUEBAS': 'res_card_capacidad_inst_prueba',
   'CAPACIDAD A ENTRAR 075': 'res_card_mw',
@@ -58,14 +66,14 @@ const TOOLTIP_IDENTIFIERS_MAP={
   'AGGE': 'res_card_agge',
   'GENERACION DISTRIBUIDA': 'res_card_gd',
   'AGPE': 'res_card_agpe',
-  'ZNI': 'res_card_zni', // Añadir ZNI al mapeo
-}
+  'ZNI': 'res_card_zni',
+};
 
 const LABEL_MAP = {
   total_proyectos_bd075: {
-      label: 'Capacidad total instalada 6GW+ =',
-      icon: EnergiaAmarillo,
-    },
+    label: 'Capacidad total instalada 6GW+ =',
+    icon: EnergiaAmarillo,
+  },
   'EN OPERACIÓN': { label: 'Capacidad instalada en operación', icon: DemandaOn },
   'PRUEBAS': { label: 'Capacidad instalada en pruebas', icon: ProcessOn },
   'CAPACIDAD A ENTRAR 075': { label: 'MW por entrar a julio de 2026', icon: Proyecto075On },
@@ -84,71 +92,53 @@ const ORDER = [
   'AGGE',
   'GENERACION DISTRIBUIDA',
   'AGPE',
-  'ZNI', // Añadir ZNI al orden
+  'ZNI',
 ];
 
 // Helpers
 function cleanSubtitle(raw) {
-  // quita el " =" final del label para usarlo como subtítulo
   return String(raw || '').replace(/\s*=\s*$/, '');
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Utilidades
-// ─────────────────────────────────────────────────────────────────────────────
 const formatMW = (n) =>
   Number(n ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Componente
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Indicadores6GW() {
-
-  const { data, isLoading: loading, error } = useIndicadores6GW(); 
+  const { data, isLoading: loading, error } = useIndicadores6GW();
   const navigate = useNavigate();
 
-  // USO DEL HOOK CENTRALIZADO DE TOOLTIPS
-  const { 
-    data: tooltips = {}, 
-    isLoading: loadingTooltips, 
-    error: errorTooltips 
-  } = useTooltips(); 
+  const {
+    data: tooltips = {},
+    isLoading: loadingTooltips,
+    error: errorTooltips
+  } = useTooltips();
 
-
-  // ESTADOS DE LA MODAL
+  // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState('');
-
-  // FUNCIÓN PARA CERRAR LA MODAL
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalTitle('');
-    setModalContent('');
-  };
-
-
-  // NOTA: El useEffect para cargar tooltips fue eliminado. Su lógica está en useTooltipsCache.
-
+  const closeModal = () => { setIsModalOpen(false); setModalTitle(''); setModalContent(''); };
 
   const heroSubtitle = cleanSubtitle(LABEL_MAP.total_proyectos_bd075.label);
-  
+
   const normalized = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return data.map((d) => ({
       original: d.indicador,
       key: canonicalKey(d.indicador),
       mw: Number(d.capacidad_mw ?? 0),
-    }));
+    }))
+    // ⛔️ Filtra las 3 tarjetas no deseadas (ya canonicalizado)
+    .filter(item => !EXCLUDE_KEYS.has(item.key));
   }, [data]);
 
-  // Total que mostramos arriba
+  // Total arriba
   const totalMW = useMemo(() => {
     if (!normalized.length) return 0;
     const total = normalized.find((x) => x.key === 'CAPACIDAD TOTAL')?.mw;
     if (total != null && !Number.isNaN(total)) return total;
-    // Respaldo: suma de categorías (sin duplicar "total")
     return normalized
       .filter((x) => x.key !== 'CAPACIDAD TOTAL')
       .reduce((acc, x) => acc + (x.mw || 0), 0);
@@ -159,25 +149,25 @@ export default function Indicadores6GW() {
   const cards = useMemo(() => {
     if (!normalized.length) return [];
 
-    // 1) tarjetas desde API (excluyendo "Capacidad Total")
+    // tarjetas desde API (excluye “Capacidad Total”—y ya excluimos las 3 no deseadas arriba)
     const apiCards = normalized
       .filter((x) => x.key !== 'CAPACIDAD TOTAL')
       .map((x) => {
         const meta = LABEL_MAP[x.key];
-        const tooltipId=TOOLTIP_IDENTIFIERS_MAP[x.key];
+        const tooltipId = TOOLTIP_IDENTIFIERS_MAP[x.key];
         return {
           order: ORDER.indexOf(x.key) === -1 ? 999 : ORDER.indexOf(x.key),
           icon: meta?.icon ?? GWOff,
           label: meta?.label ?? x.original,
           value: x.mw,
           special: meta?.special || false,
-          tooltipId:tooltipId,
-          key:x.key,
+          tooltipId,
+          key: x.key,
         };
       })
       .sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'es'));
 
-    // 2) tarjeta fija de ZNI
+    // tarjeta fija ZNI
     const zniCard = {
       order: ORDER.indexOf('ZNI'),
       icon: TerritorioOn,
@@ -185,23 +175,20 @@ export default function Indicadores6GW() {
       value: 13.89,
       special: true,
       fixedDate: '8/5/2025',
-      key: 'ZNI', // Aseguramos que la ZNI card también tiene key para el tooltip
+      key: 'ZNI',
     };
 
     return [...apiCards, zniCard].sort((a, b) => a.order - b.order);
   }, [normalized]);
 
-  // FUNCIÓN PARA MOSTRAR EL TOOLTIP
-  const handleHelpClick=(cardKey)=>{
-    const tooltipId=TOOLTIP_IDENTIFIERS_MAP[cardKey];
-    const title=LABEL_MAP[cardKey]?.label || cardKey;
-    const content = tooltips[tooltipId]; // Obtener el contenido del tooltip
+  const handleHelpClick = (cardKey) => {
+    const tooltipId = TOOLTIP_IDENTIFIERS_MAP[cardKey];
+    const title = LABEL_MAP[cardKey]?.label || cardKey;
+    const content = tooltips[tooltipId];
 
-    
     if (tooltipId && tooltips[tooltipId]) {
       setModalTitle(cleanSubtitle(title));
-      // CORRECCIÓN: Se usa el contenido del tooltip directamente, sin cleanSubtitle
-      setModalContent(content); 
+      setModalContent(content);
       setIsModalOpen(true);
     } else {
       setModalTitle('Información no disponible');
@@ -209,7 +196,6 @@ export default function Indicadores6GW() {
       setIsModalOpen(true);
     }
   };
-  
 
   if (loading || loadingTooltips) {
     return (
@@ -230,8 +216,9 @@ export default function Indicadores6GW() {
     );
   }
 
-  // Se unifica el manejo de error de indicadores y tooltips
-  if (error || errorTooltips) return <div className="text-red-400 p-6">Error al cargar datos: {error || errorTooltips}</div>;
+  if (error || errorTooltips) {
+    return <div className="text-red-400 p-6">Error al cargar datos: {error || errorTooltips}</div>;
+  }
 
   return (
     <>
@@ -243,11 +230,7 @@ export default function Indicadores6GW() {
               className="inline-flex items-center justify-center rounded-full"
               style={{ width: 64, height: 64, background: tokens.colors.accent.primary }}
             >
-              <img
-                src={EnergiaAmarillo}
-                alt="Energía"
-                className="w-12 h-12 md:w-14 md:h-14"
-              />
+              <img src={EnergiaAmarillo} alt="Energía" className="w-12 h-12 md:w-14 md:h-14" />
             </span>
             <div className="flex flex-col leading-tight text-left">
               <span className="text-[color:var(--accent-primary)] text-3xl lg:text-5xl font-semibold">
@@ -258,13 +241,14 @@ export default function Indicadores6GW() {
               </span>
             </div>
           </div>
-          <button
-            onClick={() => navigate('/proyectos_generacion')}
-            className="inline-flex items-center gap-2 bg-[color:var(--accent-primary)] text-black px-4 py-2 rounded-md shadow-soft hover:bg-[color:var(--accent-warning)] transition"
-          >
-            <Bolt size={16} />
-            Ver seguimiento de proyectos
-          </button>
+        <button
+          onClick={() => navigate('/proyectos_generacion')}
+          className="flex items-center gap-1 bg-yellow-400 text-gray-800 px-3 py-2 rounded hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+          aria-label="Ver seguimiento de proyectos"
+        >
+          <Bolt size={16} />
+          Ver seguimiento de proyectos
+        </button>
         </Card>
       </div>
 
@@ -298,13 +282,12 @@ export default function Indicadores6GW() {
         </div>
       </div>
 
-      {/*Agregar el componente modal */}
       <TooltipModal
         isOpen={isModalOpen}
         onClose={closeModal}
         title={modalTitle}
         content={modalContent}
-        />
+      />
     </>
   );
 }
