@@ -25,8 +25,6 @@ const Carousel = ({ images = [], interval = 5000, height = "h-56" }) => {
   return (
     <div
       className={`relative bg-surface-primary border border-[color:var(--border-subtle)] rounded-xl p-0 overflow-hidden`}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
       {/* Imagen activa */}
       <img
